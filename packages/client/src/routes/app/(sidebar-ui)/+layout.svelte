@@ -19,11 +19,13 @@
 		deletedServers,
 		isMobileUI,
 		wsChannels,
+		wsMessages,
 		wsServers
 	} from '$lib/stores'
 	import { page } from '$app/stores'
 	import Portal from 'svelte-portal/src/Portal.svelte'
 	import { cn } from '$lib/cn'
+	import { onDestroy } from 'svelte'
 
 	let newServerModalOpen = false
 	let newServerModal: HTMLDialogElement
@@ -81,10 +83,8 @@
 	export let data: LayoutData
 
 	$: servers = [...data.servers, ...$wsServers].filter(({ id }) => !$deletedServers.has(id))
-	$: channels = [
-		...(servers.find(({ id }) => id === $currentServerId)?.channels ?? []),
-		...$wsChannels.filter(({ server_id }) => server_id === $currentServerId)
-	]
+	$: allChannels = [...servers.flatMap(({ channels }) => channels), ...$wsChannels]
+	$: channels = allChannels.filter(({ server_id }) => server_id === $currentServerId)
 
 	let mobileSidebarsModal: HTMLDialogElement
 	let mobileSidebarsModalOpen = false
@@ -101,6 +101,31 @@
 	let desktopChannelListContainer: HTMLDivElement
 
 	let currentView: 'server' | 'channel' = 'server'
+
+	if (Notification.permission === 'default') {
+		Notification.requestPermission()
+	}
+
+	onDestroy(
+		wsMessages.subscribe((m) => {
+			const newest = m[m.length - 1]
+			if (newest.member.user_id === data.me.id) return
+			if (newest.channel_id === $currentChannelId && document.visibilityState === 'visible') return
+
+			if (Notification.permission === 'granted') {
+				const name = newest.member.nickname ?? newest.member.user?.username ?? 'Deleted User'
+				const channel = allChannels.find(({ id }) => id === newest.channel_id)
+
+				new Notification(`${name}${channel ? `| #${channel.name}` : ''}`, {
+					body: newest.content,
+					timestamp: new Date(newest.created_at).getTime()
+				}).addEventListener('click', () => {
+					if (!channel) return
+					goto(`/app/servers/${channel.server_id}/channels/${newest.channel_id}`)
+				})
+			}
+		})
+	)
 </script>
 
 <Modal
