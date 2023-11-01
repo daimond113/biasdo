@@ -117,7 +117,7 @@
 				const name = newest.member.nickname ?? newest.member.user?.username ?? 'Deleted User'
 				const channel = allChannels.find(({ id }) => id === newest.channel_id)
 
-				new Notification(`${name}${channel ? `| #${channel.name}` : ''}`, {
+				new Notification(`${name}${channel ? ` | #${channel.name}` : ''}`, {
 					body: newest.content,
 					timestamp: new Date(newest.created_at).getTime()
 				}).addEventListener('click', () => {
