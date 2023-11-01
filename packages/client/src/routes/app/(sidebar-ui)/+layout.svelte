@@ -109,6 +109,7 @@
 	onDestroy(
 		wsMessages.subscribe((m) => {
 			const newest = m[m.length - 1]
+			if (!newest) return
 			if (newest.member.user_id === data.me.id) return
 			if (newest.channel_id === $currentChannelId && document.visibilityState === 'visible') return
 
