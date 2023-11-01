@@ -1,0 +1,33 @@
+
+dist
+.solid
+.output
+.vercel
+.netlify
+netlify
+
+# dependencies
+node_modules
+
+# IDEs and editors
+.idea
+.project
+.classpath
+*.launch
+.settings/
+
+# Temp
+gitignore
+
+# System Files
+.DS_Store
+Thumbs.db
+
+stats.html
+.turbo
+target
+packages/server/src/prisma.rs
+packages/client/src/server-types.ts
+packages/client/src/lib/schemas
+packages/server/mysql-data
+.vite-inspect

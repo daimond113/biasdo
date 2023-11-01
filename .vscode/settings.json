@@ -1,0 +1,8 @@
+{
+    "rust-analyzer.linkedProjects": [
+        "packages/server/Cargo.toml",
+        ".\\packages\\server\\Cargo.toml"
+    ],
+    "prettier.prettierPath": "packages/client/node_modules/prettier/index.js",
+    "prettier.configPath": "packages/client/.prettierrc",
+}

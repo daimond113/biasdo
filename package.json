@@ -1,0 +1,11 @@
+{
+  "name": "@biasdo/core",
+  "devDependencies": {
+    "turbo": "^1.10.16"
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "svelte-portal@2.2.0": "patches/svelte-portal@2.2.0.patch"
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+    "name": "@biasdo/server-utils",
+    "description": "API Typings and utilities for TypeScript",
+    "main": "dist/index.js",
+    "scripts": {
+        "build": "tsc"
+    },
+    "devDependencies": {
+        "typescript": "^5.1.6"
+    }
+}

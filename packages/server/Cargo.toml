@@ -1,0 +1,39 @@
+[package]
+name = "biasdo_server"
+version = "0.0.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+actix-web = "4.4.0"
+actix-web-actors = "4.2.0"
+actix-cors = "0.6.4"
+actix-session = { version = "0.8.0", features = ["actix", "cookie-session"] }
+actix-web-httpauth = "0.8.1"
+actix = "0.13.1"
+
+serde = "1.0.189"
+serde_json = "1.0.107"
+
+sqlx = { version = "0.7.2", features = [
+    "mysql",
+    "runtime-tokio",
+    "tls-native-tls",
+    "chrono"
+] }
+bcrypt = "0.15.0"
+cuid2 = "0.1.0"
+
+derive_more = "0.99.17"
+dotenvy = "0.15.7"
+native-tls = "0.2.11"
+futures-util = "0.3.28"
+
+chrono = { version = "0.4.31", features = ["serde"] }
+validator = { version = "0.16.1", features = ["derive"] }
+ts-rs = { version = "7.0.0", features = ["chrono-impl"] }
+
+env_logger = "0.10.0"
+log = "0.4.20"
+indexmap = "2.1.0"
