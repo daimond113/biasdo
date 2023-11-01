@@ -1,0 +1,25 @@
+{
+  "db_name": "MySQL",
+  "query": "SELECT id FROM Channel WHERE id = ? AND server_id = ?",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": {
+          "type": "LongLong",
+          "flags": "NOT_NULL | PRIMARY_KEY | UNSIGNED | AUTO_INCREMENT",
+          "char_set": 63,
+          "max_size": 20
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "a36f28065b8bb41d2c9bc1ecc64c1efba001fa302972a2dc0d96f2fe37b3661e"
+}

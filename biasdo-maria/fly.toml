@@ -1,0 +1,22 @@
+app = "biasdo-maria"
+primary_region = "waw"
+
+kill_signal = "SIGINT"
+kill_timeout = 5
+
+[processes]
+app = """--datadir /data/mariadb \
+  --performance-schema=OFF \
+  --innodb-buffer-pool-size 64M"""
+
+[mounts]
+source = "mariadbdata"
+destination = "/data"
+
+[env]
+MYSQL_DATABASE = "biasdo"
+MYSQL_USER = "biasdo-server"
+
+
+[build]
+image = "mariadb:11.1.2"

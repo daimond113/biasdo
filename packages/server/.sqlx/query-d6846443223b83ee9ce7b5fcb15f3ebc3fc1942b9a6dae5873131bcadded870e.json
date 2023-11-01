@@ -1,0 +1,12 @@
+{
+  "db_name": "MySQL",
+  "query": "DELETE FROM Session WHERE expires_at <= NOW()",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 0
+    },
+    "nullable": []
+  },
+  "hash": "d6846443223b83ee9ce7b5fcb15f3ebc3fc1942b9a6dae5873131bcadded870e"
+}

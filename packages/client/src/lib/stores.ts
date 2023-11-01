@@ -49,7 +49,7 @@ const ws = readable<WebSocket | undefined>(undefined, (set) => {
 
 		if (openPromise) return
 
-		ws = new WebSocket(`ws://${apiUrl.host}/v0/ws`)
+		ws = new WebSocket(`${import.meta.env.DEV ? 'ws' : 'wss'}://${apiUrl.host}/v0/ws`)
 
 		openPromise = new Promise((resolve, reject) => {
 			ws!.onopen = () => {

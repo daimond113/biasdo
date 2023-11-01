@@ -1,0 +1,12 @@
+{
+  "db_name": "MySQL",
+  "query": "UPDATE Member SET user_id=NULL, nickname=NULL WHERE id = ? AND server_id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "d247a55e4929217f6019885a13a280fcf4fc43ae0587542a6764ececa7f63849"
+}
