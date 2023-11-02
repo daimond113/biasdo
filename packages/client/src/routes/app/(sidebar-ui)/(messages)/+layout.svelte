@@ -17,6 +17,7 @@
 	import { validator } from '@felte/validator-zod'
 	import { z } from 'zod'
 	import { credentialSubmitHandler } from '$lib'
+	import { cn } from '$lib/cn'
 
 	let div: HTMLDivElement | undefined
 	let autoscroll = false
@@ -90,7 +91,7 @@
 </svelte:head>
 
 <Paper class="w-full flex-shrink-0 p-[0.375rem] h-[3.625rem] flex items-center">
-	<SidebarButton notButton class="w-max max-w-[40%] inline-flex pr-3 mr-2"
+	<SidebarButton notButton class="w-max lg:max-w-[40%] inline-flex pr-3 mr-2"
 		><span class="font-bold text-lg w-6 text-center mr-1">#</span
 		>{currentChannelData?.name}</SidebarButton
 	>
@@ -98,19 +99,23 @@
 		>{currentChannelData?.topic ?? ''}</span
 	>
 </Paper>
-<div class="flex-grow overflow-auto flex flex-col gap-2 justify-end" bind:this={div}>
-	{#each currentChannelMessages ?? [] as { id, content, created_at, member: { nickname, user } } (id)}
+<div class="flex-grow overflow-auto justify-end" bind:this={div}>
+	{#each currentChannelMessages ?? [] as { id, content, created_at, member: { nickname, user }, member_id }, index (id)}
 		<div
-			class="w-full flex-shrink-0 border border-transparent hover:border-[var(--paper-level-1-outline)] hover:bg-[var(--paper-level-1)] p-2 rounded-lg transition-all flex gap-2"
+			class={cn(
+				'w-full border border-transparent hover:border-[var(--paper-level-1-outline)] hover:bg-[var(--paper-level-1)] p-2 rounded-lg transition-all flex gap-2 min-h-0',
+				index !== 0 && 'mt-2'
+			)}
 		>
 			<img
-				src="https://www.daimond113.com/logo.svg"
+				src="/user-icons/{BigInt(member_id) % 4n}.svg"
 				class="w-10 h-10 inline rounded-lg mr-1 flex-shrink-0"
 				alt={nickname ?? user?.username ?? 'Deleted User'}
+				loading="lazy"
 			/>
 			<div class="flex-grow">
 				<span class="mr-1 font-bold">{nickname ?? user?.username ?? 'Deleted User'}</span>
-				<span class="text-xs">{dateToText(new Date(created_at))}</span>
+				<time class="text-xs" datetime={created_at}>{dateToText(new Date(created_at))}</time>
 				<div>{content}</div>
 			</div>
 		</div>

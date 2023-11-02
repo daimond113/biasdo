@@ -36,9 +36,9 @@
 	})
 </script>
 
-<div class="flex justify-center items-center h-screen">
+<div class="flex justify-center items-center h-screen p-2">
 	<form use:form bind:this={authForm} action="{import.meta.env.VITE_API_URL}/auth" method="post">
-		<Paper class="w-[32rem] p-12">
+		<Paper class="max-w-[32rem] p-6 sm:p-12">
 			<h1 class="font-bold text-3xl text-center mb-2">
 				{#if isRegister}
 					Register
