@@ -3,7 +3,7 @@
 	import SidebarButton from '$lib/SidebarButton.svelte'
 	import TextField from '$lib/TextField.svelte'
 
-	import { afterUpdate, beforeUpdate, onMount } from 'svelte'
+	import { afterUpdate, beforeUpdate, onDestroy, tick } from 'svelte'
 	import type { LayoutData } from './$types'
 	import {
 		currentServerId,
@@ -35,11 +35,14 @@
 		}
 	})
 
-	onMount(() => {
-		if (div) {
-			div.scrollTo(0, div.scrollHeight)
-		}
-	})
+	onDestroy(
+		currentChannelId.subscribe(async () => {
+			await tick() // wait for new messages to be added to the DOM
+			if (div) {
+				div.scrollTo(0, div.scrollHeight)
+			}
+		})
+	)
 
 	function dateToText(date: Date) {
 		const isToday = new Date().toDateString() === date.toDateString()
@@ -60,11 +63,9 @@
 
 	$: servers = [...data.servers, ...$wsServers].filter(({ id }) => !$deletedServers.has(id))
 	$: currentServerData = servers.find(({ id }) => id === $currentServerId)
-	$: channels = [
-		...(currentServerData?.channels.filter(({ server_id }) => server_id === $currentServerId) ??
-			[]),
-		...$wsChannels.filter(({ server_id }) => server_id === $currentServerId)
-	]
+	$: channels = [...(currentServerData?.channels ?? []), ...$wsChannels].filter(
+		({ server_id }) => server_id === $currentServerId
+	)
 	$: currentChannelData = channels.find(({ id }) => id === $currentChannelId)
 	$: messages = [...data.messages, ...$wsMessages]
 	$: currentChannelMessages = messages.filter(({ channel_id }) => channel_id === $currentChannelId)
@@ -99,8 +100,8 @@
 		>{currentChannelData?.topic ?? ''}</span
 	>
 </Paper>
-<div class="flex-grow overflow-auto justify-end" bind:this={div}>
-	{#each currentChannelMessages ?? [] as { id, content, created_at, member: { nickname, user, user_id } }, index (id)}
+<div class="flex-grow overflow-auto" bind:this={div}>
+	{#each currentChannelMessages ?? [] as { id, content, created_at, member: { nickname, user, user_id } }, index}
 		<div
 			class={cn(
 				'w-full border border-transparent hover:border-[var(--paper-level-1-outline)] hover:bg-[var(--paper-level-1)] p-2 rounded-lg transition-all flex gap-2 min-h-0',
