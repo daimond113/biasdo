@@ -6,6 +6,7 @@ use crate::{
 };
 use actix_web::{error::Error, get, post, web, HttpResponse, Responder};
 use chrono::{DateTime, Utc};
+use cuid2::create_id;
 use sqlx::{query, query_as};
 use crate::consts::send_to_server_members;
 use crate::ws::JsonMessage;
@@ -13,7 +14,7 @@ use crate::ws::JsonMessage;
 #[get("/invites/{id}")]
 async fn get_invite(
     data: web::Data<AppState>,
-    path: web::Path<u64>,
+    path: web::Path<String>,
     session: web::ReqData<Session>,
 ) -> Result<impl Responder, Error> {
     let invite_id = path.into_inner();
@@ -45,7 +46,7 @@ async fn get_invite(
             }
 
             let invite = structures::invite::Invite {
-                id: record.id.into(),
+                id: record.id,
                 created_at: record.created_at,
                 expires_at: record.expires_at,
                 server_id: record.server_id.into(),
@@ -122,18 +123,21 @@ async fn create_invite(
         return Ok(HttpResponse::NotFound().finish());
     }
 
-    let invite: (u64, DateTime<Utc>, DateTime<Utc>) = query_as(
-        "INSERT INTO Invite VALUES (NULL, DEFAULT, DEFAULT, ?) RETURNING id, created_at, expires_at"
+    let invite_id = create_id();
+
+    let invite: (DateTime<Utc>, DateTime<Utc>) = query_as(
+        "INSERT INTO Invite VALUES (?, DEFAULT, DEFAULT, ?) RETURNING created_at, expires_at"
     )
+        .bind(invite_id.clone())
         .bind(server_id)
         .fetch_one(&data.db)
         .await
         .map_err(errors::Errors::Db)?;
 
     let invite_struct = structures::invite::Invite {
-        id: invite.0.into(),
-        created_at: invite.1,
-        expires_at: invite.2,
+        id: invite_id,
+        created_at: invite.0,
+        expires_at: invite.1,
         server_id: server_id.into(),
     };
 
@@ -152,7 +156,7 @@ async fn create_invite(
 #[post("/invites/{id}/join")]
 async fn join_invite(
     data: web::Data<AppState>,
-    path: web::Path<u64>,
+    path: web::Path<String>,
     session: web::ReqData<Session>,
 ) -> Result<impl Responder, Error> {
     let invite_id = path.into_inner();

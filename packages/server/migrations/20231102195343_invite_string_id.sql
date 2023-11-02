@@ -1,0 +1,4 @@
+DELETE FROM Invite;
+
+ALTER TABLE Invite
+    MODIFY COLUMN id CHAR(24);

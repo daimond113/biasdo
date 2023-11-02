@@ -101,11 +101,7 @@ importers:
 
   packages/server: {}
 
-  packages/server-utils:
-    devDependencies:
-      typescript:
-        specifier: ^5.1.6
-        version: 5.1.6
+  packages/server-utils: {}
 
 packages:
 

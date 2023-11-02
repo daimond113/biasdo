@@ -10,3 +10,4 @@
 fly.toml
 target
 .env
+.sqlx
