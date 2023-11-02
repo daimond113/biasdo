@@ -119,7 +119,8 @@
 
 				new Notification(`${name}${channel ? ` | #${channel.name}` : ''}`, {
 					body: newest.content,
-					timestamp: new Date(newest.created_at).getTime()
+					timestamp: new Date(newest.created_at).getTime(),
+					icon: `/user-icons/${BigInt(newest.member.user_id ?? 1) % BigInt(4)}.svg`
 				}).addEventListener('click', () => {
 					if (!channel) return
 					goto(`/app/servers/${channel.server_id}/channels/${newest.channel_id}`)
@@ -260,7 +261,7 @@
 					isActive={$currentServerId === id}
 				>
 					<img
-						src="/server-icons/{BigInt(id) % 4n}.svg"
+						src="/server-icons/{BigInt(id) % BigInt(4)}.svg"
 						class="w-6 mr-1 rounded-md"
 						alt={name}
 						loading="lazy"

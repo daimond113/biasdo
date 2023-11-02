@@ -100,7 +100,7 @@
 	>
 </Paper>
 <div class="flex-grow overflow-auto justify-end" bind:this={div}>
-	{#each currentChannelMessages ?? [] as { id, content, created_at, member: { nickname, user }, member_id }, index (id)}
+	{#each currentChannelMessages ?? [] as { id, content, created_at, member: { nickname, user, user_id } }, index (id)}
 		<div
 			class={cn(
 				'w-full border border-transparent hover:border-[var(--paper-level-1-outline)] hover:bg-[var(--paper-level-1)] p-2 rounded-lg transition-all flex gap-2 min-h-0',
@@ -108,7 +108,7 @@
 			)}
 		>
 			<img
-				src="/user-icons/{BigInt(member_id) % 4n}.svg"
+				src="/user-icons/{BigInt(user_id ?? 1) % BigInt(4)}.svg"
 				class="w-10 h-10 inline rounded-lg mr-1 flex-shrink-0"
 				alt={nickname ?? user?.username ?? 'Deleted User'}
 				loading="lazy"
