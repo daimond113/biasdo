@@ -1,5 +1,5 @@
-use chrono::{DateTime, Utc};
 use crate::id_type::Id;
+use chrono::{DateTime, Utc};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Session {

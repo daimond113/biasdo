@@ -1,7 +1,7 @@
+use crate::id_type::Id;
 use chrono::{DateTime, Utc};
 use serde::Serialize;
 use ts_rs::TS;
-use crate::id_type::Id;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, TS, Hash)]
 #[ts(export, export_to = "../server-utils/src/")]

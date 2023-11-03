@@ -1,3 +1,5 @@
+use crate::consts::send_to_server_members;
+use crate::ws::JsonMessage;
 use crate::{
     consts::merge_json,
     errors::{self},
@@ -8,8 +10,6 @@ use actix_web::{error::Error, get, post, web, HttpResponse, Responder};
 use chrono::{DateTime, Utc};
 use cuid2::create_id;
 use sqlx::{query, query_as};
-use crate::consts::send_to_server_members;
-use crate::ws::JsonMessage;
 
 #[get("/invites/{id}")]
 async fn get_invite(
@@ -34,9 +34,9 @@ async fn get_invite(
                 session.user_id,
                 record.server_id
             )
-                .fetch_optional(&data.db)
-                .await
-                .map_err(errors::Errors::Db)?;
+            .fetch_optional(&data.db)
+            .await
+            .map_err(errors::Errors::Db)?;
 
             if member.is_some() {
                 return Ok(HttpResponse::Conflict().json(serde_json::json!({
@@ -82,9 +82,9 @@ async fn get_invites(
         session.user_id,
         server_id
     )
-        .fetch_optional(&data.db)
-        .await
-        .map_err(errors::Errors::Db)?;
+    .fetch_optional(&data.db)
+    .await
+    .map_err(errors::Errors::Db)?;
 
     if member.is_none() {
         return Ok(HttpResponse::NotFound().finish());
@@ -115,9 +115,9 @@ async fn create_invite(
         session.user_id,
         server_id
     )
-        .fetch_optional(&data.db)
-        .await
-        .map_err(errors::Errors::Db)?;
+    .fetch_optional(&data.db)
+    .await
+    .map_err(errors::Errors::Db)?;
 
     if member.is_none() {
         return Ok(HttpResponse::NotFound().finish());
@@ -126,13 +126,13 @@ async fn create_invite(
     let invite_id = create_id();
 
     let invite: (DateTime<Utc>, DateTime<Utc>) = query_as(
-        "INSERT INTO Invite VALUES (?, DEFAULT, DEFAULT, ?) RETURNING created_at, expires_at"
+        "INSERT INTO Invite VALUES (?, DEFAULT, DEFAULT, ?) RETURNING created_at, expires_at",
     )
-        .bind(invite_id.clone())
-        .bind(server_id)
-        .fetch_one(&data.db)
-        .await
-        .map_err(errors::Errors::Db)?;
+    .bind(invite_id.clone())
+    .bind(server_id)
+    .fetch_one(&data.db)
+    .await
+    .map_err(errors::Errors::Db)?;
 
     let invite_struct = structures::invite::Invite {
         id: invite_id,
@@ -147,7 +147,7 @@ async fn create_invite(
         &JsonMessage(serde_json::json!({
             "type": "invite_create",
             "data": invite_struct.clone()
-        }))
+        })),
     );
 
     Ok(HttpResponse::Ok().json(invite_struct))
@@ -166,9 +166,9 @@ async fn join_invite(
         "SELECT id, created_at, expires_at, server_id FROM Invite WHERE id = ?",
         invite_id
     )
-        .fetch_optional(&data.db)
-        .await
-        .map_err(errors::Errors::Db)?;
+    .fetch_optional(&data.db)
+    .await
+    .map_err(errors::Errors::Db)?;
 
     if invite.is_none() {
         return Ok(HttpResponse::NotFound().finish());
@@ -181,9 +181,9 @@ async fn join_invite(
         session.user_id,
         invite.server_id
     )
-        .fetch_optional(&data.db)
-        .await
-        .map_err(errors::Errors::Db)?;
+    .fetch_optional(&data.db)
+    .await
+    .map_err(errors::Errors::Db)?;
 
     if existing_member.is_some() {
         return Ok(HttpResponse::Conflict().json(serde_json::json!({
@@ -192,23 +192,22 @@ async fn join_invite(
         })));
     }
 
-    let member: (u64, DateTime<Utc>) = query_as(
-        "INSERT INTO Member VALUES (NULL, DEFAULT, ?, ?, NULL) RETURNING id, created_at"
-    )
-        .bind(invite.server_id)
-        .bind(session.user_id)
-        .fetch_one(&data.db)
-        .await
-        .map_err(errors::Errors::Db)?;
+    let member: (u64, DateTime<Utc>) =
+        query_as("INSERT INTO Member VALUES (NULL, DEFAULT, ?, ?, NULL) RETURNING id, created_at")
+            .bind(invite.server_id)
+            .bind(session.user_id)
+            .fetch_one(&data.db)
+            .await
+            .map_err(errors::Errors::Db)?;
 
     let user = query_as!(
         structures::user::User,
         "SELECT id, created_at, username, password FROM User WHERE id = ?",
         session.user_id
     )
-        .fetch_one(&data.db)
-        .await
-        .map_err(errors::Errors::Db)?;
+    .fetch_one(&data.db)
+    .await
+    .map_err(errors::Errors::Db)?;
 
     let member_struct = structures::member::Member {
         id: member.0.into(),
@@ -228,8 +227,15 @@ async fn join_invite(
         &JsonMessage(serde_json::json!({
             "type": "member_create",
             "data": member_value.clone()
-        }))
+        })),
     );
 
     Ok(HttpResponse::Ok().json(member_value))
+}
+
+pub fn configure(cfg: &mut web::ServiceConfig) {
+    cfg.service(get_invite)
+        .service(get_invites)
+        .service(create_invite)
+        .service(join_invite);
 }

@@ -5,9 +5,9 @@ mod id_type;
 mod structures;
 mod ws;
 
-use std::collections::{HashMap, HashSet};
-use std::sync::RwLock;
+use crate::ws::MyWebSocket;
 use crate::{consts::SESSION_COOKIE_NAME, errors::Errors};
+use actix::Addr;
 use actix_cors::Cors;
 use actix_web::{
     dev::ServiceRequest,
@@ -16,10 +16,10 @@ use actix_web::{
     rt, web, App, Error, HttpMessage, HttpServer,
 };
 use actix_web_httpauth::{extractors::bearer::BearerAuth, middleware::HttpAuthentication};
-use sqlx::{mysql::MySqlPoolOptions, query_as, MySqlPool, query};
+use sqlx::{mysql::MySqlPoolOptions, query, query_as, MySqlPool};
+use std::collections::{HashMap, HashSet};
+use std::sync::RwLock;
 use std::time::Duration;
-use actix::Addr;
-use crate::ws::MyWebSocket;
 
 #[derive(Debug)]
 pub struct AppState {
@@ -114,25 +114,7 @@ async fn main() -> std::io::Result<()> {
             .service(
                 web::scope("/v0")
                     .wrap(HttpAuthentication::with_fn(validator))
-                    .service(endpoints::auth::logout)
-                    .service(endpoints::auth::get_me)
-                    .service(endpoints::servers::get_server)
-                    .service(endpoints::servers::my_servers)
-                    .service(endpoints::servers::create_server)
-                    .service(endpoints::channels::server_channels)
-                    .service(endpoints::channels::create_channel)
-                    .service(endpoints::channels::server_channel)
-                    .service(endpoints::messages::channel_messages)
-                    .service(endpoints::messages::create_message)
-                    .service(endpoints::messages::channel_message)
-                    .service(endpoints::members::server_members)
-                    .service(endpoints::members::server_member)
-                    .service(endpoints::members::leave_server)
-                    .service(endpoints::invites::get_invite)
-                    .service(endpoints::invites::get_invites)
-                    .service(endpoints::invites::create_invite)
-                    .service(endpoints::invites::join_invite)
-                    .service(ws::ws_route)
+                    .configure(endpoints::configure),
             )
     })
     .bind((address, port))?

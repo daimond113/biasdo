@@ -2,7 +2,7 @@ use actix_web::{cookie::Cookie, error, HttpResponse};
 use derive_more::{Display, Error};
 use log::error;
 use serde::Serialize;
-use sqlx::{Error as DbError};
+use sqlx::Error as DbError;
 use validator::ValidationErrors;
 
 use crate::consts;
@@ -18,9 +18,7 @@ pub enum Errors {
     Db(DbError),
 }
 
-pub fn remove_tokens_from_response<T>(
-    mut response: HttpResponse<T>,
-) -> HttpResponse<T> {
+pub fn remove_tokens_from_response<T>(mut response: HttpResponse<T>) -> HttpResponse<T> {
     response
         .add_removal_cookie(
             &Cookie::build(consts::SESSION_COOKIE_NAME, "")

@@ -3,13 +3,13 @@ use std::hash::Hash;
 use std::time::{Duration, Instant};
 
 use actix::prelude::*;
-use actix_web::{Error, get, HttpRequest, HttpResponse, web};
+use actix_web::{get, web, Error, HttpRequest, HttpResponse};
 use actix_web_actors::ws;
 use cuid2::create_id;
 use sqlx::query;
 
-use crate::AppState;
 use crate::structures::session::Session;
+use crate::AppState;
 
 const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(5);
 
@@ -26,8 +26,8 @@ pub struct MyWebSocket {
 #[derive(Message, Debug, Clone)]
 #[rtype(result = "()")]
 pub struct JsonMessage<T>(pub T)
-    where
-        T: serde::Serialize + std::fmt::Debug + Clone + Send + 'static;
+where
+    T: serde::Serialize + std::fmt::Debug + Clone + Send + 'static;
 
 impl Hash for MyWebSocket {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
@@ -52,12 +52,12 @@ async fn on_started(app_data: web::Data<AppState>, session: Session, addr: Addr<
         .insert(addr);
 
     let ids = query!(
-                "SELECT server_id FROM Member WHERE user_id = ?",
-                session.user_id.0
-            )
-        .fetch_all(&app_data.db)
-        .await
-        .unwrap();
+        "SELECT server_id FROM Member WHERE user_id = ?",
+        session.user_id.0
+    )
+    .fetch_all(&app_data.db)
+    .await
+    .unwrap();
 
     let mut server_connections = app_data.server_connections.write().unwrap();
 
@@ -77,12 +77,12 @@ async fn on_stopped(app_data: web::Data<AppState>, session: Session, addr: Addr<
         user_connections.remove(&session.user_id.0);
 
         let ids = query!(
-                "SELECT server_id FROM Member WHERE user_id = ?",
-                session.user_id.0
-            )
-            .fetch_all(&app_data.db)
-            .await
-            .unwrap();
+            "SELECT server_id FROM Member WHERE user_id = ?",
+            session.user_id.0
+        )
+        .fetch_all(&app_data.db)
+        .await
+        .unwrap();
 
         let mut server_connections = app_data.server_connections.write().unwrap();
 
@@ -102,7 +102,12 @@ async fn on_stopped(app_data: web::Data<AppState>, session: Session, addr: Addr<
 
 impl MyWebSocket {
     pub fn new(data: &web::Data<AppState>, session: &Session) -> Self {
-        Self { hb: Instant::now(), app_data: web::Data::clone(data), session: session.clone(), unique_session_id: create_id() }
+        Self {
+            hb: Instant::now(),
+            app_data: web::Data::clone(data),
+            session: session.clone(),
+            unique_session_id: create_id(),
+        }
     }
 
     fn hb(&self, ctx: &mut <Self as Actor>::Context) {
@@ -136,11 +141,19 @@ impl Actor for MyWebSocket {
     fn started(&mut self, ctx: &mut Self::Context) {
         self.hb(ctx);
 
-        actix_web::rt::spawn(on_started(web::Data::clone(&self.app_data), self.session.clone(), ctx.address()));
+        actix_web::rt::spawn(on_started(
+            web::Data::clone(&self.app_data),
+            self.session.clone(),
+            ctx.address(),
+        ));
     }
 
     fn stopped(&mut self, ctx: &mut Self::Context) {
-        actix_web::rt::spawn(on_stopped(web::Data::clone(&self.app_data), self.session.clone(), ctx.address()));
+        actix_web::rt::spawn(on_stopped(
+            web::Data::clone(&self.app_data),
+            self.session.clone(),
+            ctx.address(),
+        ));
     }
 }
 
@@ -165,7 +178,9 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for MyWebSocket {
     }
 }
 
-impl<T: serde::Serialize + std::fmt::Debug + Clone + Send + 'static> Handler<JsonMessage<T>> for MyWebSocket {
+impl<T: serde::Serialize + std::fmt::Debug + Clone + Send + 'static> Handler<JsonMessage<T>>
+    for MyWebSocket
+{
     type Result = ();
 
     fn handle(&mut self, msg: JsonMessage<T>, ctx: &mut Self::Context) {
@@ -174,6 +189,11 @@ impl<T: serde::Serialize + std::fmt::Debug + Clone + Send + 'static> Handler<Jso
 }
 
 #[get("/ws")]
-pub async fn ws_route(req: HttpRequest, stream: web::Payload, app_data: web::Data<AppState>, session: web::ReqData<Session>) -> Result<HttpResponse, Error> {
+pub async fn ws_route(
+    req: HttpRequest,
+    stream: web::Payload,
+    app_data: web::Data<AppState>,
+    session: web::ReqData<Session>,
+) -> Result<HttpResponse, Error> {
     ws::start(MyWebSocket::new(&app_data, &session), &req, stream)
 }
