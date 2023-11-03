@@ -13,8 +13,6 @@ use crate::{
     AppState,
 };
 
-use super::servers::{create_server, my_servers};
-
 #[get("/servers/{id}/channels")]
 async fn server_channels(
     data: web::Data<AppState>,
