@@ -2,6 +2,7 @@
 name = "biasdo_server"
 version = "0.0.0"
 edition = "2021"
+license = "MIT"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -20,7 +21,7 @@ sqlx = { version = "0.7.2", features = [
     "mysql",
     "runtime-tokio",
     "tls-native-tls",
-    "chrono"
+    "chrono",
 ] }
 bcrypt = "0.15.0"
 cuid2 = "0.1.0"

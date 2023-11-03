@@ -1,5 +1,6 @@
 {
   "name": "@biasdo/core",
+  "license": "MIT",
   "devDependencies": {
     "turbo": "^1.10.16"
   },
