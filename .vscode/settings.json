@@ -3,6 +3,6 @@
         "packages/server/Cargo.toml",
         ".\\packages\\server\\Cargo.toml"
     ],
-    "prettier.prettierPath": "packages/client/node_modules/prettier/index.js",
+    "prettier.prettierPath": "node_modules/prettier/index.cjs",
     "prettier.configPath": "packages/client/.prettierrc",
 }
