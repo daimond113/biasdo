@@ -74,6 +74,18 @@ async fn create_channel(
         return Ok(HttpResponse::NotFound().finish());
     }
 
+    let server_owner = query!(
+        "SELECT owner_id FROM Server WHERE id = ?",
+        server_id
+    )
+        .fetch_one(&data.db)
+        .await
+        .map_err(errors::Errors::Db)?;
+
+    if server_owner.owner_id != session.user_id.0 {
+        return Ok(HttpResponse::Unauthorized().finish());
+    }
+
     let channels = query!("SELECT COUNT(id) AS count FROM Channel WHERE server_id = ?", server_id)
         .fetch_one(&data.db)
         .await

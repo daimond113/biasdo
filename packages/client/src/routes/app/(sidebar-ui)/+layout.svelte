@@ -83,6 +83,7 @@
 	export let data: LayoutData
 
 	$: servers = [...data.servers, ...$wsServers].filter(({ id }) => !$deletedServers.has(id))
+	$: currentServerData = servers.find(({ id }) => id === $currentServerId)
 	$: allChannels = [...servers.flatMap(({ channels }) => channels), ...$wsChannels]
 	$: channels = allChannels.filter(({ server_id }) => server_id === $currentServerId)
 
@@ -292,6 +293,7 @@
 			onClick={() => {
 				newChannelModalOpen = true
 			}}
+			disabled={currentServerData?.owner_id !== data.me.id}
 		>
 			<span class="font-bold text-lg w-6 text-center mr-1">+</span>
 			<span class="min-w-0 whitespace-nowrap overflow-hidden text-ellipsis">Create channel</span>

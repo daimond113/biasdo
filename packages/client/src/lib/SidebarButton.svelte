@@ -6,13 +6,15 @@
 	export let className: string | undefined = undefined
 	export let isActive = false
 	export let notButton = false
+	export let disabled = false
 
 	$: resolvedClassName = cn(
 		'rounded-lg p-2 h-10 border flex items-center w-full flex-shrink-0',
 		isActive
 			? 'border-[var(--secondary-button-active-outline)] bg-[var(--secondary-button-active)]'
 			: 'bg-[var(--paper-level-1)] border-[var(--paper-level-1-outline)]',
-		!notButton && 'hover:brightness-110 active:brightness-90',
+		!notButton && !disabled && 'hover:brightness-110 active:brightness-90',
+		disabled && 'opacity-50 cursor-not-allowed',
 		'transition-all',
 		className
 	)
@@ -29,7 +31,7 @@
 		<slot />
 	</a>
 {:else}
-	<button class={resolvedClassName} type="button" on:click={onClick}>
+	<button class={resolvedClassName} type="button" on:click={onClick} {disabled}>
 		<slot />
 	</button>
 {/if}
