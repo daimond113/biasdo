@@ -63,12 +63,11 @@
 
 	$: servers = [...data.servers, ...$wsServers].filter(({ id }) => !$deletedServers.has(id))
 	$: currentServerData = servers.find(({ id }) => id === $currentServerId)
-	$: channels = [...(currentServerData?.channels ?? []), ...$wsChannels].filter(
+	$: currentChannels = [...(currentServerData?.channels ?? []), ...$wsChannels.filter(
 		({ server_id }) => server_id === $currentServerId
-	)
-	$: currentChannelData = channels.find(({ id }) => id === $currentChannelId)
-	$: messages = [...data.messages, ...$wsMessages]
-	$: currentChannelMessages = messages.filter(({ channel_id }) => channel_id === $currentChannelId)
+	)]
+	$: currentChannelData = currentChannels.find(({ id }) => id === $currentChannelId)
+	$: messages = [...data.messages, ...$wsMessages.filter(({ channel_id }) => channel_id === $currentChannelId)]
 
 	let formElement: HTMLFormElement
 
@@ -101,7 +100,7 @@
 	>
 </Paper>
 <div class="flex-grow overflow-auto" bind:this={div}>
-	{#each currentChannelMessages ?? [] as { id, content, created_at, member: { nickname, user, user_id } }, index (id)}
+	{#each messages ?? [] as { id, content, created_at, member: { nickname, user, user_id } }, index (id)}
 		<div
 			class={cn(
 				'w-full border border-transparent hover:border-[var(--paper-level-1-outline)] hover:bg-[var(--paper-level-1)] p-2 rounded-lg transition-all flex gap-2 min-h-0',

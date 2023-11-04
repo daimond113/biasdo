@@ -29,7 +29,7 @@
 
 	$: servers = [...data.servers, ...$wsServers].filter(({ id }) => !$deletedServers.has(id))
 	$: currentServerData = servers.find(({ id }) => id === $currentServerId)
-	$: invites = [...data.invites, ...$wsInvites]
+	$: invites = [...data.invites, ...$wsInvites.filter(({ server_id }) => server_id === $currentServerId)]
 </script>
 
 <svelte:head>
