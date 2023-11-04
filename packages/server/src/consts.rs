@@ -25,16 +25,9 @@ pub fn send_to_server_members<T>(
 ) where T: serde::Serialize + std::fmt::Debug + Clone + Send + 'static {
     if let Some(server_connections) = data
         .server_connections
-        .read()
-        .unwrap()
         .get(&server_id) {
-        let user_connections = data
-            .user_connections
-            .read()
-            .unwrap();
-
-        for user_id in server_connections {
-            if let Some(user_sockets) = user_connections.get(&user_id) {
+        for user_id in server_connections.iter() {
+            if let Some(user_sockets) = data.user_connections.get(&user_id) {
                 user_sockets.iter().for_each(|addr| {
                     addr.do_send(message.clone());
                 });

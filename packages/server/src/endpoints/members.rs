@@ -202,11 +202,13 @@ async fn leave_server(
             "data": server.clone()
         }));
 
-    data.user_connections.read().unwrap().get(&session.user_id.0).unwrap().iter().for_each(|addr| {
-        addr.do_send(server_msg.clone());
-    });
+    if let Some(user_connections) = data.user_connections.get(&session.user_id.0) {
+        user_connections.iter().for_each(|addr| {
+            addr.do_send(server_msg.clone());
+        });
+    }
 
-    data.server_connections.write().unwrap().entry(server_id).and_modify(|map| {
+    data.server_connections.entry(server_id).and_modify(|map| {
         map.remove(&session.user_id.0);
     });
 

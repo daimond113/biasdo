@@ -5,8 +5,6 @@ mod id_type;
 mod structures;
 mod ws;
 
-use std::collections::{HashMap, HashSet};
-use std::sync::RwLock;
 use crate::{consts::SESSION_COOKIE_NAME, errors::Errors};
 use actix_cors::Cors;
 use actix_web::{
@@ -20,14 +18,15 @@ use sqlx::{mysql::MySqlPoolOptions, query_as, MySqlPool, query};
 use std::time::Duration;
 use actix::Addr;
 use crate::ws::MyWebSocket;
+use dashmap::{DashMap, DashSet};
 
 #[derive(Debug)]
 pub struct AppState {
     pub db: MySqlPool,
     // server id -> user id(s)
-    pub server_connections: RwLock<HashMap<u64, HashSet<u64>>>,
+    pub server_connections: DashMap<u64, DashSet<u64>>,
     // user id -> ws(s) // multiple sessions
-    pub user_connections: RwLock<HashMap<u64, HashSet<Addr<MyWebSocket>>>>,
+    pub user_connections: DashMap<u64, DashSet<Addr<MyWebSocket>>>,
 }
 
 pub async fn validator(
@@ -81,8 +80,8 @@ async fn main() -> std::io::Result<()> {
 
     let data = web::Data::new(AppState {
         db: pool.clone(),
-        server_connections: RwLock::new(HashMap::new()),
-        user_connections: RwLock::new(HashMap::new()),
+        server_connections: DashMap::new(),
+        user_connections: DashMap::new(),
     });
 
     let db = pool.clone();

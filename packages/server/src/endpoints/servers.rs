@@ -1,8 +1,8 @@
-use std::collections::HashSet;
 use std::str::FromStr;
 
 use actix_web::{get, HttpResponse, post, Responder, web};
 use chrono::{DateTime, Utc};
+use dashmap::DashSet;
 use indexmap::IndexMap;
 use serde::Deserialize;
 use sqlx::{query, query_as};
@@ -183,11 +183,9 @@ async fn create_server(
 
     if let Some(owner_sockets) = data
         .user_connections
-        .read()
-        .unwrap()
         .get(&session.user_id.0)
     {
-        data.server_connections.write().unwrap().entry(server.0).or_insert_with(HashSet::new).insert(session.user_id.0);
+        data.server_connections.entry(server.0).or_insert_with(DashSet::new).insert(session.user_id.0);
         
         owner_sockets.iter().for_each(|addr| {
             addr.do_send(msg.clone());

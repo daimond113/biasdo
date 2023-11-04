@@ -1,4 +1,3 @@
-use std::collections::HashSet;
 use std::hash::Hash;
 use std::time::{Duration, Instant};
 
@@ -6,6 +5,7 @@ use actix::prelude::*;
 use actix_web::{Error, get, HttpRequest, HttpResponse, web};
 use actix_web_actors::ws;
 use cuid2::create_id;
+use dashmap::DashSet;
 use sqlx::query;
 
 use crate::AppState;
@@ -45,10 +45,9 @@ impl PartialEq for MyWebSocket {
 impl Eq for MyWebSocket {}
 
 async fn on_started(app_data: web::Data<AppState>, session: Session, addr: Addr<MyWebSocket>) {
-    let mut user_connections = app_data.user_connections.write().unwrap();
-    user_connections
+    app_data.user_connections
         .entry(session.user_id.0)
-        .or_insert_with(HashSet::new)
+        .or_insert_with(DashSet::new)
         .insert(addr);
 
     let ids = query!(
@@ -59,22 +58,17 @@ async fn on_started(app_data: web::Data<AppState>, session: Session, addr: Addr<
         .await
         .unwrap();
 
-    let mut server_connections = app_data.server_connections.write().unwrap();
-
     for id in ids {
-        server_connections
+        app_data.server_connections
             .entry(id.server_id)
-            .or_insert_with(HashSet::new)
+            .or_insert_with(DashSet::new)
             .insert(session.user_id.0);
     }
 }
 
 async fn on_stopped(app_data: web::Data<AppState>, session: Session, addr: Addr<MyWebSocket>) {
-    let mut user_connections = app_data.user_connections.write().unwrap();
-    let current_connections = user_connections.get_mut(&session.user_id.0).unwrap();
-
-    if current_connections.len() == 1 {
-        user_connections.remove(&session.user_id.0);
+    if app_data.user_connections.get(&session.user_id.0).unwrap().len() == 1 {
+        app_data.user_connections.remove(&session.user_id.0);
 
         let ids = query!(
                 "SELECT server_id FROM Member WHERE user_id = ?",
@@ -84,19 +78,18 @@ async fn on_stopped(app_data: web::Data<AppState>, session: Session, addr: Addr<
             .await
             .unwrap();
 
-        let mut server_connections = app_data.server_connections.write().unwrap();
-
         for id in ids {
-            if let Some(server) = server_connections.get_mut(&id.server_id) {
-                if server.is_empty() {
-                    server_connections.remove(&id.server_id);
+            if let Some(server) = app_data.server_connections.get(&id.server_id) {
+                if server.len() == 1 {
+                    std::mem::drop(server); // DashMap gets locked if we don't drop it
+                    app_data.server_connections.remove(&id.server_id);
                 } else {
                     server.remove(&session.user_id.0);
                 }
             }
         }
     } else {
-        current_connections.remove(&addr);
+        app_data.user_connections.get(&session.user_id.0).unwrap().remove(&addr);
     }
 }
 
