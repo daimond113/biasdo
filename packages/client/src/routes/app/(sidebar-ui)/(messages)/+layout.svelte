@@ -101,7 +101,7 @@
 	>
 </Paper>
 <div class="flex-grow overflow-auto" bind:this={div}>
-	{#each currentChannelMessages ?? [] as { id, content, created_at, member: { nickname, user, user_id } }, index}
+	{#each currentChannelMessages ?? [] as { id, content, created_at, member: { nickname, user, user_id } }, index (id)}
 		<div
 			class={cn(
 				'w-full border border-transparent hover:border-[var(--paper-level-1-outline)] hover:bg-[var(--paper-level-1)] p-2 rounded-lg transition-all flex gap-2 min-h-0',
@@ -114,10 +114,10 @@
 				alt={nickname ?? user?.username ?? 'Deleted User'}
 				loading="lazy"
 			/>
-			<div class="flex-grow">
+			<div class="flex-grow overflow-hidden">
 				<span class="mr-1 font-bold">{nickname ?? user?.username ?? 'Deleted User'}</span>
 				<time class="text-xs" datetime={created_at}>{dateToText(new Date(created_at))}</time>
-				<div>{content}</div>
+				<div class="break-words">{content}</div>
 			</div>
 		</div>
 	{/each}
