@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use actix_web::{get, HttpResponse, post, Responder, web};
+use actix_web::{get, post, web, HttpResponse, Responder};
 use chrono::{DateTime, Utc};
 use dashmap::DashSet;
 use indexmap::IndexMap;
@@ -8,8 +8,8 @@ use serde::Deserialize;
 use sqlx::{query, query_as};
 use validator::Validate;
 
+use crate::ws::JsonMessage;
 use crate::{
-    AppState,
     consts::merge_json,
     errors::{self},
     structures::{
@@ -19,8 +19,8 @@ use crate::{
         server::Server,
         session::Session,
     },
+    AppState,
 };
-use crate::ws::JsonMessage;
 
 #[get("/servers/{id}")]
 async fn get_server(
@@ -173,7 +173,7 @@ async fn create_server(
             name: body.name,
             owner_id: session.user_id,
         })
-            .unwrap(),
+        .unwrap(),
     );
 
     let msg = JsonMessage(serde_json::json!({
@@ -181,16 +181,22 @@ async fn create_server(
         "data": additional_data.clone(),
     }));
 
-    if let Some(owner_sockets) = data
-        .user_connections
-        .get(&session.user_id.0)
-    {
-        data.server_connections.entry(server.0).or_insert_with(DashSet::new).insert(session.user_id.0);
-        
+    if let Some(owner_sockets) = data.user_connections.get(&session.user_id.0) {
+        data.server_connections
+            .entry(server.0)
+            .or_insert_with(DashSet::new)
+            .insert(session.user_id.0);
+
         owner_sockets.iter().for_each(|addr| {
             addr.do_send(msg.clone());
         })
     }
 
     Ok(HttpResponse::Ok().json(additional_data))
+}
+
+pub fn configure(cfg: &mut web::ServiceConfig) {
+    cfg.service(get_server)
+        .service(my_servers)
+        .service(create_server);
 }

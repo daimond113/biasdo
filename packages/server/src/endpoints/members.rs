@@ -1,17 +1,14 @@
-use actix_web::{error::Error, get, web, HttpResponse, Responder, post};
+use actix_web::{error::Error, get, post, web, HttpResponse, Responder};
 use serde::Deserialize;
 use sqlx::{query, query_as};
 
-use crate::{
-    errors,
-    structures::{
-        self,
-        session::Session,
-    },
-    AppState,
-};
 use crate::consts::{merge_json, send_to_server_members};
 use crate::ws::JsonMessage;
+use crate::{
+    errors,
+    structures::{self, session::Session},
+    AppState,
+};
 
 #[derive(Deserialize, Debug)]
 pub struct ServerMembersQuery {
@@ -27,10 +24,14 @@ async fn server_members(
 ) -> Result<impl Responder, Error> {
     let server_id = path.into_inner();
 
-    let member = query!("SELECT id FROM Member WHERE user_id = ? AND server_id = ?", session.user_id, server_id)
-        .fetch_optional(&data.db)
-        .await
-        .map_err(errors::Errors::Db)?;
+    let member = query!(
+        "SELECT id FROM Member WHERE user_id = ? AND server_id = ?",
+        session.user_id,
+        server_id
+    )
+    .fetch_optional(&data.db)
+    .await
+    .map_err(errors::Errors::Db)?;
 
     if member.is_none() {
         return Ok(HttpResponse::NotFound().finish());
@@ -45,33 +46,35 @@ async fn server_members(
         .await
         .map_err(errors::Errors::Db)?;
 
-    Ok(HttpResponse::Ok().json(members.iter().map(|record| {
-        let member = structures::member::Member {
-            id: record.id.into(),
-            created_at: record.created_at,
-            server_id: record.server_id.into(),
-            user_id: record.user_id.into(),
-            nickname: record.nickname.clone(),
-        };
+    Ok(HttpResponse::Ok().json(
+        members
+            .iter()
+            .map(|record| {
+                let member = structures::member::Member {
+                    id: record.id.into(),
+                    created_at: record.created_at,
+                    server_id: record.server_id.into(),
+                    user_id: record.user_id.into(),
+                    nickname: record.nickname.clone(),
+                };
 
-        let mut member_value = serde_json::to_value(member.clone()).unwrap();
+                let mut member_value = serde_json::to_value(member.clone()).unwrap();
 
-        if let Some(id) = member.user_id.0 {
-            let user = structures::user::User {
-                id: id.into(),
-                created_at: record.user_created_at,
-                username: record.user_username.clone(),
-                password: "".to_string(),
-            };
+                if let Some(id) = member.user_id.0 {
+                    let user = structures::user::User {
+                        id: id.into(),
+                        created_at: record.user_created_at,
+                        username: record.user_username.clone(),
+                        password: "".to_string(),
+                    };
 
-            merge_json(
-                &mut member_value,
-                &serde_json::json!({ "user": user }),
-            );
-        };
+                    merge_json(&mut member_value, &serde_json::json!({ "user": user }));
+                };
 
-        member_value
-    }).collect::<serde_json::Value>()))
+                member_value
+            })
+            .collect::<serde_json::Value>(),
+    ))
 }
 
 #[get("/servers/{server_id}/members/{member_id}")]
@@ -114,10 +117,7 @@ async fn server_member(
             password: "".to_string(),
         };
 
-        merge_json(
-            &mut member_value,
-            &serde_json::json!({ "user": user }),
-        );
+        merge_json(&mut member_value, &serde_json::json!({ "user": user }));
     };
 
     Ok(HttpResponse::Ok().json(member_value))
@@ -151,9 +151,9 @@ async fn leave_server(
         record.id,
         server_id
     )
-        .execute(&data.db)
-        .await
-        .map_err(errors::Errors::Db)?;
+    .execute(&data.db)
+    .await
+    .map_err(errors::Errors::Db)?;
 
     let member = structures::member::Member {
         id: record.id.into(),
@@ -173,10 +173,7 @@ async fn leave_server(
             password: "".to_string(),
         };
 
-        merge_json(
-            &mut member_value,
-            &serde_json::json!({ "user": user }),
-        );
+        merge_json(&mut member_value, &serde_json::json!({ "user": user }));
     };
 
     send_to_server_members(
@@ -193,14 +190,14 @@ async fn leave_server(
         "SELECT id, created_at, name, owner_id FROM Server WHERE id = ?",
         server_id
     )
-        .fetch_one(&data.db)
-        .await
-        .map_err(errors::Errors::Db)?;
+    .fetch_one(&data.db)
+    .await
+    .map_err(errors::Errors::Db)?;
 
     let server_msg = JsonMessage(serde_json::json!({
-            "type": "server_delete",
-            "data": server.clone()
-        }));
+        "type": "server_delete",
+        "data": server.clone()
+    }));
 
     if let Some(user_connections) = data.user_connections.get(&session.user_id.0) {
         user_connections.iter().for_each(|addr| {
@@ -213,4 +210,10 @@ async fn leave_server(
     });
 
     Ok(HttpResponse::Ok().json(member_value))
+}
+
+pub fn configure(cfg: &mut web::ServiceConfig) {
+    cfg.service(server_members)
+        .service(server_member)
+        .service(leave_server);
 }
