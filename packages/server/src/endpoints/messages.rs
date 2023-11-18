@@ -1,19 +1,19 @@
-use std::str::FromStr;
 use actix_web::{error::Error, get, post, web, HttpResponse, Responder};
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
 use serde_json::Map;
 use sqlx::{query, query_as};
+use std::str::FromStr;
 use validator::Validate;
 
+use crate::consts::{merge_json, send_to_server_members};
 use crate::structures::message::MessageKind;
+use crate::ws::JsonMessage;
 use crate::{
     errors,
     structures::{self, session::Session},
     AppState,
 };
-use crate::consts::{merge_json, send_to_server_members};
-use crate::ws::JsonMessage;
 
 #[derive(Deserialize, Debug)]
 pub struct ChannelMessagesQuery {
@@ -34,9 +34,9 @@ async fn channel_messages(
         session.user_id,
         server_id
     )
-        .fetch_optional(&data.db)
-        .await
-        .map_err(errors::Errors::Db)?;
+    .fetch_optional(&data.db)
+    .await
+    .map_err(errors::Errors::Db)?;
 
     if member.is_none() {
         return Ok(HttpResponse::NotFound().finish());
@@ -47,9 +47,9 @@ async fn channel_messages(
         channel_id,
         server_id
     )
-        .fetch_optional(&data.db)
-        .await
-        .map_err(errors::Errors::Db)?;
+    .fetch_optional(&data.db)
+    .await
+    .map_err(errors::Errors::Db)?;
 
     if channel.is_none() {
         return Ok(HttpResponse::NotFound().finish());
@@ -64,52 +64,51 @@ async fn channel_messages(
         .await
         .map_err(errors::Errors::Db)?;
 
-    Ok(HttpResponse::Ok().json(messages.iter().map(|record| {
-        let message = structures::message::Message {
-            id: record.id.into(),
-            created_at: record.created_at,
-            content: record.content.clone(),
-            kind: MessageKind::from_str(record.kind.as_str()).unwrap(),
-            channel_id: record.channel_id.into(),
-            member_id: record.member_id.into(),
-        };
+    Ok(HttpResponse::Ok().json(
+        messages
+            .iter()
+            .map(|record| {
+                let message = structures::message::Message {
+                    id: record.id.into(),
+                    created_at: record.created_at,
+                    content: record.content.clone(),
+                    kind: MessageKind::from_str(record.kind.as_str()).unwrap(),
+                    channel_id: record.channel_id.into(),
+                    member_id: record.member_id.into(),
+                };
 
-        let mut message_value = serde_json::to_value(message.clone()).unwrap();
+                let mut message_value = serde_json::to_value(message.clone()).unwrap();
 
-        let member = structures::member::Member {
-            id: record.member_id.into(),
-            created_at: record.member_created_at,
-            server_id: record.member_server_id.into(),
-            user_id: record.member_user_id.into(),
-            nickname: record.member_nickname.clone(),
-        };
+                let member = structures::member::Member {
+                    id: record.member_id.into(),
+                    created_at: record.member_created_at,
+                    server_id: record.member_server_id.into(),
+                    user_id: record.member_user_id.into(),
+                    nickname: record.member_nickname.clone(),
+                };
 
-        let mut member_value = serde_json::to_value(member.clone()).unwrap();
+                let mut member_value = serde_json::to_value(member.clone()).unwrap();
 
-        if let Some(id) = member.user_id.0 {
-            let user = structures::user::User {
-                id: id.into(),
-                created_at: record.user_created_at,
-                username: record.user_username.clone(),
-                password: "".to_string(),
-            };
+                if let Some(id) = member.user_id.0 {
+                    let user = structures::user::User {
+                        id: id.into(),
+                        created_at: record.user_created_at,
+                        username: record.user_username.clone(),
+                        password: "".to_string(),
+                    };
 
-            merge_json(
-                &mut member_value,
-                &serde_json::json!({ "user": user }),
-            );
-        }
+                    merge_json(&mut member_value, &serde_json::json!({ "user": user }));
+                }
 
-        let mut map = Map::new();
-        map.insert("member".to_string(), member_value);
+                let mut map = Map::new();
+                map.insert("member".to_string(), member_value);
 
-        merge_json(
-            &mut message_value,
-            &serde_json::Value::Object(map)
-        );
+                merge_json(&mut message_value, &serde_json::Value::Object(map));
 
-        message_value
-    }).collect::<serde_json::Value>()))
+                message_value
+            })
+            .collect::<serde_json::Value>(),
+    ))
 }
 
 #[derive(Deserialize, Validate)]
@@ -146,9 +145,9 @@ async fn create_message(
         channel_id,
         server_id
     )
-        .fetch_optional(&data.db)
-        .await
-        .map_err(errors::Errors::Db)?;
+    .fetch_optional(&data.db)
+    .await
+    .map_err(errors::Errors::Db)?;
 
     if channel.is_none() {
         return Ok(HttpResponse::NotFound().finish());
@@ -187,23 +186,17 @@ async fn create_message(
             "SELECT id, created_at, username, password FROM User WHERE id = ?",
             id
         )
-            .fetch_one(&data.db)
-            .await
-            .map_err(errors::Errors::Db)?;
+        .fetch_one(&data.db)
+        .await
+        .map_err(errors::Errors::Db)?;
 
-        merge_json(
-            &mut member_value,
-            &serde_json::json!({ "user": user }),
-        );
+        merge_json(&mut member_value, &serde_json::json!({ "user": user }));
     }
 
     let mut map = Map::new();
     map.insert("member".to_string(), member_value);
 
-    merge_json(
-        &mut message_value,
-        &serde_json::Value::Object(map)
-    );
+    merge_json(&mut message_value, &serde_json::Value::Object(map));
 
     send_to_server_members(
         &data,
@@ -211,7 +204,7 @@ async fn create_message(
         &JsonMessage(serde_json::json!({
             "type": "message_create",
             "data": message_value.clone()
-        }))
+        })),
     );
 
     Ok(HttpResponse::Ok().json(message_value))
@@ -230,9 +223,9 @@ async fn channel_message(
         session.user_id,
         server_id
     )
-        .fetch_optional(&data.db)
-        .await
-        .map_err(errors::Errors::Db)?;
+    .fetch_optional(&data.db)
+    .await
+    .map_err(errors::Errors::Db)?;
 
     if member.is_none() {
         return Ok(HttpResponse::NotFound().finish());
@@ -243,9 +236,9 @@ async fn channel_message(
         channel_id,
         server_id
     )
-        .fetch_optional(&data.db)
-        .await
-        .map_err(errors::Errors::Db)?;
+    .fetch_optional(&data.db)
+    .await
+    .map_err(errors::Errors::Db)?;
 
     if channel.is_none() {
         return Ok(HttpResponse::NotFound().finish());
@@ -295,19 +288,19 @@ async fn channel_message(
             password: "".to_string(),
         };
 
-        merge_json(
-            &mut member_value,
-            &serde_json::json!({ "user": user }),
-        );
+        merge_json(&mut member_value, &serde_json::json!({ "user": user }));
     }
 
     let mut map = Map::new();
     map.insert("member".to_string(), member_value);
 
-    merge_json(
-        &mut message_value,
-        &serde_json::Value::Object(map)
-    );
+    merge_json(&mut message_value, &serde_json::Value::Object(map));
 
     Ok(HttpResponse::Ok().json(message_value))
+}
+
+pub fn configure(cfg: &mut web::ServiceConfig) {
+    cfg.service(channel_messages)
+        .service(create_message)
+        .service(channel_message);
 }

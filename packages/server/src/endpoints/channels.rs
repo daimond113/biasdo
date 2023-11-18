@@ -4,14 +4,14 @@ use serde::Deserialize;
 use sqlx::{query, query_as, query_as_unchecked};
 use validator::Validate;
 
+use crate::consts::send_to_server_members;
 use crate::structures::session::Session;
+use crate::ws::JsonMessage;
 use crate::{
     errors::{self, ErrorResponse},
     structures::{self},
     AppState,
 };
-use crate::consts::send_to_server_members;
-use crate::ws::JsonMessage;
 
 #[get("/servers/{id}/channels")]
 async fn server_channels(
@@ -26,9 +26,9 @@ async fn server_channels(
         session.user_id,
         server_id
     )
-        .fetch_optional(&data.db)
-        .await
-        .map_err(errors::Errors::Db)?;
+    .fetch_optional(&data.db)
+    .await
+    .map_err(errors::Errors::Db)?;
 
     if member.is_none() {
         return Ok(HttpResponse::NotFound().finish());
@@ -66,18 +66,15 @@ async fn create_channel(
         session.user_id,
         server_id
     )
-        .fetch_optional(&data.db)
-        .await
-        .map_err(errors::Errors::Db)?;
+    .fetch_optional(&data.db)
+    .await
+    .map_err(errors::Errors::Db)?;
 
     if member.is_none() {
         return Ok(HttpResponse::NotFound().finish());
     }
 
-    let server_owner = query!(
-        "SELECT owner_id FROM Server WHERE id = ?",
-        server_id
-    )
+    let server_owner = query!("SELECT owner_id FROM Server WHERE id = ?", server_id)
         .fetch_one(&data.db)
         .await
         .map_err(errors::Errors::Db)?;
@@ -86,10 +83,13 @@ async fn create_channel(
         return Ok(HttpResponse::Unauthorized().finish());
     }
 
-    let channels = query!("SELECT COUNT(id) AS count FROM Channel WHERE server_id = ?", server_id)
-        .fetch_one(&data.db)
-        .await
-        .map_err(errors::Errors::Db)?;
+    let channels = query!(
+        "SELECT COUNT(id) AS count FROM Channel WHERE server_id = ?",
+        server_id
+    )
+    .fetch_one(&data.db)
+    .await
+    .map_err(errors::Errors::Db)?;
 
     if channels.count >= 200 {
         return Ok(HttpResponse::TooManyRequests().json(ErrorResponse {
@@ -141,9 +141,9 @@ async fn server_channel(
         session.user_id,
         server_id
     )
-        .fetch_optional(&data.db)
-        .await
-        .map_err(errors::Errors::Db)?;
+    .fetch_optional(&data.db)
+    .await
+    .map_err(errors::Errors::Db)?;
 
     if member.is_none() {
         return Ok(HttpResponse::NotFound().finish());
@@ -158,4 +158,10 @@ async fn server_channel(
         Some(channel) => Ok(HttpResponse::Ok().json(channel)),
         None => Ok(HttpResponse::NotFound().finish()),
     }
+}
+
+pub fn configure(cfg: &mut web::ServiceConfig) {
+    cfg.service(create_channel)
+        .service(server_channels)
+        .service(server_channel);
 }

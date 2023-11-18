@@ -1,5 +1,8 @@
 use actix_web::cookie::time::Duration;
-use actix_web::{cookie::{Cookie, CookieBuilder, SameSite}, post, web, HttpResponse, Responder, get};
+use actix_web::{
+    cookie::{Cookie, CookieBuilder, SameSite},
+    get, post, web, HttpResponse, Responder,
+};
 use bcrypt::{hash, verify, DEFAULT_COST};
 use chrono::{DateTime, Utc};
 use cuid2::create_id;
@@ -162,4 +165,8 @@ async fn get_me(
     .map_err(errors::Errors::Db)?;
 
     Ok(HttpResponse::Ok().json(user))
+}
+
+pub fn configure(cfg: &mut web::ServiceConfig) {
+    cfg.service(logout).service(get_me);
 }
