@@ -123,6 +123,30 @@ async fn create_invite(
         return Ok(HttpResponse::NotFound().finish());
     }
 
+    // TODO: improve this with a permission system
+    let server_owner = query!("SELECT owner_id FROM Server WHERE id = ?", server_id)
+        .fetch_one(&data.db)
+        .await
+        .map_err(errors::Errors::Db)?;
+
+    if server_owner.owner_id != session.user_id.0 {
+        return Ok(HttpResponse::Unauthorized().finish());
+    }
+
+    let invite_count = query!(
+        "SELECT COUNT(*) AS count FROM Invite WHERE server_id = ?",
+        server_id
+    )
+    .fetch_one(&data.db)
+    .await
+    .map_err(errors::Errors::Db)?;
+
+    if invite_count.count >= 25 {
+        return Ok(HttpResponse::BadRequest().json(serde_json::json!({
+            "errors": "Invite limit reached. Max: 25",
+        })));
+    }
+
     let invite_id = create_id();
 
     let invite: (DateTime<Utc>, DateTime<Utc>) = query_as(

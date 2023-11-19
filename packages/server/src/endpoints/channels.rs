@@ -74,6 +74,7 @@ async fn create_channel(
         return Ok(HttpResponse::NotFound().finish());
     }
 
+    // TODO: improve this with a permission system
     let server_owner = query!("SELECT owner_id FROM Server WHERE id = ?", server_id)
         .fetch_one(&data.db)
         .await
@@ -84,7 +85,7 @@ async fn create_channel(
     }
 
     let channels = query!(
-        "SELECT COUNT(id) AS count FROM Channel WHERE server_id = ?",
+        "SELECT COUNT(*) AS count FROM Channel WHERE server_id = ?",
         server_id
     )
     .fetch_one(&data.db)

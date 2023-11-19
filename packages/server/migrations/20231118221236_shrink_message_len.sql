@@ -1,0 +1,1 @@
+UPDATE Message SET content = SUBSTR(content, 1, 2000);

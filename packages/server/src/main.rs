@@ -113,7 +113,8 @@ async fn main() -> std::io::Result<()> {
             .service(
                 web::scope("/v0")
                     .wrap(HttpAuthentication::with_fn(validator))
-                    .configure(endpoints::configure),
+                    .configure(endpoints::configure)
+                    .service(ws::ws_route),
             )
     })
     .bind((address, port))?

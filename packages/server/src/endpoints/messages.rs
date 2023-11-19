@@ -113,7 +113,7 @@ async fn channel_messages(
 
 #[derive(Deserialize, Validate)]
 pub struct CreateChannelData {
-    #[validate(length(min = 1, max = 4500))]
+    #[validate(length(min = 1, max = 2000))]
     content: String,
 }
 
