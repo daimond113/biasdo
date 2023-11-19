@@ -59,3 +59,7 @@ export async function credentialSubmitHandler(form: HTMLFormElement): Promise<un
 	if (response.ok) return response
 	throw new FelteSubmitError('An error occurred while submitting the form', response as never)
 }
+
+// can this be made quicker and more performant? set approach loses order
+export const dedupe = <T extends { id: string }>(arr: T[]) =>
+	arr.filter(({ id }, index) => arr.findIndex(({ id: idB }) => id === idB) === index)

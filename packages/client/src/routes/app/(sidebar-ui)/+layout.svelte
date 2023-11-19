@@ -8,7 +8,7 @@
 	import { createForm } from 'felte'
 	import { validator } from '@felte/validator-zod'
 	import { z } from 'zod'
-	import { credentialSubmitHandler } from '$lib'
+	import { credentialSubmitHandler, dedupe } from '$lib'
 	import { goto } from '$app/navigation'
 	import type { Server } from '@biasdo/server-utils/src/Server'
 	import type { Channel } from '@biasdo/server-utils/src/Channel'
@@ -82,9 +82,9 @@
 
 	export let data: LayoutData
 
-	$: servers = [...data.servers, ...$wsServers].filter(({ id }) => !$deletedServers.has(id))
+	$: servers = dedupe([...data.servers, ...$wsServers].filter(({ id }) => !$deletedServers.has(id)))
 	$: currentServerData = servers.find(({ id }) => id === $currentServerId)
-	$: allChannels = [...servers.flatMap(({ channels }) => channels), ...$wsChannels]
+	$: allChannels = dedupe([...servers.flatMap(({ channels }) => channels), ...$wsChannels])
 	$: channels = allChannels.filter(({ server_id }) => server_id === $currentServerId)
 
 	let mobileSidebarsModal: HTMLDialogElement

@@ -2,6 +2,7 @@
 	import Paper from '$lib/Paper.svelte'
 	import SidebarButton from '$lib/SidebarButton.svelte'
 	import TextField from '$lib/TextField.svelte'
+	import Message from '$lib/Message.svelte'
 
 	import { afterUpdate, beforeUpdate, onDestroy, tick } from 'svelte'
 	import type { LayoutData } from './$types'
@@ -16,65 +17,53 @@
 	import { createForm } from 'felte'
 	import { validator } from '@felte/validator-zod'
 	import { z } from 'zod'
-	import { credentialSubmitHandler } from '$lib'
-	import { cn } from '$lib/cn'
+	import { credentialSubmitHandler, dedupe } from '$lib'
+	import VirtualList from 'svelte-virtual-scroll-list'
 
-	let div: HTMLDivElement | undefined
+	let vs: VirtualList
+
 	let autoscroll = false
 
 	beforeUpdate(() => {
-		if (div) {
-			const scrollableDistance = div.scrollHeight - div.offsetHeight
-			autoscroll = div.scrollTop > scrollableDistance - 20
+		if (vs) {
+			const scrollableDistance = vs.getScrollSize() - vs.getOffsetDimension()
+			autoscroll = vs.getOffset() > scrollableDistance - 20
 		}
 	})
 
 	afterUpdate(() => {
-		if (autoscroll && div) {
-			div.scrollTo(0, div.scrollHeight)
+		if (autoscroll) {
+			vs?.scrollToBottom()
 		}
 	})
 
 	onDestroy(
 		currentChannelId.subscribe(async () => {
 			await tick() // wait for new messages to be added to the DOM
-			if (div) {
-				div.scrollTo(0, div.scrollHeight)
-			}
+			vs?.scrollToBottom()
 		})
 	)
 
-	function dateToText(date: Date) {
-		const isToday = new Date().toDateString() === date.toDateString()
-		// 60 * 60 * 24 * 1000(ms) = 86400000(ms) = 1 day
-		const isYesterday = date.toDateString() === new Date(Date.now() - 86400000).toDateString()
-
-		if (isToday || isYesterday) {
-			return `${isToday ? 'Today' : 'Yesterday'} at ${date.toLocaleTimeString([], {
-				hour: '2-digit',
-				minute: '2-digit'
-			})}`
-		}
-
-		return date.toLocaleString([], { timeStyle: 'short', dateStyle: 'short' })
-	}
-
 	export let data: LayoutData
 
-	$: servers = [...data.servers, ...$wsServers].filter(({ id }) => !$deletedServers.has(id))
+	$: servers = dedupe([...data.servers, ...$wsServers].filter(({ id }) => !$deletedServers.has(id)))
 	$: currentServerData = servers.find(({ id }) => id === $currentServerId)
-	$: currentChannels = [...(currentServerData?.channels ?? []), ...$wsChannels.filter(
-		({ server_id }) => server_id === $currentServerId
-	)]
+	$: currentChannels = dedupe([
+		...(currentServerData?.channels ?? []),
+		...$wsChannels.filter(({ server_id }) => server_id === $currentServerId)
+	])
 	$: currentChannelData = currentChannels.find(({ id }) => id === $currentChannelId)
-	$: messages = [...data.messages, ...$wsMessages.filter(({ channel_id }) => channel_id === $currentChannelId)]
+	$: messages = dedupe([
+		...data.messages,
+		...$wsMessages.filter(({ channel_id }) => channel_id === $currentChannelId)
+	])
 
 	let formElement: HTMLFormElement
 
 	const { form, errors, isValid, isSubmitting, isValidating, reset } = createForm({
 		extend: validator({
 			schema: z.object({
-				content: z.string().min(1).max(4500)
+				content: z.string().min(1).max(2000)
 			})
 		}),
 		onSubmit: () => credentialSubmitHandler(formElement),
@@ -99,27 +88,10 @@
 		>{currentChannelData?.topic ?? ''}</span
 	>
 </Paper>
-<div class="flex-grow overflow-auto" bind:this={div}>
-	{#each messages ?? [] as { id, content, created_at, member: { nickname, user, user_id } }, index (id)}
-		<div
-			class={cn(
-				'w-full border border-transparent hover:border-[var(--paper-level-1-outline)] hover:bg-[var(--paper-level-1)] p-2 rounded-lg transition-all flex gap-2 min-h-0',
-				index !== 0 && 'mt-2'
-			)}
-		>
-			<img
-				src="/user-icons/{BigInt(user_id ?? 1) % BigInt(4)}.svg"
-				class="w-10 h-10 inline rounded-lg mr-1 flex-shrink-0"
-				alt={nickname ?? user?.username ?? 'Deleted User'}
-				loading="lazy"
-			/>
-			<div class="flex-grow overflow-hidden">
-				<span class="mr-1 font-bold">{nickname ?? user?.username ?? 'Deleted User'}</span>
-				<time class="text-xs" datetime={created_at}>{dateToText(new Date(created_at))}</time>
-				<div class="break-words">{content}</div>
-			</div>
-		</div>
-	{/each}
+<div class="flex-grow basis-0 overflow-hidden">
+	<VirtualList data={messages} let:data bind:this={vs}>
+		<Message {data} />
+	</VirtualList>
 </div>
 <Paper class="w-full flex-shrink-0 p-[0.375rem] min-h-[3.625rem]">
 	<form
@@ -141,3 +113,9 @@
 		/>
 	</form>
 </Paper>
+
+<style>
+	:global(.virtual-scroll-root) {
+		height: 100% !important;
+	}
+</style>

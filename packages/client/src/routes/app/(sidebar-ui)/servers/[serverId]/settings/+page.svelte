@@ -6,7 +6,7 @@
 	import { currentServerId, deletedServers, wsInvites, wsServers } from '$lib/stores'
 	import { createForm } from 'felte'
 	import type { PageData } from './$types'
-	import { credentialSubmitHandler } from '$lib'
+	import { credentialSubmitHandler, dedupe } from '$lib'
 
 	export let data: PageData
 
@@ -27,9 +27,9 @@
 		onSubmit: () => credentialSubmitHandler(leaveFormElement)
 	})
 
-	$: servers = [...data.servers, ...$wsServers].filter(({ id }) => !$deletedServers.has(id))
+	$: servers = dedupe([...data.servers, ...$wsServers].filter(({ id }) => !$deletedServers.has(id)))
 	$: currentServerData = servers.find(({ id }) => id === $currentServerId)
-	$: invites = [...data.invites, ...$wsInvites.filter(({ server_id }) => server_id === $currentServerId)]
+	$: invites = dedupe([...data.invites, ...$wsInvites.filter(({ server_id }) => server_id === $currentServerId)])
 </script>
 
 <svelte:head>
@@ -38,7 +38,7 @@
 
 <Paper class="w-full h-full p-6 overflow-auto flex flex-col">
 	<h1 class="text-2xl font-bold mb-4">{currentServerData?.name} Settings</h1>
-	<div class="w-full lg:w-2/3 xl:w-1/2 2xl:w-1/3">
+	<div class="w-full lg:w-2/3 xl:w-1/2 2xl:w-1/3 mb-4">
 		<h2 class="text-xl font-bold mb-4">Invites</h2>
 		<ul>
 			{#each invites as { id, expires_at } (id)}
@@ -79,10 +79,9 @@
 			method="post"
 		>
 			<Button
-				onClick={() => {}}
 				class="w-full"
 				type="submit"
-				disabled={$inviteIsValidating || $inviteIsSubmitting || !$inviteIsValid}>Generate</Button
+				disabled={data.me.id !== currentServerData?.owner_id || $inviteIsValidating || $inviteIsSubmitting || !$inviteIsValid}>Generate</Button
 			>
 		</form>
 	</div>

@@ -26,6 +26,8 @@ dialog {
 	--error-button: rgb(227 16 16 / 0.3);
 	--error-button-outline: #fe5555;
 	--logo-font: 'Rammetto One', sans-serif;
+
+	scrollbar-color: var(--text-color) var(--text-field-outline);
 }
 
 dialog {
@@ -40,4 +42,23 @@ html {
 a:not([data-not-standard]) {
 	color: var(--link-color);
 	text-decoration: none;
+}
+
+::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
+}
+
+::-webkit-scrollbar-track {
+	background: var(--text-field-outline);
+	border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+	background: var(--text-color);
+	border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: var(--link-color);
 }
