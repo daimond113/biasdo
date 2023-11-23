@@ -30,7 +30,7 @@
 		alt={data.member?.nickname ?? data.member?.user?.username ?? 'Deleted User'}
 		loading="lazy"
 	/>
-	<div class="flex-grow overflow-hidden">
+	<div class="flex-grow overflow-hidden -mt-[0.375rem]">
 		<span class="mr-1 font-bold"
 			>{data.member?.nickname ?? data.member?.user?.username ?? 'Deleted User'}</span
 		>

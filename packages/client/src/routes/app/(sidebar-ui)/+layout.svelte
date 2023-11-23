@@ -285,7 +285,11 @@
 			? $page.url.pathname === '/app/settings'
 			: $currentChannelId === null}
 		><span class="min-w-0 whitespace-nowrap overflow-hidden text-ellipsis"
-			>{#if $currentServerId === null} User {:else} Server {/if} Settings</span
+			>{#if $currentServerId === null}
+				User
+			{:else}
+				Server
+			{/if} Settings</span
 		></SidebarButton
 	>
 	{#if $currentServerId}
