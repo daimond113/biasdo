@@ -35,3 +35,18 @@ pub fn send_to_server_members<T>(
         }
     }
 }
+
+#[macro_export]
+macro_rules! add_value_to_json {
+    ($into:expr, $thing:expr, $key:expr) => {{
+        let mut into_value = serde_json::to_value($into.clone()).unwrap();
+        let thing_value = serde_json::to_value($thing.clone()).unwrap();
+
+        let mut map = serde_json::Map::new();
+        map.insert($key.to_string(), thing_value);
+
+        crate::consts::merge_json(&mut into_value, &serde_json::Value::Object(map));
+
+        into_value
+    }};
+}

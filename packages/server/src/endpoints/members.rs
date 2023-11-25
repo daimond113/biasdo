@@ -1,18 +1,29 @@
 use actix_web::{error::Error, get, post, web, HttpResponse, Responder};
+use chrono::{DateTime, Utc};
 use serde::Deserialize;
 use sqlx::{query, query_as};
 
 use crate::consts::{merge_json, send_to_server_members};
 use crate::ws::JsonMessage;
 use crate::{
-    errors,
+    errors, get_member_opt_user_value, get_member_value,
     structures::{self, session::Session},
     AppState,
 };
 
 #[derive(Deserialize, Debug)]
 pub struct ServerMembersQuery {
-    last_id: u64,
+    last_id: Option<u64>,
+}
+
+struct MemberResult {
+    member_id: u64,
+    member_created_at: DateTime<Utc>,
+    member_server_id: u64,
+    member_user_id: Option<u64>,
+    member_nickname: Option<String>,
+    user_created_at: Option<DateTime<Utc>>,
+    user_username: Option<String>,
 }
 
 #[get("/servers/{server_id}/members")]
@@ -37,42 +48,34 @@ async fn server_members(
         return Ok(HttpResponse::NotFound().finish());
     }
 
-    let members = query!(
-        "SELECT Member.id, Member.created_at, Member.server_id, Member.user_id, Member.nickname, User.created_at AS user_created_at, User.username AS user_username FROM Member INNER JOIN User ON User.id = Member.user_id WHERE Member.server_id = ? AND Member.id > ? ORDER BY Member.id LIMIT 100",
-        server_id,
-        query.map(|q| q.into_inner().last_id).unwrap_or(0)
-    )
-        .fetch_all(&data.db)
-        .await
-        .map_err(errors::Errors::Db)?;
+    let last_id_opt = query.map(|q| q.into_inner().last_id).unwrap_or(None);
+
+    let mut members = match last_id_opt {
+        Some(last_id) => query_as!(
+            MemberResult,
+            "SELECT Member.id AS member_id, Member.created_at AS member_created_at, Member.server_id AS member_server_id, Member.user_id AS member_user_id, Member.nickname AS member_nickname, User.created_at AS user_created_at, User.username AS user_username FROM Member LEFT JOIN User ON User.id = Member.user_id WHERE Member.server_id = ? AND Member.id < ? ORDER BY Member.id LIMIT 100",
+            server_id,
+            last_id
+        )
+            .fetch_all(&data.db)
+            .await
+            .map_err(errors::Errors::Db)?,
+        None => query_as!(
+            MemberResult,
+            "SELECT Member.id AS member_id, Member.created_at AS member_created_at, Member.server_id AS member_server_id, Member.user_id AS member_user_id, Member.nickname AS member_nickname, User.created_at AS user_created_at, User.username AS user_username FROM Member LEFT JOIN User ON User.id = Member.user_id WHERE Member.server_id = ? ORDER BY Member.id LIMIT 100",
+            server_id
+        )
+            .fetch_all(&data.db)
+            .await
+            .map_err(errors::Errors::Db)?
+    };
+
+    members.reverse();
 
     Ok(HttpResponse::Ok().json(
         members
             .iter()
-            .map(|record| {
-                let member = structures::member::Member {
-                    id: record.id.into(),
-                    created_at: record.created_at,
-                    server_id: record.server_id.into(),
-                    user_id: record.user_id.into(),
-                    nickname: record.nickname.clone(),
-                };
-
-                let mut member_value = serde_json::to_value(member.clone()).unwrap();
-
-                if let Some(id) = member.user_id.0 {
-                    let user = structures::user::User {
-                        id: id.into(),
-                        created_at: record.user_created_at,
-                        username: record.user_username.clone(),
-                        password: "".to_string(),
-                    };
-
-                    merge_json(&mut member_value, &serde_json::json!({ "user": user }));
-                };
-
-                member_value
-            })
+            .map(|r| get_member_opt_user_value!(r))
             .collect::<serde_json::Value>(),
     ))
 }
@@ -85,7 +88,7 @@ async fn server_member(
     let (server_id, member_id) = path.into_inner();
 
     let record_opt = query!(
-        "SELECT Member.id, Member.created_at, Member.server_id, Member.user_id, Member.nickname, User.created_at AS user_created_at, User.username AS user_username FROM Member INNER JOIN User ON User.id = Member.user_id WHERE Member.server_id = ? AND Member.id = ? LIMIT 100",
+        "SELECT Member.id AS member_id, Member.created_at AS member_created_at, Member.server_id AS member_server_id, Member.user_id AS member_user_id, Member.nickname AS member_nickname, User.created_at AS user_created_at, User.username AS user_username FROM Member INNER JOIN User ON User.id = Member.user_id WHERE Member.server_id = ? AND Member.id = ? LIMIT 100",
         server_id,
         member_id
     )
@@ -99,28 +102,7 @@ async fn server_member(
 
     let record = record_opt.unwrap();
 
-    let member = structures::member::Member {
-        id: record.id.into(),
-        created_at: record.created_at,
-        server_id: record.server_id.into(),
-        user_id: record.user_id.into(),
-        nickname: record.nickname.clone(),
-    };
-
-    let mut member_value = serde_json::to_value(member.clone()).unwrap();
-
-    if let Some(id) = member.user_id.0 {
-        let user = structures::user::User {
-            id: id.into(),
-            created_at: record.user_created_at,
-            username: record.user_username.clone(),
-            password: "".to_string(),
-        };
-
-        merge_json(&mut member_value, &serde_json::json!({ "user": user }));
-    };
-
-    Ok(HttpResponse::Ok().json(member_value))
+    Ok(HttpResponse::Ok().json(get_member_value!(record)))
 }
 
 #[post("/servers/{server_id}/leave")]
@@ -132,7 +114,7 @@ async fn leave_server(
     let server_id = path.into_inner();
 
     let record_opt = query!(
-        "SELECT Member.id, Member.created_at, Member.server_id, Member.user_id, Member.nickname, User.created_at AS user_created_at, User.username AS user_username FROM Member INNER JOIN User ON User.id = Member.user_id WHERE Member.server_id = ? AND Member.user_id = ?",
+        "SELECT Member.id AS member_id, Member.created_at AS member_created_at, Member.server_id AS member_server_id, Member.user_id AS member_user_id, Member.nickname AS member_nickname, User.created_at AS user_created_at, User.username AS user_username FROM Member INNER JOIN User ON User.id = Member.user_id WHERE Member.server_id = ? AND Member.user_id = ?",
         server_id,
         session.user_id,
     )
@@ -148,33 +130,14 @@ async fn leave_server(
 
     query!(
         "UPDATE Member SET user_id=NULL, nickname=NULL WHERE id = ? AND server_id = ?",
-        record.id,
+        record.member_id,
         server_id
     )
     .execute(&data.db)
     .await
     .map_err(errors::Errors::Db)?;
 
-    let member = structures::member::Member {
-        id: record.id.into(),
-        created_at: record.created_at,
-        server_id: record.server_id.into(),
-        user_id: record.user_id.into(),
-        nickname: record.nickname.clone(),
-    };
-
-    let mut member_value = serde_json::to_value(member.clone()).unwrap();
-
-    if let Some(id) = member.user_id.0 {
-        let user = structures::user::User {
-            id: id.into(),
-            created_at: record.user_created_at,
-            username: record.user_username.clone(),
-            password: "".to_string(),
-        };
-
-        merge_json(&mut member_value, &serde_json::json!({ "user": user }));
-    };
+    let member_value = get_member_value!(record);
 
     send_to_server_members(
         &data,
@@ -203,11 +166,11 @@ async fn leave_server(
         user_connections.iter().for_each(|addr| {
             addr.do_send(server_msg.clone());
         });
-    }
 
-    data.server_connections.entry(server_id).and_modify(|map| {
-        map.remove(&session.user_id.0);
-    });
+        data.server_connections.entry(server_id).and_modify(|map| {
+            map.remove(&session.user_id.0);
+        });
+    }
 
     Ok(HttpResponse::Ok().json(member_value))
 }

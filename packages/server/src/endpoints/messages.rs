@@ -2,7 +2,7 @@ use actix_web::{error::Error, get, post, web, HttpResponse, Responder};
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
 use serde_json::Map;
-use sqlx::{query, query_as};
+use sqlx::{query, query_as, query_as_unchecked};
 use std::str::FromStr;
 use validator::Validate;
 
@@ -10,7 +10,7 @@ use crate::consts::{merge_json, send_to_server_members};
 use crate::structures::message::MessageKind;
 use crate::ws::JsonMessage;
 use crate::{
-    errors,
+    add_value_to_json, errors, get_member_opt_user_value,
     structures::{self, session::Session},
     AppState,
 };
@@ -18,6 +18,21 @@ use crate::{
 #[derive(Deserialize, Debug)]
 pub struct ChannelMessagesQuery {
     last_id: Option<u64>,
+}
+
+struct MessageResult {
+    id: u64,
+    created_at: DateTime<Utc>,
+    content: String,
+    kind: MessageKind,
+    channel_id: u64,
+    member_id: u64,
+    member_created_at: DateTime<Utc>,
+    member_server_id: u64,
+    member_user_id: Option<u64>,
+    member_nickname: Option<String>,
+    user_created_at: Option<DateTime<Utc>>,
+    user_username: Option<String>,
 }
 
 #[get("/servers/{server_id}/channels/{channel_id}/messages")]
@@ -55,64 +70,53 @@ async fn channel_messages(
         return Ok(HttpResponse::NotFound().finish());
     }
 
-    let messages = query!(
-        "SELECT Message.id, Message.created_at, Message.content, Message.kind, Message.channel_id, Message.member_id, Member.created_at AS member_created_at, Member.server_id AS member_server_id, Member.user_id AS member_user_id, Member.nickname AS member_nickname, User.created_at AS user_created_at, User.username AS user_username FROM Message INNER JOIN Member ON Member.id = Message.member_id INNER JOIN User ON User.id = Member.user_id WHERE Message.channel_id = ? AND Message.id > ? ORDER BY Message.id LIMIT 100",
-        channel_id,
-        query.map(|q| q.into_inner().last_id.unwrap_or(0)).unwrap_or(0)
-    )
-        .fetch_all(&data.db)
-        .await
-        .map_err(errors::Errors::Db)?;
+    let last_id_opt = query.map(|q| q.into_inner().last_id).unwrap_or(None);
+
+    let mut messages = match last_id_opt {
+        Some(last_id) => query_as_unchecked!(
+            MessageResult,
+            "SELECT Message.id, Message.created_at, Message.content, Message.kind AS `kind: _`, Message.channel_id, Message.member_id, Member.created_at AS member_created_at, Member.server_id AS member_server_id, Member.user_id AS member_user_id, Member.nickname AS member_nickname, User.created_at AS user_created_at, User.username AS user_username FROM Message INNER JOIN Member ON Member.id = Message.member_id LEFT JOIN User ON User.id = Member.user_id WHERE Message.channel_id = ? AND Message.id < ? ORDER BY Message.id DESC LIMIT 100",
+            channel_id,
+            last_id
+        )
+            .fetch_all(&data.db)
+            .await
+            .map_err(errors::Errors::Db)?,
+        None => query_as_unchecked!(
+            MessageResult,
+            "SELECT Message.id, Message.created_at, Message.content, Message.kind AS `kind: _`, Message.channel_id, Message.member_id, Member.created_at AS member_created_at, Member.server_id AS member_server_id, Member.user_id AS member_user_id, Member.nickname AS member_nickname, User.created_at AS user_created_at, User.username AS user_username FROM Message INNER JOIN Member ON Member.id = Message.member_id LEFT JOIN User ON User.id = Member.user_id WHERE Message.channel_id = ? ORDER BY Message.id DESC LIMIT 100",
+            channel_id
+        )
+            .fetch_all(&data.db)
+            .await
+            .map_err(errors::Errors::Db)?
+    };
+
+    messages.reverse();
 
     Ok(HttpResponse::Ok().json(
         messages
             .iter()
             .map(|record| {
-                let message = structures::message::Message {
-                    id: record.id.into(),
-                    created_at: record.created_at,
-                    content: record.content.clone(),
-                    kind: MessageKind::from_str(record.kind.as_str()).unwrap(),
-                    channel_id: record.channel_id.into(),
-                    member_id: record.member_id.into(),
-                };
-
-                let mut message_value = serde_json::to_value(message.clone()).unwrap();
-
-                let member = structures::member::Member {
-                    id: record.member_id.into(),
-                    created_at: record.member_created_at,
-                    server_id: record.member_server_id.into(),
-                    user_id: record.member_user_id.into(),
-                    nickname: record.member_nickname.clone(),
-                };
-
-                let mut member_value = serde_json::to_value(member.clone()).unwrap();
-
-                if let Some(id) = member.user_id.0 {
-                    let user = structures::user::User {
-                        id: id.into(),
-                        created_at: record.user_created_at,
-                        username: record.user_username.clone(),
-                        password: "".to_string(),
-                    };
-
-                    merge_json(&mut member_value, &serde_json::json!({ "user": user }));
-                }
-
-                let mut map = Map::new();
-                map.insert("member".to_string(), member_value);
-
-                merge_json(&mut message_value, &serde_json::Value::Object(map));
-
-                message_value
+                add_value_to_json!(
+                    structures::message::Message {
+                        id: record.id.into(),
+                        created_at: record.created_at,
+                        content: record.content.clone(),
+                        kind: record.kind.clone(),
+                        channel_id: record.channel_id.into(),
+                        member_id: record.member_id.into(),
+                    },
+                    get_member_opt_user_value!(record),
+                    "member"
+                )
             })
             .collect::<serde_json::Value>(),
     ))
 }
 
 #[derive(Deserialize, Validate)]
-pub struct CreateChannelData {
+pub struct CreateMessageData {
     #[validate(length(min = 1, max = 2000))]
     content: String,
 }
@@ -121,7 +125,7 @@ pub struct CreateChannelData {
 async fn create_message(
     data: web::Data<AppState>,
     path: web::Path<(u64, u64)>,
-    req_body: web::Either<web::Json<CreateChannelData>, web::Form<CreateChannelData>>,
+    req_body: web::Either<web::Json<CreateMessageData>, web::Form<CreateMessageData>>,
     session: web::ReqData<Session>,
 ) -> Result<impl Responder, Error> {
     let (server_id, channel_id) = path.into_inner();
@@ -245,7 +249,7 @@ async fn channel_message(
     }
 
     let message = query!(
-        "SELECT Message.id, Message.created_at, Message.content, Message.kind, Message.channel_id, Message.member_id, Member.created_at AS member_created_at, Member.server_id AS member_server_id, Member.user_id AS member_user_id, Member.nickname AS member_nickname, User.created_at AS user_created_at, User.username AS user_username FROM Message INNER JOIN Member ON Member.id = Message.member_id INNER JOIN User ON User.id = Member.user_id WHERE Message.channel_id = ? AND Message.id = ? LIMIT 100",
+        "SELECT Message.id, Message.created_at, Message.content, Message.kind, Message.channel_id, Message.member_id, Member.created_at AS member_created_at, Member.server_id AS member_server_id, Member.user_id AS member_user_id, Member.nickname AS member_nickname, User.created_at AS user_created_at, User.username AS user_username FROM Message INNER JOIN Member ON Member.id = Message.member_id LEFT JOIN User ON User.id = Member.user_id WHERE Message.channel_id = ? AND Message.id = ?",
         channel_id,
         message_id
     )
@@ -268,35 +272,11 @@ async fn channel_message(
         member_id: record.member_id.into(),
     };
 
-    let mut message_value = serde_json::to_value(message_struct.clone()).unwrap();
-
-    let member = structures::member::Member {
-        id: record.member_id.into(),
-        created_at: record.member_created_at,
-        server_id: record.member_server_id.into(),
-        user_id: record.member_user_id.into(),
-        nickname: record.member_nickname.clone(),
-    };
-
-    let mut member_value = serde_json::to_value(member.clone()).unwrap();
-
-    if let Some(id) = member.user_id.0 {
-        let user = structures::user::User {
-            id: id.into(),
-            created_at: record.user_created_at,
-            username: record.user_username.clone(),
-            password: "".to_string(),
-        };
-
-        merge_json(&mut member_value, &serde_json::json!({ "user": user }));
-    }
-
-    let mut map = Map::new();
-    map.insert("member".to_string(), member_value);
-
-    merge_json(&mut message_value, &serde_json::Value::Object(map));
-
-    Ok(HttpResponse::Ok().json(message_value))
+    Ok(HttpResponse::Ok().json(add_value_to_json!(
+        message_struct,
+        get_member_opt_user_value!(record),
+        "member"
+    )))
 }
 
 pub fn configure(cfg: &mut web::ServiceConfig) {
