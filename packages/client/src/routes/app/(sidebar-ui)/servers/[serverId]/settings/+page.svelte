@@ -3,10 +3,10 @@
 	import Button from '$lib/Button.svelte'
 	import Paper from '$lib/Paper.svelte'
 	import TextField from '$lib/TextField.svelte'
-	import { currentServerId, deletedServers, wsInvites, wsServers } from '$lib/stores'
+	import { currentServerId, createPageStores } from '$lib/stores'
 	import { createForm } from 'felte'
 	import type { PageData } from './$types'
-	import { credentialSubmitHandler, dedupe } from '$lib'
+	import { credentialSubmitHandler } from '$lib'
 
 	export let data: PageData
 
@@ -27,9 +27,14 @@
 		onSubmit: () => credentialSubmitHandler(leaveFormElement)
 	})
 
-	$: servers = dedupe([...data.servers, ...$wsServers].filter(({ id }) => !$deletedServers.has(id)))
+	const { wsServers, wsInvites, deletedServers } = createPageStores()
+
+	$: servers = [...data.servers, ...$wsServers].filter(({ id }) => !$deletedServers.has(id))
 	$: currentServerData = servers.find(({ id }) => id === $currentServerId)
-	$: invites = dedupe([...data.invites, ...$wsInvites.filter(({ server_id }) => server_id === $currentServerId)])
+	$: invites = [
+		...data.invites,
+		...$wsInvites.filter(({ server_id }) => server_id === $currentServerId)
+	]
 </script>
 
 <svelte:head>
@@ -81,7 +86,10 @@
 			<Button
 				class="w-full"
 				type="submit"
-				disabled={data.me.id !== currentServerData?.owner_id || $inviteIsValidating || $inviteIsSubmitting || !$inviteIsValid}>Generate</Button
+				disabled={data.me.id !== currentServerData?.owner_id ||
+					$inviteIsValidating ||
+					$inviteIsSubmitting ||
+					!$inviteIsValid}>Generate</Button
 			>
 		</form>
 	</div>

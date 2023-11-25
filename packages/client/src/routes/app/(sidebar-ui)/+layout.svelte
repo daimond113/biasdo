@@ -8,20 +8,12 @@
 	import { createForm } from 'felte'
 	import { validator } from '@felte/validator-zod'
 	import { z } from 'zod'
-	import { credentialSubmitHandler, dedupe } from '$lib'
+	import { credentialSubmitHandler } from '$lib'
 	import { goto } from '$app/navigation'
 	import type { Server } from '@biasdo/server-utils/src/Server'
 	import type { Channel } from '@biasdo/server-utils/src/Channel'
 	import type { LayoutData } from './$types'
-	import {
-		currentChannelId,
-		currentServerId,
-		deletedServers,
-		isMobileUI,
-		wsChannels,
-		wsMessages,
-		wsServers
-	} from '$lib/stores'
+	import { currentChannelId, currentServerId, createPageStores, isMobileUI } from '$lib/stores'
 	import { page } from '$app/stores'
 	import Portal from 'svelte-portal/src/Portal.svelte'
 	import { cn } from '$lib/cn'
@@ -82,9 +74,11 @@
 
 	export let data: LayoutData
 
-	$: servers = dedupe([...data.servers, ...$wsServers].filter(({ id }) => !$deletedServers.has(id)))
+	const { wsServers, wsChannels, wsMessages, deletedServers } = createPageStores()
+
+	$: servers = [...data.servers, ...$wsServers].filter(({ id }) => !$deletedServers.has(id))
 	$: currentServerData = servers.find(({ id }) => id === $currentServerId)
-	$: allChannels = dedupe([...servers.flatMap(({ channels }) => channels), ...$wsChannels])
+	$: allChannels = [...servers.flatMap(({ channels }) => channels), ...$wsChannels]
 	$: channels = allChannels.filter(({ server_id }) => server_id === $currentServerId)
 
 	let mobileSidebarsModal: HTMLDialogElement

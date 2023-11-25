@@ -6,23 +6,28 @@
 
 	import { afterUpdate, beforeUpdate, onDestroy, tick } from 'svelte'
 	import type { LayoutData } from './$types'
-	import {
-		currentServerId,
-		currentChannelId,
-		wsServers,
-		wsChannels,
-		wsMessages,
-		deletedServers
-	} from '$lib/stores'
+	import { currentServerId, currentChannelId, createPageStores, type APIMessage } from '$lib/stores'
 	import { createForm } from 'felte'
 	import { validator } from '@felte/validator-zod'
 	import { z } from 'zod'
-	import { credentialSubmitHandler, dedupe } from '$lib'
+	import { credentialSubmitHandler } from '$lib'
 	import VirtualList from 'svelte-virtual-scroll-list'
+	import { afterNavigate } from '$app/navigation'
 
 	let vs: VirtualList
 
 	let autoscroll = false
+	let isFetching = false
+	let abortController = new AbortController()
+	let isFinished = false
+	let additionalMessages = [] as APIMessage[]
+
+	afterNavigate(() => {
+		additionalMessages = []
+		isFinished = false
+		abortController.abort('Navigation interrupted')
+		abortController = new AbortController()
+	})
 
 	beforeUpdate(() => {
 		if (vs) {
@@ -46,17 +51,20 @@
 
 	export let data: LayoutData
 
-	$: servers = dedupe([...data.servers, ...$wsServers].filter(({ id }) => !$deletedServers.has(id)))
+	const { wsServers, wsChannels, wsMessages, deletedServers } = createPageStores()
+
+	$: servers = [...data.servers, ...$wsServers].filter(({ id }) => !$deletedServers.has(id))
 	$: currentServerData = servers.find(({ id }) => id === $currentServerId)
-	$: currentChannels = dedupe([
+	$: currentChannels = [
 		...(currentServerData?.channels ?? []),
 		...$wsChannels.filter(({ server_id }) => server_id === $currentServerId)
-	])
+	]
 	$: currentChannelData = currentChannels.find(({ id }) => id === $currentChannelId)
-	$: messages = dedupe([
+	$: messages = [
+		...additionalMessages,
 		...data.messages,
 		...$wsMessages.filter(({ channel_id }) => channel_id === $currentChannelId)
-	])
+	]
 
 	let formElement: HTMLFormElement
 
@@ -89,7 +97,47 @@
 	>
 </Paper>
 <div class="flex-grow basis-0 overflow-hidden">
-	<VirtualList data={messages} let:data bind:this={vs}>
+	<VirtualList
+		data={messages}
+		let:data
+		bind:this={vs}
+		on:top={() => {
+			console.log('top')
+			if (!isFetching && !isFinished) {
+				console.log('fetching')
+				isFetching = true
+
+				const lastId = messages[0]?.id
+				if (!lastId) {
+					isFetching = false
+					isFinished = true
+					return
+				}
+
+				fetch(
+					`${
+						import.meta.env.VITE_API_URL
+					}/v0/servers/${$currentServerId}/channels/${$currentChannelId}/messages?last_id=${lastId}`,
+					{
+						credentials: 'include',
+						signal: abortController.signal
+					}
+				)
+					.then((res) => res.json())
+					.then((data) => {
+						if (data.length === 0) {
+							isFinished = true
+						} else {
+							additionalMessages = [...data, ...additionalMessages]
+							isFinished = data.length !== 100
+						}
+					})
+					.finally(() => {
+						isFetching = false
+					})
+			}
+		}}
+	>
 		<Message {data} />
 	</VirtualList>
 </div>

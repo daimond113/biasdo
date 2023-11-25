@@ -22,7 +22,7 @@
 </script>
 
 <div
-	class={'w-full border border-transparent hover:border-[var(--paper-level-1-outline)] hover:bg-[var(--paper-level-1)] p-2 rounded-lg transition-all flex gap-2 min-h-0'}
+	class="w-full border border-transparent hover:border-[var(--paper-level-1-outline)] hover:bg-[var(--paper-level-1)] p-2 rounded-lg transition-all flex gap-2 min-h-0"
 >
 	<img
 		src="/user-icons/{BigInt(data.member?.user_id ?? 1) % BigInt(4)}.svg"
