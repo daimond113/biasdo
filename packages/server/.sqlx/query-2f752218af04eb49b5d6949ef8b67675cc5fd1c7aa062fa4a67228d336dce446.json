@@ -1,11 +1,11 @@
 {
   "db_name": "MySQL",
-  "query": "SELECT Member.id, Member.created_at, Member.server_id, Member.user_id, Member.nickname, User.created_at AS user_created_at, User.username AS user_username FROM Member INNER JOIN User ON User.id = Member.user_id WHERE Member.server_id = ? AND Member.user_id = ?",
+  "query": "SELECT Member.id AS member_id, Member.created_at AS member_created_at, Member.server_id AS member_server_id, Member.user_id AS member_user_id, Member.nickname AS member_nickname, User.created_at AS user_created_at, User.username AS user_username FROM Member INNER JOIN User ON User.id = Member.user_id WHERE Member.server_id = ? AND Member.user_id = ?",
   "describe": {
     "columns": [
       {
         "ordinal": 0,
-        "name": "id",
+        "name": "member_id",
         "type_info": {
           "type": "LongLong",
           "flags": "NOT_NULL | PRIMARY_KEY | UNSIGNED | AUTO_INCREMENT",
@@ -15,7 +15,7 @@
       },
       {
         "ordinal": 1,
-        "name": "created_at",
+        "name": "member_created_at",
         "type_info": {
           "type": "Timestamp",
           "flags": "NOT_NULL | UNSIGNED | BINARY | TIMESTAMP",
@@ -25,7 +25,7 @@
       },
       {
         "ordinal": 2,
-        "name": "server_id",
+        "name": "member_server_id",
         "type_info": {
           "type": "LongLong",
           "flags": "NOT_NULL | MULTIPLE_KEY | UNSIGNED | NO_DEFAULT_VALUE",
@@ -35,7 +35,7 @@
       },
       {
         "ordinal": 3,
-        "name": "user_id",
+        "name": "member_user_id",
         "type_info": {
           "type": "LongLong",
           "flags": "MULTIPLE_KEY | UNSIGNED",
@@ -45,7 +45,7 @@
       },
       {
         "ordinal": 4,
-        "name": "nickname",
+        "name": "member_nickname",
         "type_info": {
           "type": "VarString",
           "flags": "",
@@ -87,5 +87,5 @@
       false
     ]
   },
-  "hash": "3bec5320a9c8ff3cffc3586e6ed3dac431c878780946f4b96b2d71e103196e21"
+  "hash": "2f752218af04eb49b5d6949ef8b67675cc5fd1c7aa062fa4a67228d336dce446"
 }

@@ -1,11 +1,11 @@
 {
   "db_name": "MySQL",
-  "query": "SELECT Member.id, Member.created_at, Member.server_id, Member.user_id, Member.nickname, User.created_at AS user_created_at, User.username AS user_username FROM Member INNER JOIN User ON User.id = Member.user_id WHERE Member.server_id = ? AND Member.id = ? LIMIT 100",
+  "query": "SELECT Member.id AS member_id, Member.created_at AS member_created_at, Member.server_id AS member_server_id, Member.user_id AS member_user_id, Member.nickname AS member_nickname, User.created_at AS user_created_at, User.username AS user_username FROM Member LEFT JOIN User ON User.id = Member.user_id WHERE Member.server_id = ? AND Member.id < ? ORDER BY Member.id LIMIT 100",
   "describe": {
     "columns": [
       {
         "ordinal": 0,
-        "name": "id",
+        "name": "member_id",
         "type_info": {
           "type": "LongLong",
           "flags": "NOT_NULL | PRIMARY_KEY | UNSIGNED | AUTO_INCREMENT",
@@ -15,7 +15,7 @@
       },
       {
         "ordinal": 1,
-        "name": "created_at",
+        "name": "member_created_at",
         "type_info": {
           "type": "Timestamp",
           "flags": "NOT_NULL | UNSIGNED | BINARY | TIMESTAMP",
@@ -25,7 +25,7 @@
       },
       {
         "ordinal": 2,
-        "name": "server_id",
+        "name": "member_server_id",
         "type_info": {
           "type": "LongLong",
           "flags": "NOT_NULL | MULTIPLE_KEY | UNSIGNED | NO_DEFAULT_VALUE",
@@ -35,7 +35,7 @@
       },
       {
         "ordinal": 3,
-        "name": "user_id",
+        "name": "member_user_id",
         "type_info": {
           "type": "LongLong",
           "flags": "MULTIPLE_KEY | UNSIGNED",
@@ -45,7 +45,7 @@
       },
       {
         "ordinal": 4,
-        "name": "nickname",
+        "name": "member_nickname",
         "type_info": {
           "type": "VarString",
           "flags": "",
@@ -58,7 +58,7 @@
         "name": "user_created_at",
         "type_info": {
           "type": "Timestamp",
-          "flags": "NOT_NULL | UNSIGNED | BINARY | TIMESTAMP",
+          "flags": "UNSIGNED | BINARY | TIMESTAMP",
           "char_set": 63,
           "max_size": 19
         }
@@ -68,7 +68,7 @@
         "name": "user_username",
         "type_info": {
           "type": "VarString",
-          "flags": "NOT_NULL | MULTIPLE_KEY | NO_DEFAULT_VALUE",
+          "flags": "MULTIPLE_KEY | NO_DEFAULT_VALUE",
           "char_set": 224,
           "max_size": 64
         }
@@ -83,9 +83,9 @@
       false,
       true,
       true,
-      false,
-      false
+      true,
+      true
     ]
   },
-  "hash": "739e4bb2512e30ea33a675bb3b8772de5c49471d6ddcbc37300da473beb9837f"
+  "hash": "362afb56117e33b1c248f1d36890a557e8f606731cfe786de0d72067a4eb745d"
 }

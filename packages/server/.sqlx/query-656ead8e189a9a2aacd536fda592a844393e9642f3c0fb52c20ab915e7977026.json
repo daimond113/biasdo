@@ -1,6 +1,6 @@
 {
   "db_name": "MySQL",
-  "query": "SELECT Message.id, Message.created_at, Message.content, Message.kind, Message.channel_id, Message.member_id, Member.created_at AS member_created_at, Member.server_id AS member_server_id, Member.user_id AS member_user_id, Member.nickname AS member_nickname, User.created_at AS user_created_at, User.username AS user_username FROM Message INNER JOIN Member ON Member.id = Message.member_id INNER JOIN User ON User.id = Member.user_id WHERE Message.channel_id = ? AND Message.id = ? LIMIT 100",
+  "query": "SELECT Message.id, Message.created_at, Message.content, Message.kind AS `kind: _`, Message.channel_id, Message.member_id, Member.created_at AS member_created_at, Member.server_id AS member_server_id, Member.user_id AS member_user_id, Member.nickname AS member_nickname, User.created_at AS user_created_at, User.username AS user_username FROM Message INNER JOIN Member ON Member.id = Message.member_id LEFT JOIN User ON User.id = Member.user_id WHERE Message.channel_id = ? AND Message.id < ? ORDER BY Message.id DESC LIMIT 100",
   "describe": {
     "columns": [
       {
@@ -35,7 +35,7 @@
       },
       {
         "ordinal": 3,
-        "name": "kind",
+        "name": "kind: _",
         "type_info": {
           "type": "String",
           "flags": "NOT_NULL | ENUM | NO_DEFAULT_VALUE",
@@ -108,7 +108,7 @@
         "name": "user_created_at",
         "type_info": {
           "type": "Timestamp",
-          "flags": "NOT_NULL | UNSIGNED | BINARY | TIMESTAMP",
+          "flags": "UNSIGNED | BINARY | TIMESTAMP",
           "char_set": 63,
           "max_size": 19
         }
@@ -118,7 +118,7 @@
         "name": "user_username",
         "type_info": {
           "type": "VarString",
-          "flags": "NOT_NULL | MULTIPLE_KEY | NO_DEFAULT_VALUE",
+          "flags": "MULTIPLE_KEY | NO_DEFAULT_VALUE",
           "char_set": 224,
           "max_size": 64
         }
@@ -138,9 +138,9 @@
       false,
       true,
       true,
-      false,
-      false
+      true,
+      true
     ]
   },
-  "hash": "44d5a65a5c1c1510f72bdcf488f9b60142e4e6102ff613a0f07dff8cbea3bd67"
+  "hash": "656ead8e189a9a2aacd536fda592a844393e9642f3c0fb52c20ab915e7977026"
 }

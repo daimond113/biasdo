@@ -12,7 +12,6 @@ RUN --mount=type=secret,id=DATABASE_URL \
 
 RUN cargo install sqlx-cli
 RUN cargo sqlx migrate run
-RUN cargo sqlx prepare
 
 RUN cargo install --path .
 
