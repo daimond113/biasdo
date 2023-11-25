@@ -13,7 +13,6 @@ export const load: PageLoad = async ({ fetch, params }) => {
 	)
 
 	if (!res.ok) {
-		console.log(await res.text())
 		throw error(res.status, 'An error occurred while fetching channels')
 	}
 

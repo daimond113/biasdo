@@ -69,13 +69,6 @@
 		...$wsChannels.filter(({ server_id }) => server_id === $currentServerId)
 	]
 	$: currentChannelData = currentChannels.find(({ id }) => id === $currentChannelId)
-	$: {
-		console.log({
-			additionalMessages,
-			dataMessages: data.messages,
-			wsMessages: $wsMessages.filter(({ channel_id }) => channel_id === $currentChannelId)
-		})
-	}
 	$: messages = [
 		...additionalMessages,
 		...data.messages,

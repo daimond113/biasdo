@@ -152,11 +152,7 @@ export const wsMessages = writable<APIMessage[]>([], (_, update) => {
 	const handler = (event: MessageEvent) => {
 		const data = JSON.parse(event.data) as { type: string; data: APIMessage }
 		if (!data.type.startsWith('message_')) return
-		update((prev) => {
-			const a = [...prev, data.data]
-			console.log(a)
-			return a
-		})
+		update((prev) => [...prev, data.data])
 	}
 
 	return ws.subscribe(
