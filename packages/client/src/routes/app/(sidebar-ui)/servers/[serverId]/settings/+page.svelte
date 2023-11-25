@@ -3,10 +3,13 @@
 	import Button from '$lib/Button.svelte'
 	import Paper from '$lib/Paper.svelte'
 	import TextField from '$lib/TextField.svelte'
-	import { currentServerId, createPageStores } from '$lib/stores'
+	import { currentServerId, wsServers, wsInvites, deletedServers, resetStores } from '$lib/stores'
 	import { createForm } from 'felte'
 	import type { PageData } from './$types'
 	import { credentialSubmitHandler } from '$lib'
+	import { afterNavigate } from '$app/navigation'
+
+	afterNavigate(resetStores)
 
 	export let data: PageData
 
@@ -26,8 +29,6 @@
 	const { form: leaveForm } = createForm({
 		onSubmit: () => credentialSubmitHandler(leaveFormElement)
 	})
-
-	const { wsServers, wsInvites, deletedServers } = createPageStores()
 
 	$: servers = [...data.servers, ...$wsServers].filter(({ id }) => !$deletedServers.has(id))
 	$: currentServerData = servers.find(({ id }) => id === $currentServerId)

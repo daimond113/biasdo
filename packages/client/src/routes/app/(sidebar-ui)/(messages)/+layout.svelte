@@ -6,7 +6,16 @@
 
 	import { afterUpdate, beforeUpdate, onDestroy, tick } from 'svelte'
 	import type { LayoutData } from './$types'
-	import { currentServerId, currentChannelId, createPageStores, type APIMessage } from '$lib/stores'
+	import {
+		currentServerId,
+		currentChannelId,
+		wsServers,
+		wsChannels,
+		wsMessages,
+		deletedServers,
+		type APIMessage,
+		resetStores
+	} from '$lib/stores'
 	import { createForm } from 'felte'
 	import { validator } from '@felte/validator-zod'
 	import { z } from 'zod'
@@ -23,6 +32,8 @@
 	let additionalMessages = [] as APIMessage[]
 
 	afterNavigate(() => {
+		resetStores()
+
 		additionalMessages = []
 		isFinished = false
 		abortController.abort('Navigation interrupted')
@@ -51,8 +62,6 @@
 
 	export let data: LayoutData
 
-	const { wsServers, wsChannels, wsMessages, deletedServers } = createPageStores()
-
 	$: servers = [...data.servers, ...$wsServers].filter(({ id }) => !$deletedServers.has(id))
 	$: currentServerData = servers.find(({ id }) => id === $currentServerId)
 	$: currentChannels = [
@@ -60,6 +69,13 @@
 		...$wsChannels.filter(({ server_id }) => server_id === $currentServerId)
 	]
 	$: currentChannelData = currentChannels.find(({ id }) => id === $currentChannelId)
+	$: {
+		console.log({
+			additionalMessages,
+			dataMessages: data.messages,
+			wsMessages: $wsMessages.filter(({ channel_id }) => channel_id === $currentChannelId)
+		})
+	}
 	$: messages = [
 		...additionalMessages,
 		...data.messages,
