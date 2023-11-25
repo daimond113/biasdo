@@ -102,40 +102,38 @@
 		let:data
 		bind:this={vs}
 		on:top={() => {
-			console.log('top')
-			if (!isFetching && !isFinished) {
-				console.log('fetching')
-				isFetching = true
+			if (isFetching || isFinished) return
 
-				const lastId = messages[0]?.id
-				if (!lastId) {
-					isFetching = false
-					isFinished = true
-					return
-				}
+			isFetching = true
 
-				fetch(
-					`${
-						import.meta.env.VITE_API_URL
-					}/v0/servers/${$currentServerId}/channels/${$currentChannelId}/messages?last_id=${lastId}`,
-					{
-						credentials: 'include',
-						signal: abortController.signal
-					}
-				)
-					.then((res) => res.json())
-					.then((data) => {
-						if (data.length === 0) {
-							isFinished = true
-						} else {
-							additionalMessages = [...data, ...additionalMessages]
-							isFinished = data.length !== 100
-						}
-					})
-					.finally(() => {
-						isFetching = false
-					})
+			const lastId = messages[0]?.id
+			if (!lastId) {
+				isFetching = false
+				isFinished = true
+				return
 			}
+
+			fetch(
+				`${
+					import.meta.env.VITE_API_URL
+				}/v0/servers/${$currentServerId}/channels/${$currentChannelId}/messages?last_id=${lastId}`,
+				{
+					credentials: 'include',
+					signal: abortController.signal
+				}
+			)
+				.then((res) => res.json())
+				.then((data) => {
+					if (data.length === 0) {
+						isFinished = true
+					} else {
+						additionalMessages = [...data, ...additionalMessages]
+						isFinished = data.length !== 100
+					}
+				})
+				.finally(() => {
+					isFetching = false
+				})
 		}}
 	>
 		<Message {data} />
