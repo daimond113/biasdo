@@ -2,6 +2,7 @@ use actix_web::web;
 
 pub mod auth;
 pub mod channels;
+pub mod direct_messages;
 pub mod invites;
 pub mod members;
 pub mod messages;
@@ -13,5 +14,6 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
         .configure(invites::configure)
         .configure(members::configure)
         .configure(messages::configure)
-        .configure(servers::configure);
+        .configure(servers::configure)
+        .configure(direct_messages::configure);
 }

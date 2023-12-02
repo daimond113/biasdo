@@ -1,6 +1,6 @@
 {
   "db_name": "MySQL",
-  "query": "SELECT id, created_at, name, kind AS `kind: _`, server_id FROM Channel WHERE id = ? AND server_id = ?",
+  "query": "SELECT id, created_at, name, kind as `kind: _`, server_id FROM Channel WHERE id = ?",
   "describe": {
     "columns": [
       {
@@ -48,22 +48,22 @@
         "name": "server_id",
         "type_info": {
           "type": "LongLong",
-          "flags": "NOT_NULL | MULTIPLE_KEY | UNSIGNED | NO_DEFAULT_VALUE",
+          "flags": "MULTIPLE_KEY | UNSIGNED",
           "char_set": 63,
           "max_size": 20
         }
       }
     ],
     "parameters": {
-      "Right": 2
+      "Right": 1
     },
     "nullable": [
       false,
       false,
       false,
       false,
-      false
+      true
     ]
   },
-  "hash": "c3ce199ac96a43246c563ec0adb4557522d8065167f81e86edd4b1dce14919e2"
+  "hash": "40bfa0c4c996b1d04aa4c9af7e560bddddbef57b247a402c54eb0f357f7e91ea"
 }

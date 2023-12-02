@@ -2,8 +2,9 @@
 	import type { Message } from '@biasdo/server-utils/src/Message'
 	import type { Member } from '@biasdo/server-utils/src/Member'
 	import type { User } from '@biasdo/server-utils/src/User'
+	import UserIcon from './UserIcon.svelte'
 
-	export let data: Message & { member?: Member & { user?: User } }
+	export let data: Message & { member?: Member; user?: User }
 
 	function dateToText(date: Date) {
 		const isToday = new Date().toDateString() === date.toDateString()
@@ -22,17 +23,12 @@
 </script>
 
 <div
-	class="w-full border border-transparent hover:border-[var(--paper-level-1-outline)] hover:bg-[var(--paper-level-1)] p-2 rounded-lg transition-all flex gap-2 min-h-0"
+	class="w-full border border-transparent hover:border-[var(--paper-level-1-outline)] hover:bg-[var(--paper-level-1)] p-2 rounded-lg transition-all flex gap-2 min-h-0 relative"
 >
-	<img
-		src="/user-icons/{BigInt(data.member?.user_id ?? 1) % BigInt(4)}.svg"
-		class="w-10 h-10 inline rounded-lg mr-1 flex-shrink-0"
-		alt={data.member?.nickname ?? data.member?.user?.username ?? 'Deleted User'}
-		loading="lazy"
-	/>
+	<UserIcon class="mr-1" user={data.user} member={data.member} />
 	<div class="flex-grow overflow-hidden -mt-[0.375rem]">
 		<span class="mr-1 font-bold"
-			>{data.member?.nickname ?? data.member?.user?.username ?? 'Deleted User'}</span
+			>{data.member?.nickname ?? data.user?.username ?? 'Deleted User'}</span
 		>
 		<time class="text-xs" datetime={data.created_at}>{dateToText(new Date(data.created_at))}</time>
 		<div class="break-words">{data.content}</div>

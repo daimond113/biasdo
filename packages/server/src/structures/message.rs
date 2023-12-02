@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use crate::id_type::Id;
+use crate::id_type::{Id, OptionId};
 use chrono::{DateTime, Utc};
 use derive_more::Display;
 use serde::Serialize;
@@ -32,5 +32,6 @@ pub struct Message {
     pub content: String,
     pub kind: MessageKind,
     pub channel_id: Id,
-    pub member_id: Id,
+    #[serde(skip_serializing_if = "OptionId::is_none")]
+    pub user_id: OptionId,
 }

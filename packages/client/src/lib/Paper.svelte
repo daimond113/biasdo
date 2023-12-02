@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { getPaperStyles } from '$lib'
-	import { cn } from './cn'
 
 	export let level: 1 = 1
 	export let isError = false
@@ -12,6 +11,6 @@
 	$: resolvedClassName = getPaperStyles(isError ? 'error' : level, className)
 </script>
 
-<div class={resolvedClassName} bind:this={div}>
+<div class={resolvedClassName} bind:this={div} {...$$restProps}>
 	<slot />
 </div>

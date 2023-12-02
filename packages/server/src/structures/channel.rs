@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-use crate::id_type::Id;
+use crate::id_type::{Id, OptionId};
 use chrono::{DateTime, Utc};
 use derive_more::Display;
 use serde::Serialize;
@@ -11,6 +11,23 @@ use ts_rs::TS;
 #[ts(export, export_to = "../server-utils/src/")]
 pub enum ChannelKind {
     Text,
+    DM,
+}
+
+impl ChannelKind {
+    pub fn has_members(&self) -> bool {
+        match self {
+            ChannelKind::Text => true,
+            _ => false,
+        }
+    }
+
+    pub fn has_recipients(&self) -> bool {
+        match self {
+            ChannelKind::DM => true,
+            _ => false,
+        }
+    }
 }
 
 impl FromStr for ChannelKind {
@@ -19,6 +36,7 @@ impl FromStr for ChannelKind {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
             "Text" => Ok(ChannelKind::Text),
+            "DM" => Ok(ChannelKind::DM),
             _ => Err(format!("Unknown channel kind: {}", s)),
         }
     }
@@ -31,5 +49,6 @@ pub struct Channel {
     pub created_at: DateTime<Utc>,
     pub name: String,
     pub kind: ChannelKind,
-    pub server_id: Id,
+    #[serde(skip_serializing_if = "OptionId::is_none")]
+    pub server_id: OptionId,
 }

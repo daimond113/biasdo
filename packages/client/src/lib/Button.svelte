@@ -14,8 +14,8 @@
 		variant === 'primary'
 			? 'bg-[var(--primary-button)] border-[var(--primary-button-outline)] text-[var(--primary-button-text)]'
 			: variant === 'secondary'
-			? 'bg-[var(--secondary-button-active)] border-[var(--secondary-button-active-outline)]'
-			: 'bg-[var(--error-button)] border-[var(--error-button-outline)] text-[var(--error-paper-text)]',
+			  ? 'bg-[var(--secondary-button-active)] border-[var(--secondary-button-active-outline)]'
+			  : 'bg-[var(--error-button)] border-[var(--error-button-outline)] text-[var(--error-paper-text)]',
 		disabled
 			? 'opacity-50 cursor-not-allowed'
 			: 'cursor-pointer hover:brightness-110 active:brightness-90',
@@ -27,12 +27,19 @@
 </script>
 
 {#if href}
-	<a data-not-standard class={resolvedClassName} {href}>
+	<a data-not-standard class={resolvedClassName} {href} {...$$restProps}>
 		<slot />
 	</a>
 {:else}
 	<!-- svelte-ignore a11y-autofocus -->
-	<button class={resolvedClassName} {type} {disabled} {autofocus} on:click={onClick}>
+	<button
+		class={resolvedClassName}
+		{type}
+		{disabled}
+		{autofocus}
+		on:click={onClick}
+		{...$$restProps}
+	>
 		<slot />
 	</button>
 {/if}

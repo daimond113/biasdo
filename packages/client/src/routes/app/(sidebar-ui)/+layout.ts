@@ -29,8 +29,19 @@ export const load: LayoutLoad = async ({ fetch }) => {
 
 	const me = (await userRes.json()) as User
 
+	const dmsRes = await fetch(`${import.meta.env.VITE_API_URL}/v0/direct-messages/channels`, {
+		credentials: 'include'
+	})
+
+	if (!dmsRes.ok) {
+		throw error(dmsRes.status, 'An error occurred while fetching direct messages')
+	}
+
+	const channels = (await dmsRes.json()) as (Channel & { kind: 'DM'; recipients: User[] })[]
+
 	return {
 		me,
-		servers
+		servers,
+		channels
 	}
 }

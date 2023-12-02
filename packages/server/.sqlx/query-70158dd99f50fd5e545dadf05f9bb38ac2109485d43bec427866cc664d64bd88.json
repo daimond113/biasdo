@@ -1,6 +1,6 @@
 {
   "db_name": "MySQL",
-  "query": "SELECT id, created_at, name, kind AS `kind: _`, server_id FROM Channel WHERE server_id = ?",
+  "query": "SELECT id, created_at, name, kind AS `kind: _`, server_id FROM Channel WHERE server_id IS NULL AND id IN (SELECT channel_id FROM ChannelRecipient WHERE user_id = ?) AND id = ?",
   "describe": {
     "columns": [
       {
@@ -55,7 +55,7 @@
       }
     ],
     "parameters": {
-      "Right": 1
+      "Right": 2
     },
     "nullable": [
       false,
@@ -65,5 +65,5 @@
       true
     ]
   },
-  "hash": "ca6d4ddeaecaacc7278e3eeba53b64749d7dcb3d7454c5593815696ad02103f8"
+  "hash": "70158dd99f50fd5e545dadf05f9bb38ac2109485d43bec427866cc664d64bd88"
 }

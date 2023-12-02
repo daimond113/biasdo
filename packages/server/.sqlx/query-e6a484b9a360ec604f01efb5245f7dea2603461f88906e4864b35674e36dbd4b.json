@@ -1,6 +1,6 @@
 {
   "db_name": "MySQL",
-  "query": "SELECT Message.id, Message.created_at, Message.content, Message.kind AS `kind: _`, Message.channel_id, Message.member_id, Member.created_at AS member_created_at, Member.server_id AS member_server_id, Member.user_id AS member_user_id, Member.nickname AS member_nickname, User.created_at AS user_created_at, User.username AS user_username FROM Message INNER JOIN Member ON Member.id = Message.member_id LEFT JOIN User ON User.id = Member.user_id WHERE Message.channel_id = ? ORDER BY Message.id DESC LIMIT 100",
+  "query": "SELECT Message.id, Message.created_at, Message.content, Message.kind AS `kind: _`, Message.channel_id, Message.user_id, User.created_at AS user_created_at, User.username AS user_username, Member.id as member_id, Member.created_at AS member_created_at, Member.server_id AS member_server_id, Member.nickname AS member_nickname FROM Message LEFT JOIN User ON User.id = Message.user_id LEFT JOIN Member ON Member.server_id = (SELECT server_id FROM Channel WHERE id = Message.channel_id) AND Member.user_id = Message.user_id WHERE Message.channel_id = ? ORDER BY Message.id DESC LIMIT 100",
   "describe": {
     "columns": [
       {
@@ -55,37 +55,7 @@
       },
       {
         "ordinal": 5,
-        "name": "member_id",
-        "type_info": {
-          "type": "LongLong",
-          "flags": "NOT_NULL | MULTIPLE_KEY | UNSIGNED | NO_DEFAULT_VALUE",
-          "char_set": 63,
-          "max_size": 20
-        }
-      },
-      {
-        "ordinal": 6,
-        "name": "member_created_at",
-        "type_info": {
-          "type": "Timestamp",
-          "flags": "NOT_NULL | UNSIGNED | BINARY | TIMESTAMP",
-          "char_set": 63,
-          "max_size": 19
-        }
-      },
-      {
-        "ordinal": 7,
-        "name": "member_server_id",
-        "type_info": {
-          "type": "LongLong",
-          "flags": "NOT_NULL | MULTIPLE_KEY | UNSIGNED | NO_DEFAULT_VALUE",
-          "char_set": 63,
-          "max_size": 20
-        }
-      },
-      {
-        "ordinal": 8,
-        "name": "member_user_id",
+        "name": "user_id",
         "type_info": {
           "type": "LongLong",
           "flags": "MULTIPLE_KEY | UNSIGNED",
@@ -94,17 +64,7 @@
         }
       },
       {
-        "ordinal": 9,
-        "name": "member_nickname",
-        "type_info": {
-          "type": "VarString",
-          "flags": "",
-          "char_set": 224,
-          "max_size": 128
-        }
-      },
-      {
-        "ordinal": 10,
+        "ordinal": 6,
         "name": "user_created_at",
         "type_info": {
           "type": "Timestamp",
@@ -114,13 +74,53 @@
         }
       },
       {
-        "ordinal": 11,
+        "ordinal": 7,
         "name": "user_username",
         "type_info": {
           "type": "VarString",
           "flags": "MULTIPLE_KEY | NO_DEFAULT_VALUE",
           "char_set": 224,
           "max_size": 64
+        }
+      },
+      {
+        "ordinal": 8,
+        "name": "member_id",
+        "type_info": {
+          "type": "LongLong",
+          "flags": "PRIMARY_KEY | UNSIGNED | AUTO_INCREMENT",
+          "char_set": 63,
+          "max_size": 20
+        }
+      },
+      {
+        "ordinal": 9,
+        "name": "member_created_at",
+        "type_info": {
+          "type": "Timestamp",
+          "flags": "UNSIGNED | BINARY | TIMESTAMP",
+          "char_set": 63,
+          "max_size": 19
+        }
+      },
+      {
+        "ordinal": 10,
+        "name": "member_server_id",
+        "type_info": {
+          "type": "LongLong",
+          "flags": "MULTIPLE_KEY | UNSIGNED | NO_DEFAULT_VALUE",
+          "char_set": 63,
+          "max_size": 20
+        }
+      },
+      {
+        "ordinal": 11,
+        "name": "member_nickname",
+        "type_info": {
+          "type": "VarString",
+          "flags": "",
+          "char_set": 224,
+          "max_size": 128
         }
       }
     ],
@@ -133,14 +133,14 @@
       false,
       false,
       false,
-      false,
-      false,
-      false,
+      true,
+      true,
+      true,
       true,
       true,
       true,
       true
     ]
   },
-  "hash": "019bbba58c567f71d09de87875e557a0b9e2e657bc739fe6c7d9f8efa963b844"
+  "hash": "e6a484b9a360ec604f01efb5245f7dea2603461f88906e4864b35674e36dbd4b"
 }

@@ -4,7 +4,9 @@ use serde::Deserialize;
 use sqlx::{query, query_as, query_as_unchecked};
 use validator::Validate;
 
-use crate::consts::send_to_server_members;
+use crate::consts::{get_channel_access_data, send_to_server_members};
+use crate::errors::RouteError;
+use crate::id_type::OptionId;
 use crate::structures::session::Session;
 use crate::ws::JsonMessage;
 use crate::{
@@ -114,7 +116,7 @@ async fn create_channel(
         created_at: channel.1,
         name,
         kind: structures::channel::ChannelKind::Text,
-        server_id: server_id.into(),
+        server_id: OptionId(Some(server_id)),
     };
 
     send_to_server_members(
@@ -129,36 +131,19 @@ async fn create_channel(
     Ok(HttpResponse::Ok().json(channel_struct))
 }
 
-#[get("/servers/{server_id}/channels/{channel_id}")]
+#[get("/channels/{channel_id}")]
 async fn server_channel(
     data: web::Data<AppState>,
-    path: web::Path<(u64, u64)>,
+    path: web::Path<u64>,
     session: web::ReqData<Session>,
-) -> Result<impl Responder, Error> {
-    let (server_id, channel_id) = path.into_inner();
+) -> Result<impl Responder, RouteError> {
+    let channel_id = path.into_inner();
 
-    let member = query!(
-        "SELECT id FROM Member WHERE user_id = ? AND server_id = ?",
-        session.user_id,
-        server_id
-    )
-    .fetch_optional(&data.db)
-    .await
-    .map_err(errors::Errors::Db)?;
-
-    if member.is_none() {
-        return Ok(HttpResponse::NotFound().finish());
-    }
-
-    let channel = query_as_unchecked!(structures::channel::Channel, "SELECT id, created_at, name, kind AS `kind: _`, server_id FROM Channel WHERE id = ? AND server_id = ?", channel_id, server_id)
-        .fetch_optional(&data.db)
-        .await
-        .map_err(errors::Errors::Db)?;
-
-    match channel {
-        Some(channel) => Ok(HttpResponse::Ok().json(channel)),
-        None => Ok(HttpResponse::NotFound().finish()),
-    }
+    Ok(HttpResponse::Ok().json(
+        get_channel_access_data(&data, channel_id, session.user_id.0)
+            .await?
+            .0,
+    ))
 }
 
 pub fn configure(cfg: &mut web::ServiceConfig) {

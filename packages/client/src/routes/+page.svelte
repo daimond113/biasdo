@@ -1,5 +1,8 @@
 <script lang="ts">
 	import Button from '$lib/Button.svelte'
+	import type { PageData } from './$types'
+
+	export let data: PageData
 </script>
 
 <svelte:head>
@@ -17,10 +20,14 @@
 	</div>
 	<p>A chat app made for users, by users</p>
 	<a href="https://www.daimond113.com" class="w-max">Made with ❤️ by daimond113</a>
-	<div class="flex gap-3">
-		<Button href="/auth?register=true">Register</Button>
-		<Button href="/auth" variant="secondary">Login</Button>
-	</div>
+	{#if data.me}
+		<Button href="/app">Go to app</Button>
+	{:else}
+		<div class="flex gap-3">
+			<Button href="/auth?register=true">Register</Button>
+			<Button href="/auth" variant="secondary">Login</Button>
+		</div>
+	{/if}
 </div>
 
 <footer

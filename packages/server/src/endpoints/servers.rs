@@ -8,8 +8,10 @@ use serde::Deserialize;
 use sqlx::{query, query_as};
 use validator::Validate;
 
+use crate::id_type::OptionId;
 use crate::ws::JsonMessage;
 use crate::{
+    add_value_to_json,
     consts::merge_json,
     errors::{self},
     structures::{
@@ -80,7 +82,7 @@ async fn my_servers(
             created_at: row.channel_created_at,
             name: row.channel_name.clone(),
             kind: ChannelKind::from_str(row.channel_kind.as_str()).unwrap(),
-            server_id: row.id.into(),
+            server_id: OptionId(Some(row.id)),
         };
 
         server_channel_map
@@ -92,14 +94,7 @@ async fn my_servers(
     Ok(HttpResponse::Ok().json(
         server_channel_map
             .iter()
-            .map(|(server, channels)| {
-                let mut server_value = serde_json::to_value(server.clone()).unwrap();
-                merge_json(
-                    &mut server_value,
-                    &serde_json::json!({ "channels": channels }),
-                );
-                server_value
-            })
+            .map(|(server, channels)| add_value_to_json!(server, channels, "channels"))
             .collect::<Vec<_>>(),
     ))
 }
@@ -157,7 +152,7 @@ async fn create_server(
         created_at: channel.1,
         name: "general".to_string(),
         kind: ChannelKind::Text,
-        server_id: server.0.into(),
+        server_id: OptionId(Some(server.0)),
     };
 
     let mut additional_data = serde_json::json!({

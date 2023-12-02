@@ -9,26 +9,22 @@
 	import { validator } from '@felte/validator-zod'
 	import { z } from 'zod'
 	import { credentialSubmitHandler } from '$lib'
-	import { afterNavigate, goto } from '$app/navigation'
+	import { goto } from '$app/navigation'
 	import type { Server } from '@biasdo/server-utils/src/Server'
 	import type { Channel } from '@biasdo/server-utils/src/Channel'
 	import type { LayoutData } from './$types'
 	import {
 		currentChannelId,
 		currentServerId,
-		wsServers,
-		wsChannels,
-		wsMessages,
-		deletedServers,
+		makeStores,
 		isMobileUI,
-		resetStores
+		type APIMessage
 	} from '$lib/stores'
 	import { page } from '$app/stores'
 	import Portal from 'svelte-portal/src/Portal.svelte'
 	import { cn } from '$lib/cn'
 	import { onDestroy } from 'svelte'
-
-	afterNavigate(resetStores)
+	import { get } from 'svelte/store'
 
 	let newServerModalOpen = false
 	let newServerModal: HTMLDialogElement
@@ -54,7 +50,9 @@
 				channels: [{ id: channelId }]
 			} = (await succ.json()) as Server & { channels: [Channel] }
 			newServerModal.close()
-			goto(`/app/servers/${id}/channels/${channelId}`)
+			goto(`/app/servers/${id}/channels/${channelId}`, {
+				invalidateAll: true
+			})
 		}
 	})
 
@@ -79,16 +77,20 @@
 			const succ = s as Response
 			const { id } = (await succ.json()) as Channel
 			newChannelModal.close()
-			goto(`/app/servers/${$currentServerId}/channels/${id}`)
+			goto(`/app/servers/${get(currentServerId)}/channels/${id}`, {
+				invalidateAll: true
+			})
 		}
 	})
 
 	export let data: LayoutData
 
-	$: servers = [...data.servers, ...$wsServers].filter(({ id }) => !$deletedServers.has(id))
-	$: currentServerData = servers.find(({ id }) => id === $currentServerId)
-	$: allChannels = [...servers.flatMap(({ channels }) => channels), ...$wsChannels]
-	$: channels = allChannels.filter(({ server_id }) => server_id === $currentServerId)
+	$: ({ servers, channels, allChannels, allMessages } = makeStores({
+		...data,
+		channels: [...data.servers.flatMap(({ channels }) => channels), ...data.channels]
+	}))
+
+	$: currentServerData = $servers.find(({ id }) => id === $currentServerId)
 
 	let mobileSidebarsModal: HTMLDialogElement
 	let mobileSidebarsModalOpen = false
@@ -110,28 +112,37 @@
 		Notification.requestPermission()
 	}
 
-	onDestroy(
-		wsMessages.subscribe((m) => {
-			const newest = m[m.length - 1]
-			if (!newest) return
-			if (newest.member.user_id === data.me.id) return
-			if (newest.channel_id === $currentChannelId && document.visibilityState === 'visible') return
+	const handleNewMessage = (m: APIMessage[]) => {
+		const newest = m[m.length - 1]
+		if (!newest) return
+		if (newest.user_id === data.me.id) return
+		if (newest.channel_id === get(currentChannelId) && document.visibilityState === 'visible')
+			return
 
-			if (Notification.permission === 'granted') {
-				const name = newest.member.nickname ?? newest.member.user?.username ?? 'Deleted User'
-				const channel = allChannels.find(({ id }) => id === newest.channel_id)
+		if (Notification.permission === 'granted') {
+			const name = newest.member?.nickname ?? newest.user?.username ?? 'Deleted User'
+			const channel = get(allChannels).find(({ id }) => id === newest.channel_id)
 
-				new Notification(`${name}${channel ? ` | #${channel.name}` : ''}`, {
-					body: newest.content,
-					timestamp: new Date(newest.created_at).getTime(),
-					icon: `/user-icons/${BigInt(newest.member.user_id ?? 1) % BigInt(4)}.svg`
-				}).addEventListener('click', () => {
-					if (!channel) return
-					goto(`/app/servers/${channel.server_id}/channels/${newest.channel_id}`)
-				})
-			}
-		})
-	)
+			new Notification(`${name}${channel && channel.kind !== 'DM' ? ` | #${channel.name}` : ''}`, {
+				body: newest.content,
+				timestamp: new Date(newest.created_at).getTime(),
+				icon: `/user-icons/${BigInt(newest.user_id ?? 1) % BigInt(4)}.svg`
+			}).addEventListener('click', () => {
+				if (!channel) return
+
+				goto(
+					channel.kind === 'DM'
+						? `/app/direct-messages/${channel.id}`
+						: `/app/servers/${channel.server_id}/channels/${channel.id}`,
+					{
+						invalidateAll: true
+					}
+				)
+			})
+		}
+	}
+
+	$: onDestroy(allMessages.subscribe(handleNewMessage))
 </script>
 
 <Modal
@@ -258,26 +269,24 @@
 	</SidebarButton>
 	<SidebarDivider />
 	<div class="w-full flex-grow flex flex-col gap-3 items-center overflow-auto">
-		{#if servers.length > 0}
-			{#each servers as { id, name, channels } (id)}
-				<SidebarButton
-					href="/app/servers/{id}/channels/{channels[0].id}"
-					isActive={$currentServerId === id}
-				>
-					<img
-						src="/server-icons/{BigInt(id) % BigInt(4)}.svg"
-						class="w-6 mr-1 rounded-md"
-						alt={name}
-						loading="lazy"
-					/>
-					<span class="min-w-0 whitespace-nowrap overflow-hidden text-ellipsis">{name}</span>
-				</SidebarButton>
-			{/each}
+		{#each $servers as { id, name, channels } (id)}
+			<SidebarButton
+				href="/app/servers/{id}/channels/{channels[0].id}"
+				isActive={$currentServerId === id}
+			>
+				<img
+					src="/server-icons/{BigInt(id) % BigInt(4)}.svg"
+					class="w-6 mr-1 rounded-md"
+					alt={name}
+					loading="lazy"
+				/>
+				<span class="min-w-0 whitespace-nowrap overflow-hidden text-ellipsis">{name}</span>
+			</SidebarButton>
 		{:else}
 			<span class="w-full h-full flex items-center align-center text-center">
 				There are no servers. Create one and invite your friends to get started!
 			</span>
-		{/if}
+		{/each}
 	</div>
 </Portal>
 
@@ -306,19 +315,35 @@
 			<span class="min-w-0 whitespace-nowrap overflow-hidden text-ellipsis">Create channel</span>
 		</SidebarButton>
 	{/if}
-	{#if channels.length > 0}
+	{#if $channels.length > 0}
 		<SidebarDivider />
 	{/if}
 	<div class="w-full flex-grow flex flex-col gap-3 items-center overflow-auto">
-		{#each channels as { id, name } (id)}
+		{#each $channels as { id, name, recipients } (id)}
+			{@const otherRecipient = recipients?.find(({ id }) => id !== data.me.id)}
 			<SidebarButton
 				href={$currentServerId
 					? `/app/servers/${$currentServerId}/channels/${id}`
 					: `/app/direct-messages/${id}`}
 				isActive={$currentChannelId === id}
-				><span class="font-bold text-lg w-6 text-center mr-1">#</span><span
-					class="min-w-0 whitespace-nowrap overflow-hidden text-ellipsis">{name}</span
-				>
+			>
+				{#if $currentServerId}
+					<span class="font-bold text-lg w-6 text-center mr-1">#</span>
+				{:else}
+					<img
+						src="/user-icons/{BigInt(otherRecipient?.id ?? 0) % BigInt(4)}.svg"
+						class="w-6 mr-1 rounded-md"
+						alt={otherRecipient?.username ?? 'Deleted User'}
+						loading="lazy"
+					/>
+				{/if}
+				<span class="min-w-0 whitespace-nowrap overflow-hidden text-ellipsis">
+					{#if $currentServerId}
+						{name}
+					{:else}
+						{otherRecipient?.username ?? 'Deleted User'}
+					{/if}
+				</span>
 			</SidebarButton>
 		{/each}
 	</div>

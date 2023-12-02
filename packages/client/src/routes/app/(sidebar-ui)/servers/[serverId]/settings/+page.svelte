@@ -3,13 +3,11 @@
 	import Button from '$lib/Button.svelte'
 	import Paper from '$lib/Paper.svelte'
 	import TextField from '$lib/TextField.svelte'
-	import { currentServerId, wsServers, wsInvites, deletedServers, resetStores } from '$lib/stores'
+	import { currentServerId, makeStores } from '$lib/stores'
 	import { createForm } from 'felte'
 	import type { PageData } from './$types'
 	import { credentialSubmitHandler } from '$lib'
 	import { afterNavigate } from '$app/navigation'
-
-	afterNavigate(resetStores)
 
 	export let data: PageData
 
@@ -30,12 +28,9 @@
 		onSubmit: () => credentialSubmitHandler(leaveFormElement)
 	})
 
-	$: servers = [...data.servers, ...$wsServers].filter(({ id }) => !$deletedServers.has(id))
-	$: currentServerData = servers.find(({ id }) => id === $currentServerId)
-	$: invites = [
-		...data.invites,
-		...$wsInvites.filter(({ server_id }) => server_id === $currentServerId)
-	]
+	$: ({ servers, invites } = makeStores(data))
+
+	$: currentServerData = $servers.find(({ id }) => id === $currentServerId)
 </script>
 
 <svelte:head>
@@ -47,7 +42,7 @@
 	<div class="w-full lg:w-2/3 xl:w-1/2 2xl:w-1/3 mb-4">
 		<h2 class="text-xl font-bold mb-4">Invites</h2>
 		<ul>
-			{#each invites as { id, expires_at } (id)}
+			{#each $invites as { id, expires_at } (id)}
 				<li class="mb-4">
 					<TextField
 						class="w-full"

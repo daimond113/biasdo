@@ -1,6 +1,6 @@
 {
   "db_name": "MySQL",
-  "query": "SELECT id, created_at, name, kind AS `kind: _`, server_id FROM Channel WHERE server_id = ?",
+  "query": "SELECT Channel.id, Channel.created_at, Channel.name, Channel.kind, Channel.server_id, User.id AS user_id, User.created_at AS user_created_at, User.username AS user_username FROM Channel INNER JOIN ChannelRecipient ON Channel.id = ChannelRecipient.channel_id AND ? IN (SELECT user_id FROM ChannelRecipient WHERE ChannelRecipient.channel_id = Channel.id) INNER JOIN User ON ChannelRecipient.user_id = User.id ORDER BY id",
   "describe": {
     "columns": [
       {
@@ -35,7 +35,7 @@
       },
       {
         "ordinal": 3,
-        "name": "kind: _",
+        "name": "kind",
         "type_info": {
           "type": "String",
           "flags": "NOT_NULL | ENUM | NO_DEFAULT_VALUE",
@@ -52,6 +52,36 @@
           "char_set": 63,
           "max_size": 20
         }
+      },
+      {
+        "ordinal": 5,
+        "name": "user_id",
+        "type_info": {
+          "type": "LongLong",
+          "flags": "NOT_NULL | PRIMARY_KEY | UNSIGNED | AUTO_INCREMENT",
+          "char_set": 63,
+          "max_size": 20
+        }
+      },
+      {
+        "ordinal": 6,
+        "name": "user_created_at",
+        "type_info": {
+          "type": "Timestamp",
+          "flags": "NOT_NULL | UNSIGNED | BINARY | TIMESTAMP",
+          "char_set": 63,
+          "max_size": 19
+        }
+      },
+      {
+        "ordinal": 7,
+        "name": "user_username",
+        "type_info": {
+          "type": "VarString",
+          "flags": "NOT_NULL | MULTIPLE_KEY | NO_DEFAULT_VALUE",
+          "char_set": 224,
+          "max_size": 64
+        }
       }
     ],
     "parameters": {
@@ -62,8 +92,11 @@
       false,
       false,
       false,
-      true
+      true,
+      false,
+      false,
+      false
     ]
   },
-  "hash": "ca6d4ddeaecaacc7278e3eeba53b64749d7dcb3d7454c5593815696ad02103f8"
+  "hash": "21cf1948c823c1ad2a9f42559964a759290418077ca100e6bf181ac633f14346"
 }

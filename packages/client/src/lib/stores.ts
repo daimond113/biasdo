@@ -87,86 +87,108 @@ const ws = readable<WebSocket | undefined>(undefined, (set) => {
 	return close
 })
 
-export type APIMessage = Message & { member: Member & { user?: User } }
+export type APIMessage = Message & { member?: Member; user: User }
 
-export const deletedServers = writable<Set<Id>>(new Set())
+export const makeStores = (data?: {
+	servers?: ServerWithChannels[]
+	channels?: Channel[]
+	invites?: Invite[]
+	messages?: APIMessage[]
+}) => {
+	const deletedServers = writable<Set<Id>>(new Set())
 
-export const wsServers = writable<ServerWithChannels[]>([], (_, update) => {
-	const handler = (event: MessageEvent) => {
-		const data = JSON.parse(event.data) as { type: string; data: ServerWithChannels }
-		if (!data.type.startsWith('server_')) return
+	const allServers = writable<ServerWithChannels[]>(data?.servers ?? [], (_, update) => {
+		const handler = (event: MessageEvent) => {
+			const data = JSON.parse(event.data) as { type: string; data: ServerWithChannels }
+			if (!data.type.startsWith('server_')) return
 
-		update((prev) => {
-			if (data.type.endsWith('_delete')) {
-				if (get(currentServerId) === data.data.id) {
-					goto('/app')
+			update((prev) => {
+				if (data.type.endsWith('_delete')) {
+					if (get(currentServerId) === data.data.id) {
+						goto('/app', {
+							invalidateAll: true
+						})
+					}
+
+					deletedServers.update((prev) => prev.add(data.data.id))
+
+					return prev.filter((server) => server.id !== data.data.id)
 				}
 
-				deletedServers.update((prev) => prev.add(data.data.id))
+				deletedServers.update((prev) => {
+					prev.delete(data.data.id)
+					return prev
+				})
 
-				return prev.filter((server) => server.id !== data.data.id)
-			}
-
-			deletedServers.update((prev) => {
-				prev.delete(data.data.id)
-				return prev
+				return [...prev, data.data]
 			})
+		}
 
-			return [...prev, data.data]
-		})
+		return ws.subscribe(
+			(ws) => ws?.addEventListener('message', handler),
+			(ws) => ws?.removeEventListener('message', handler)
+		)
+	})
+
+	const allChannels = writable<Channel[]>(data?.channels ?? [], (_, update) => {
+		const handler = (event: MessageEvent) => {
+			const data = JSON.parse(event.data) as { type: string; data: Channel }
+			if (!data.type.startsWith('channel_')) return
+			update((prev) => [...prev, data.data])
+		}
+
+		return ws.subscribe(
+			(ws) => ws?.addEventListener('message', handler),
+			(ws) => ws?.removeEventListener('message', handler)
+		)
+	})
+	const allInvites = writable<Invite[]>(data?.invites ?? [], (_, update) => {
+		const handler = (event: MessageEvent) => {
+			const data = JSON.parse(event.data) as { type: string; data: Invite }
+			if (!data.type.startsWith('invite_')) return
+			update((prev) => [...prev, data.data])
+		}
+
+		return ws.subscribe(
+			(ws) => ws?.addEventListener('message', handler),
+			(ws) => ws?.removeEventListener('message', handler)
+		)
+	})
+	const allMessages = writable<APIMessage[]>(data?.messages ?? [], (_, update) => {
+		const handler = (event: MessageEvent) => {
+			const data = JSON.parse(event.data) as { type: string; data: APIMessage }
+			if (!data.type.startsWith('message_')) return
+			update((prev) => [...prev, data.data])
+		}
+
+		return ws.subscribe(
+			(ws) => ws?.addEventListener('message', handler),
+			(ws) => ws?.removeEventListener('message', handler)
+		)
+	})
+
+	return {
+		deletedServers,
+		allServers,
+		allChannels,
+		allInvites,
+		allMessages,
+
+		servers: derived([allServers, deletedServers], ([$allServers, $deletedServers]) =>
+			$allServers.filter((server) => !$deletedServers.has(server.id))
+		),
+		channels: derived([allChannels, currentServerId], ([$allChannels, $currentServerId]) =>
+			$allChannels.filter((channel) =>
+				$currentServerId === null ? channel.kind === 'DM' : channel.server_id === $currentServerId
+			)
+		),
+		invites: derived([allInvites, currentServerId], ([$allInvites, $currentServerId]) =>
+			$allInvites.filter((invite) => invite.server_id === $currentServerId)
+		),
+		messages: derived([allMessages, currentChannelId], ([$allMessages, $currentChannelId]) =>
+			$allMessages.filter((message) => message.channel_id === $currentChannelId)
+		)
 	}
-
-	return ws.subscribe(
-		(ws) => ws?.addEventListener('message', handler),
-		(ws) => ws?.removeEventListener('message', handler)
-	)
-})
-
-export const wsChannels = writable<Channel[]>([], (_, update) => {
-	const handler = (event: MessageEvent) => {
-		const data = JSON.parse(event.data) as { type: string; data: Channel }
-		if (!data.type.startsWith('channel_')) return
-		update((prev) => [...prev, data.data])
-	}
-
-	return ws.subscribe(
-		(ws) => ws?.addEventListener('message', handler),
-		(ws) => ws?.removeEventListener('message', handler)
-	)
-})
-
-export const wsInvites = writable<Invite[]>([], (_, update) => {
-	const handler = (event: MessageEvent) => {
-		const data = JSON.parse(event.data) as { type: string; data: Invite }
-		if (!data.type.startsWith('invite_')) return
-		update((prev) => [...prev, data.data])
-	}
-
-	return ws.subscribe(
-		(ws) => ws?.addEventListener('message', handler),
-		(ws) => ws?.removeEventListener('message', handler)
-	)
-})
-
-export const wsMessages = writable<APIMessage[]>([], (_, update) => {
-	const handler = (event: MessageEvent) => {
-		const data = JSON.parse(event.data) as { type: string; data: APIMessage }
-		if (!data.type.startsWith('message_')) return
-		update((prev) => [...prev, data.data])
-	}
-
-	return ws.subscribe(
-		(ws) => ws?.addEventListener('message', handler),
-		(ws) => ws?.removeEventListener('message', handler)
-	)
-})
-
-export const resetStores = () => {
-	deletedServers.set(new Set())
-	wsServers.set([])
-	wsChannels.set([])
-	wsInvites.set([])
-	wsMessages.set([])
 }
 
 export const isMobileUI = readable<boolean>(false, (set) => {

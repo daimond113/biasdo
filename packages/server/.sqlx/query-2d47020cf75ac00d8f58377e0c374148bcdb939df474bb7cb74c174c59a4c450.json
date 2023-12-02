@@ -1,0 +1,12 @@
+{
+  "db_name": "MySQL",
+  "query": "INSERT INTO ChannelRecipient VALUES (?, ?), (?, ?)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": []
+  },
+  "hash": "2d47020cf75ac00d8f58377e0c374148bcdb939df474bb7cb74c174c59a4c450"
+}

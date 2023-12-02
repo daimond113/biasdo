@@ -1,4 +1,5 @@
-use actix_web::{cookie::Cookie, error, HttpResponse};
+use actix_web::http::StatusCode;
+use actix_web::{cookie::Cookie, HttpResponse, ResponseError};
 use derive_more::{Display, Error};
 use log::error;
 use serde::Serialize;
@@ -30,7 +31,7 @@ pub fn remove_tokens_from_response<T>(mut response: HttpResponse<T>) -> HttpResp
     response
 }
 
-impl error::ResponseError for Errors {
+impl ResponseError for Errors {
     fn error_response(&self) -> HttpResponse {
         match self {
             Errors::Validation(err) => {
@@ -60,6 +61,21 @@ impl error::ResponseError for Errors {
                     errors: "DB error".to_string(),
                 })
             } // _ => panic!("Unexpected error, {}", self),
+        }
+    }
+}
+
+#[derive(Debug, Display)]
+pub enum RouteError {
+    Errors(Errors),
+    Status(StatusCode),
+}
+
+impl ResponseError for RouteError {
+    fn error_response(&self) -> HttpResponse {
+        match self {
+            RouteError::Errors(err) => err.error_response(),
+            RouteError::Status(status) => HttpResponse::build(*status).finish(),
         }
     }
 }

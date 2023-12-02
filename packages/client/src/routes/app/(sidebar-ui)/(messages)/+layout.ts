@@ -6,9 +6,7 @@ export const ssr = false
 
 export const load: LayoutLoad = async ({ fetch, params }) => {
 	const res = await fetch(
-		`${import.meta.env.VITE_API_URL}/v0/servers/${params.serverId}/channels/${
-			params.channelId
-		}/messages`,
+		`${import.meta.env.VITE_API_URL}/v0/channels/${params.channelId}/messages`,
 		{ credentials: 'include' }
 	)
 

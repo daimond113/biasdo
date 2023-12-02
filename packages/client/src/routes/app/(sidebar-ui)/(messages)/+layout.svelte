@@ -6,22 +6,15 @@
 
 	import { afterUpdate, beforeUpdate, onDestroy, tick } from 'svelte'
 	import type { LayoutData } from './$types'
-	import {
-		currentServerId,
-		currentChannelId,
-		wsServers,
-		wsChannels,
-		wsMessages,
-		deletedServers,
-		type APIMessage,
-		resetStores
-	} from '$lib/stores'
+	import { currentServerId, currentChannelId, type APIMessage, makeStores } from '$lib/stores'
 	import { createForm } from 'felte'
 	import { validator } from '@felte/validator-zod'
 	import { z } from 'zod'
 	import { credentialSubmitHandler } from '$lib'
 	import VirtualList from 'svelte-virtual-scroll-list'
 	import { afterNavigate } from '$app/navigation'
+	import type { User } from '@biasdo/server-utils/src/User'
+	import { get } from 'svelte/store'
 
 	let vs: VirtualList
 
@@ -32,8 +25,6 @@
 	let additionalMessages = [] as APIMessage[]
 
 	afterNavigate(() => {
-		resetStores()
-
 		additionalMessages = []
 		isFinished = false
 		abortController.abort('Navigation interrupted')
@@ -62,18 +53,21 @@
 
 	export let data: LayoutData
 
-	$: servers = [...data.servers, ...$wsServers].filter(({ id }) => !$deletedServers.has(id))
-	$: currentServerData = servers.find(({ id }) => id === $currentServerId)
-	$: currentChannels = [
-		...(currentServerData?.channels ?? []),
-		...$wsChannels.filter(({ server_id }) => server_id === $currentServerId)
-	]
-	$: currentChannelData = currentChannels.find(({ id }) => id === $currentChannelId)
-	$: messages = [
-		...additionalMessages,
-		...data.messages,
-		...$wsMessages.filter(({ channel_id }) => channel_id === $currentChannelId)
-	]
+	$: ({ servers, messages, channels } = makeStores({
+		...data,
+		messages: [...additionalMessages, ...data.messages],
+		channels: [...data.servers.flatMap(({ channels }) => channels), ...data.channels]
+	}))
+
+	$: currentServerData = $servers.find(({ id }) => id === $currentServerId)
+	$: currentChannelData = $channels.find(({ id }) => id === $currentChannelId)
+	$: otherRecipient = currentChannelData?.recipients?.find(({ id }) => id !== data.me.id) as
+		| User
+		| undefined
+
+	$: otherRecipientUsername = otherRecipient?.username ?? 'Deleted User'
+
+	$: title = $currentServerId ? `#${currentChannelData?.name}` : otherRecipientUsername
 
 	let formElement: HTMLFormElement
 
@@ -91,15 +85,23 @@
 </script>
 
 <svelte:head>
-	<title
-		>#{currentChannelData?.name} | {currentServerData?.name ?? import.meta.env.VITE_APP_NAME}</title
-	>
+	<title>{title} | {currentServerData?.name ?? import.meta.env.VITE_APP_NAME}</title>
 </svelte:head>
 
 <Paper class="w-full flex-shrink-0 p-[0.375rem] h-[3.625rem] flex items-center">
 	<SidebarButton notButton class="w-max lg:max-w-[40%] inline-flex pr-3 mr-2"
-		><span class="font-bold text-lg w-6 text-center mr-1">#</span
-		>{currentChannelData?.name}</SidebarButton
+		>{#if $currentServerId}
+			<span class="font-bold text-lg w-6 text-center mr-1">#</span>
+			{currentChannelData?.name}
+		{:else}
+			<img
+				src="/user-icons/{BigInt(otherRecipient?.id ?? 0) % BigInt(4)}.svg"
+				class="w-6 mr-1 rounded-md"
+				alt={otherRecipientUsername}
+				loading="lazy"
+			/>
+			{otherRecipientUsername}
+		{/if}</SidebarButton
 	>
 	<span class="min-w-0 whitespace-nowrap overflow-hidden text-ellipsis"
 		>{currentChannelData?.topic ?? ''}</span
@@ -107,7 +109,7 @@
 </Paper>
 <div class="flex-grow basis-0 overflow-hidden">
 	<VirtualList
-		data={messages}
+		data={$messages}
 		let:data
 		bind:this={vs}
 		on:top={() => {
@@ -115,7 +117,7 @@
 
 			isFetching = true
 
-			const lastId = messages[0]?.id
+			const lastId = get(messages)[0]?.id
 			if (!lastId) {
 				isFetching = false
 				isFinished = true
@@ -123,9 +125,9 @@
 			}
 
 			fetch(
-				`${
-					import.meta.env.VITE_API_URL
-				}/v0/servers/${$currentServerId}/channels/${$currentChannelId}/messages?last_id=${lastId}`,
+				`${import.meta.env.VITE_API_URL}/v0/channels/${get(
+					currentChannelId
+				)}/messages?last_id=${lastId}`,
 				{
 					credentials: 'include',
 					signal: abortController.signal
@@ -152,8 +154,7 @@
 	<form
 		use:form
 		bind:this={formElement}
-		action="{import.meta.env
-			.VITE_API_URL}/v0/servers/{$currentServerId}/channels/{$currentChannelId}/messages"
+		action="{import.meta.env.VITE_API_URL}/v0/channels/{$currentChannelId}/messages"
 		method="post"
 		class="contents"
 	>
