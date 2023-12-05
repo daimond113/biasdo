@@ -148,11 +148,15 @@ async fn create_message(
     let (channel, channel_recipients, member_opt, user) =
         get_channel_access_data(&data, channel_id, session.user_id.0).await?;
 
-    let content = req_body.into_inner().content;
+    let create_data = req_body.into_inner();
+
+    create_data
+        .validate()
+        .map_err(|e| RouteError::Errors(errors::Errors::Validation(e)))?;
 
     let message: (u64, DateTime<Utc>) =
         query_as("INSERT INTO Message VALUES (NULL, DEFAULT, ?, ?, ?, ?) RETURNING id, created_at")
-            .bind(content.clone())
+            .bind(create_data.content.clone())
             .bind(MessageKind::Text)
             .bind(channel_id)
             .bind(session.user_id)
@@ -163,7 +167,7 @@ async fn create_message(
     let message_struct = structures::message::Message {
         id: message.0.into(),
         created_at: message.1,
-        content,
+        content: create_data.content,
         kind: MessageKind::Text,
         channel_id: channel_id.into(),
         user_id: OptionId(Some(session.user_id.0)),

@@ -100,11 +100,13 @@ async fn create_channel(
         }));
     }
 
-    let name = req_body.into_inner().name;
+    let create_data = req_body.into_inner();
+
+    create_data.validate().map_err(errors::Errors::Validation)?;
 
     let channel: (u64, DateTime<Utc>) =
         query_as("INSERT INTO Channel VALUES (NULL, DEFAULT, ?, ?, ?) RETURNING id, created_at")
-            .bind(name.clone())
+            .bind(create_data.name.clone())
             .bind(structures::channel::ChannelKind::Text)
             .bind(server_id)
             .fetch_one(&data.db)
@@ -114,7 +116,7 @@ async fn create_channel(
     let channel_struct = structures::channel::Channel {
         id: channel.0.into(),
         created_at: channel.1,
-        name,
+        name: create_data.name,
         kind: structures::channel::ChannelKind::Text,
         server_id: OptionId(Some(server_id)),
     };
