@@ -213,7 +213,7 @@
 </Modal>
 
 <Modal bind:showModal={newServerModalOpen} bind:dialog={newServerModal}>
-	<h1 class="font-bold text-2xl">Create Server</h1>
+	<h1>Create Server</h1>
 	<form
 		use:serverForm
 		bind:this={newServerModalForm}
@@ -232,7 +232,7 @@
 </Modal>
 
 <Modal bind:showModal={newChannelModalOpen} bind:dialog={newChannelModal}>
-	<h1 class="font-bold text-2xl">Create Channel</h1>
+	<h1>Create Channel</h1>
 	<form
 		use:channelForm
 		bind:this={newChannelModalForm}

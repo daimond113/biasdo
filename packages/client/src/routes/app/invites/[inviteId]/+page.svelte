@@ -20,7 +20,7 @@
 
 <div class="flex justify-center items-center h-screen">
 	<Paper class="w-[32rem] p-12 flex flex-col gap-4 text-center">
-		<h1 class="font-bold text-2xl">You have received an invite to</h1>
+		<h1>You have received an invite to</h1>
 		<div class="max-w-[32rem] break-words">
 			{data.invite.server.name}
 		</div>

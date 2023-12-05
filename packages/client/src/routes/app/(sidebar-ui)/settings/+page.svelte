@@ -24,14 +24,14 @@
 </svelte:head>
 
 <Paper class="w-full h-full p-6 overflow-auto flex flex-col">
-	<h1 class="text-2xl font-bold mb-4">Settings</h1>
+	<h1 class="mb-4">Settings</h1>
 
 	<div class="w-full lg:w-2/3 xl:w-1/2 2xl:w-1/3">
 		<TextField label="Username" value={data.me.username} readonly class="w-full" />
 	</div>
 
 	<Paper isError class="p-4 mt-auto">
-		<h2 class="text-xl font-bold">Danger Zone</h2>
+		<h2>Danger Zone</h2>
 		<p class="text-sm">These actions are irreversible. Please be careful.</p>
 		<div class="flex gap-2 mt-2">
 			<Button disabled variant="error">Delete Account</Button>

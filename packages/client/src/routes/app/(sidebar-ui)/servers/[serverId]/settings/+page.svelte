@@ -38,9 +38,9 @@
 </svelte:head>
 
 <Paper class="w-full h-full p-6 overflow-auto flex flex-col">
-	<h1 class="text-2xl font-bold mb-4">{currentServerData?.name} Settings</h1>
+	<h1 class="mb-4">{currentServerData?.name} Settings</h1>
 	<div class="w-full lg:w-2/3 xl:w-1/2 2xl:w-1/3 mb-4">
-		<h2 class="text-xl font-bold mb-4">Invites</h2>
+		<h2 class="mb-4">Invites</h2>
 		<ul>
 			{#each $invites as { id, expires_at } (id)}
 				<li class="mb-4">
@@ -50,17 +50,16 @@
 						label="Invite"
 						value={new URL(`/app/invites/${id}`, $page.url).toString()}
 						withoutLabel
+						withBorder
 					>
 						<Button
 							onClick={() => {
 								navigator.clipboard.writeText(new URL(`/app/invites/${id}`, $page.url).toString())
 							}}
-							class="ml-2 py-[calc(0.5rem+0.5px)]"
+							class="ml-2"
 							variant="secondary">Copy</Button
 						>
-						<Button onClick={() => {}} class="ml-2 py-[calc(0.5rem+0.5px)]" variant="error" disabled
-							>Delete</Button
-						>
+						<Button onClick={() => {}} class="ml-2" variant="error" disabled>Delete</Button>
 					</TextField>
 					<p class="text-sm mt-2">
 						Expires on: <time datetime={expires_at}
@@ -91,7 +90,7 @@
 	</div>
 
 	<Paper isError class="p-4 mt-auto">
-		<h2 class="text-xl font-bold">Danger Zone</h2>
+		<h2>Danger Zone</h2>
 		<p class="text-sm">These actions are irreversible. Please be careful.</p>
 		<div class="flex gap-2 mt-2">
 			<Button disabled variant="error">Delete Server</Button>

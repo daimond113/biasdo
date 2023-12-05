@@ -39,7 +39,7 @@
 <div class="flex justify-center items-center h-screen p-2">
 	<form use:form bind:this={authForm} action="{import.meta.env.VITE_API_URL}/auth" method="post">
 		<Paper class="max-w-[32rem] p-6 sm:p-12">
-			<h1 class="font-bold text-3xl text-center mb-2">
+			<h1 class="text-center mb-2">
 				{#if isRegister}
 					Register
 				{:else}
@@ -57,8 +57,14 @@
 				<Paper isError class="px-3 py-2 mb-4">{serverErrors}</Paper>
 			{/if}
 			<input type="hidden" name="kind" value={isRegister ? 'register' : 'login'} />
-			<TextField label="Username" class="mb-4" errors={$errors} />
-			<TextField label="Password" type="password" class="mb-6" errors={$errors} />
+			<TextField label="Username" class="mb-4" errors={$errors} autocomplete="username" />
+			<TextField
+				label="Password"
+				type="password"
+				class="mb-6"
+				errors={$errors}
+				autocomplete="current-password"
+			/>
 			<p class="text-center mb-6">
 				{#if isRegister}
 					Already have an account? <a href="?register=false">Login</a> right now!

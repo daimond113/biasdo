@@ -3,6 +3,8 @@
 	import type { Member } from '@biasdo/server-utils/src/Member'
 	import type { User } from '@biasdo/server-utils/src/User'
 	import UserIcon from './UserIcon.svelte'
+	import DOMPurify from 'dompurify'
+	import { md } from './markdown'
 
 	export let data: Message & { member?: Member; user?: User }
 
@@ -20,6 +22,23 @@
 
 		return date.toLocaleString([], { timeStyle: 'short', dateStyle: 'short' })
 	}
+
+	$: markdown = DOMPurify.sanitize($md?.render(data.content) ?? '', {
+		FORBID_ATTR: ['src'],
+		// currently don't allow images, videos, audio etc. because they can be used to leak information like IP addresses. bring back when we have a proxy
+		FORBID_TAGS: [
+			'script',
+			'style',
+			'img',
+			'video',
+			'audio',
+			'iframe',
+			'object',
+			'embed',
+			'canvas',
+			'source'
+		]
+	})
 </script>
 
 <div
@@ -31,6 +50,10 @@
 			>{data.member?.nickname ?? data.user?.username ?? 'Deleted User'}</span
 		>
 		<time class="text-xs" datetime={data.created_at}>{dateToText(new Date(data.created_at))}</time>
-		<div class="break-words">{data.content}</div>
+		<div class="break-words">
+			{#if markdown}
+				{@html markdown}
+			{/if}
+		</div>
 	</div>
 </div>

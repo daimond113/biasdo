@@ -14,7 +14,7 @@
 >
 	<div class="flex items-center gap-2">
 		<img src="/logo.svg" class="w-12 h-12" alt="{import.meta.env.VITE_APP_NAME} logo" />
-		<h1 class="text-2xl" style="font-family: var(--logo-font);">
+		<h1 class="font-normal" style="font-family: var(--logo-font);">
 			{import.meta.env.VITE_APP_NAME}
 		</h1>
 	</div>

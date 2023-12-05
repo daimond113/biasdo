@@ -2,32 +2,51 @@
 @tailwind components;
 @tailwind utilities;
 
-:root,
-::backdrop,
-dialog {
+:root {
 	--root-background: #131c14;
 	--text-color: #c6d8c8;
 	--link-color: #55eb69;
-	--paper-level-1: rgb(66 98 70 / 0.2);
+
+	--paper-level-1-rgb: 66 98 70;
+	--paper-level-1-transparency: 20%;
+	--paper-level-1: rgb(var(--paper-level-1-rgb) / var(--paper-level-1-transparency));
 	--paper-level-1-outline: #426246;
+
 	--secondary-button-active: rgb(66 98 70 / 0.8);
 	--secondary-button-active-outline: #8fb393;
+
 	--text-field: transparent;
 	--text-field-outline: #527a57;
 	--text-field-placeholder: rgb(198 216 200 / 0.6);
+
 	--primary-button: rgb(38 103 46 / 0.8);
 	--primary-button-outline: #5ee46d;
 	--primary-button-text: #bbf9c3;
+
 	--error-paper: rgb(53 8 8 / 0.8);
 	--error-paper-outline: rgb(155 24 24);
 	--error-paper-text: #ffb8b8;
-	--modal-backdrop: rgb(4 28 2 / 0.25);
-	--modal-background: #1c2a1e;
+
+	--modal-background: color-mix(
+		in srgb,
+		var(--root-background) 100%,
+		rgb(var(--paper-level-1-rgb)) var(--paper-level-1-transparency)
+	);
+
 	--error-button: rgb(227 16 16 / 0.3);
 	--error-button-outline: #fe5555;
+
 	--logo-font: 'Rammetto One', sans-serif;
 
-	scrollbar-color: var(--text-color) var(--text-field-outline);
+	--scrollbar-track: #527a57;
+	--scrollbar-thumb: #c6d8c8;
+	--scrollbar-thumb-hover: #55eb69;
+
+	scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+::backdrop {
+	--modal-backdrop: rgb(4 28 2 / 0.25);
 }
 
 dialog {
@@ -50,17 +69,17 @@ a:not([data-not-standard]) {
 }
 
 ::-webkit-scrollbar-track {
-	background: var(--text-field-outline);
+	background: var(--scrollbar-track);
 	border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-	background: var(--text-color);
+	background: var(--scrollbar-thumb);
 	border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-	background: var(--link-color);
+	background: var(--scrollbar-thumb-hover);
 }
 
 @layer utilities {
@@ -69,4 +88,12 @@ a:not([data-not-standard]) {
 			height: 100svh;
 		}
 	}
+}
+
+h1 {
+	@apply font-bold text-2xl;
+}
+
+h2 {
+	@apply font-semibold text-xl;
 }

@@ -166,6 +166,7 @@
 			name="content"
 			{formElement}
 			canSubmit={!($isValidating || $isSubmitting || !$isValid)}
+			asTextarea
 		/>
 	</form>
 </Paper>

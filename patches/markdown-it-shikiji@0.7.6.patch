@@ -1,0 +1,26 @@
+diff --git a/dist/index.mjs b/dist/index.mjs
+index 767438879c2e425ebad65f53453ae755e105174b..8edd58b05d8fd30faa9b7f68fa0dbb80ff74c519 100644
+--- a/dist/index.mjs
++++ b/dist/index.mjs
+@@ -21,6 +21,8 @@ function setup(markdownit, highlighter, options) {
+     highlightLines = true
+   } = options;
+   markdownit.options.highlight = (code, lang = "text", attrs) => {
++    if (!highlighter.getLoadedLanguages().includes(lang)) lang = "text";
++
+     const codeOptions = {
+       ...options,
+       lang
+diff --git a/package.json b/package.json
+index 683e4ab0cd8fbc688206af232dc7580c767a040f..6a34c42cbe68e242aa65ab72f5f3648e74340880 100644
+--- a/package.json
++++ b/package.json
+@@ -29,7 +29,7 @@
+   "files": [
+     "dist"
+   ],
+-  "dependencies": {
++  "peerDependencies": {
+     "markdown-it": "^13.0.2",
+     "shikiji": "0.7.6"
+   },
