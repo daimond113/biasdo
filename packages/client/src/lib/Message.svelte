@@ -1,9 +1,19 @@
+<script context="module">
+	import DOMPurify from 'dompurify'
+
+	DOMPurify.addHook('afterSanitizeAttributes', function (node) {
+		if (node.tagName === 'A') {
+			node.setAttribute('target', '_blank')
+			node.setAttribute('rel', 'noopener noreferrer')
+		}
+	})
+</script>
+
 <script lang="ts">
 	import type { Message } from '@biasdo/server-utils/src/Message'
 	import type { Member } from '@biasdo/server-utils/src/Member'
 	import type { User } from '@biasdo/server-utils/src/User'
 	import UserIcon from './UserIcon.svelte'
-	import DOMPurify from 'dompurify'
 	import { md } from './markdown'
 
 	export let data: Message & { member?: Member; user?: User }

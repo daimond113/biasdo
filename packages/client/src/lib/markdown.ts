@@ -8,7 +8,7 @@ import { writable } from 'svelte/store'
 export const md = writable<MarkdownIt | undefined>(undefined)
 
 const it = MarkdownIt({
-	linkify: false
+	linkify: true
 }).use(KaTeX)
 
 Promise.all([Shikiji({ theme: 'one-dark-pro' })]).then((plugins) => {
