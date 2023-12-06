@@ -6,7 +6,15 @@
 
 	import { afterUpdate, beforeUpdate, onDestroy, tick } from 'svelte'
 	import type { LayoutData } from './$types'
-	import { currentServerId, currentChannelId, type APIMessage, makeStores } from '$lib/stores'
+	import {
+		currentServerId,
+		currentChannelId,
+		type APIMessage,
+		populateStores,
+		servers,
+		channels,
+		messages
+	} from '$lib/stores'
 	import { createForm } from 'felte'
 	import { validator } from '@felte/validator-zod'
 	import { z } from 'zod'
@@ -53,11 +61,10 @@
 
 	export let data: LayoutData
 
-	$: ({ servers, messages, channels } = makeStores({
+	$: populateStores({
 		...data,
-		messages: [...additionalMessages, ...data.messages],
-		channels: [...data.servers.flatMap(({ channels }) => channels), ...data.channels]
-	}))
+		messages: [...additionalMessages, ...data.messages]
+	})
 
 	$: currentServerData = $servers.find(({ id }) => id === $currentServerId)
 	$: currentChannelData = $channels.find(({ id }) => id === $currentChannelId)

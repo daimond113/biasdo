@@ -8,7 +8,7 @@ import type { Member } from '@biasdo/server-utils/src/Member'
 import type { Message } from '@biasdo/server-utils/src/Message'
 import type { Server } from '@biasdo/server-utils/src/Server'
 import type { User } from '@biasdo/server-utils/src/User'
-import { derived, get, readable, writable } from 'svelte/store'
+import { derived, get, readable, writable, type Writable } from 'svelte/store'
 
 export const currentServerId = derived(page, ($page) => ($page.params.serverId as Id) ?? null)
 export const currentChannelId = derived(page, ($page) => ($page.params.channelId as Id) ?? null)
@@ -89,107 +89,198 @@ const ws = readable<WebSocket | undefined>(undefined, (set) => {
 
 export type APIMessage = Message & { member?: Member; user: User }
 
-export const makeStores = (data?: {
-	servers?: ServerWithChannels[]
-	channels?: Channel[]
-	invites?: Invite[]
-	messages?: APIMessage[]
-}) => {
-	const deletedServers = writable<Set<Id>>(new Set())
+const findIndexForId = <T extends { id: Id }>(arr: T[], id: Id) => {
+	// Convert id to BigInt
+	const bigIntId = BigInt(id)
 
-	const allServers = writable<ServerWithChannels[]>(data?.servers ?? [], (_, update) => {
-		const handler = (event: MessageEvent) => {
-			const data = JSON.parse(event.data) as { type: string; data: ServerWithChannels }
-			if (!data.type.startsWith('server_')) return
+	let left = 0
+	let right = arr.length - 1
 
-			update((prev) => {
-				if (data.type.endsWith('_delete')) {
-					if (get(currentServerId) === data.data.id) {
-						goto('/app', {
-							invalidateAll: true
-						})
-					}
+	while (left <= right) {
+		const mid = left + Math.floor((right - left) / 2)
+		const midId = BigInt(arr[mid].id)
 
-					deletedServers.update((prev) => prev.add(data.data.id))
+		if (midId === bigIntId) {
+			return [mid] as const // Return an array to easily distinguish from indexes that are not found
+		} else if (midId < bigIntId) {
+			left = mid + 1
+		} else {
+			right = mid - 1
+		}
+	}
 
-					return prev.filter((server) => server.id !== data.data.id)
-				}
+	// If no id is found that is larger than the input id, return the index where the new item should be inserted
+	return left
+}
 
-				deletedServers.update((prev) => {
-					prev.delete(data.data.id)
-					return prev
+const insertBefore = <T>(array: T[], item: T, before: number) => {
+	const newArray = [...array]
+	newArray.splice(before, 0, item)
+	return newArray
+}
+
+export const deletedServers = writable<Set<Id>>(new Set())
+
+export const allServers = writable<ServerWithChannels[]>([], (_, update) => {
+	const handler = (event: MessageEvent) => {
+		const data = JSON.parse(event.data) as { type: string; data: ServerWithChannels }
+		if (!data.type.startsWith('server_')) return
+
+		if (data.type.endsWith('_delete')) {
+			if (get(currentServerId) === data.data.id) {
+				goto('/app', {
+					invalidateAll: true
 				})
+			}
 
-				return [...prev, data.data]
+			deletedServers.update((prev) => prev.add(data.data.id))
+
+			return
+		}
+
+		update((prev) => {
+			deletedServers.update((prev) => {
+				prev.delete(data.data.id)
+				return prev
 			})
-		}
 
-		return ws.subscribe(
-			(ws) => ws?.addEventListener('message', handler),
-			(ws) => ws?.removeEventListener('message', handler)
-		)
-	})
+			return [...prev, data.data]
+		})
+	}
 
-	const allChannels = writable<Channel[]>(data?.channels ?? [], (_, update) => {
-		const handler = (event: MessageEvent) => {
-			const data = JSON.parse(event.data) as { type: string; data: Channel }
-			if (!data.type.startsWith('channel_')) return
-			update((prev) => [...prev, data.data])
-		}
+	return ws.subscribe(
+		(ws) => ws?.addEventListener('message', handler),
+		(ws) => ws?.removeEventListener('message', handler)
+	)
+})
 
-		return ws.subscribe(
-			(ws) => ws?.addEventListener('message', handler),
-			(ws) => ws?.removeEventListener('message', handler)
-		)
-	})
-	const allInvites = writable<Invite[]>(data?.invites ?? [], (_, update) => {
-		const handler = (event: MessageEvent) => {
-			const data = JSON.parse(event.data) as { type: string; data: Invite }
-			if (!data.type.startsWith('invite_')) return
-			update((prev) => [...prev, data.data])
-		}
+export const allChannels = writable<Channel[]>([], (_, update) => {
+	const handler = (event: MessageEvent) => {
+		const data = JSON.parse(event.data) as { type: string; data: Channel }
+		if (!data.type.startsWith('channel_')) return
+		update((prev) => [...prev, data.data])
+	}
 
-		return ws.subscribe(
-			(ws) => ws?.addEventListener('message', handler),
-			(ws) => ws?.removeEventListener('message', handler)
-		)
-	})
-	const allMessages = writable<APIMessage[]>(data?.messages ?? [], (_, update) => {
-		const handler = (event: MessageEvent) => {
-			const data = JSON.parse(event.data) as { type: string; data: APIMessage }
-			if (!data.type.startsWith('message_')) return
-			update((prev) => [...prev, data.data])
-		}
+	return ws.subscribe(
+		(ws) => ws?.addEventListener('message', handler),
+		(ws) => ws?.removeEventListener('message', handler)
+	)
+})
 
-		return ws.subscribe(
-			(ws) => ws?.addEventListener('message', handler),
-			(ws) => ws?.removeEventListener('message', handler)
-		)
-	})
+export const allInvites = writable<Invite[]>([], (_, update) => {
+	const handler = (event: MessageEvent) => {
+		const data = JSON.parse(event.data) as { type: string; data: Invite }
+		if (!data.type.startsWith('invite_')) return
+		update((prev) => [...prev, data.data])
+	}
 
-	return {
-		deletedServers,
-		allServers,
-		allChannels,
-		allInvites,
-		allMessages,
+	return ws.subscribe(
+		(ws) => ws?.addEventListener('message', handler),
+		(ws) => ws?.removeEventListener('message', handler)
+	)
+})
 
-		servers: derived([allServers, deletedServers], ([$allServers, $deletedServers]) =>
-			$allServers.filter((server) => !$deletedServers.has(server.id))
-		),
-		channels: derived([allChannels, currentServerId], ([$allChannels, $currentServerId]) =>
-			$allChannels.filter((channel) =>
-				$currentServerId === null ? channel.kind === 'DM' : channel.server_id === $currentServerId
+const newMessageNotification = (message: APIMessage) => {
+	if (message.user_id === get(page).data?.me?.id) return
+	if (message.channel_id === get(currentChannelId) && document.visibilityState === 'visible') return
+
+	if (Notification.permission === 'default') {
+		Notification.requestPermission()
+	}
+
+	if (Notification.permission === 'granted') {
+		const name = message.member?.nickname ?? message.user?.username ?? 'Deleted User'
+		const channel = get(allChannels).find(({ id }) => id === message.channel_id)
+
+		new Notification(`${name}${channel && channel.kind !== 'DM' ? ` | #${channel.name}` : ''}`, {
+			body: message.content,
+			timestamp: new Date(message.created_at).getTime(),
+			icon: `/user-icons/${BigInt(message.user_id ?? 1) % BigInt(4)}.svg`
+		}).addEventListener('click', () => {
+			if (!channel) return
+
+			goto(
+				channel.kind === 'DM'
+					? `/app/direct-messages/${channel.id}`
+					: `/app/servers/${channel.server_id}/channels/${channel.id}`,
+				{
+					invalidateAll: true
+				}
 			)
-		),
-		invites: derived([allInvites, currentServerId], ([$allInvites, $currentServerId]) =>
-			$allInvites.filter((invite) => invite.server_id === $currentServerId)
-		),
-		messages: derived([allMessages, currentChannelId], ([$allMessages, $currentChannelId]) =>
-			$allMessages.filter((message) => message.channel_id === $currentChannelId)
-		)
+		})
 	}
 }
+
+export const allMessages = writable<APIMessage[]>([], (_, update) => {
+	const handler = (event: MessageEvent) => {
+		const data = JSON.parse(event.data) as { type: string; data: APIMessage }
+		if (!data.type.startsWith('message_')) return
+
+		newMessageNotification(data.data)
+
+		update((prev) => [...prev, data.data])
+	}
+
+	return ws.subscribe(
+		(ws) => ws?.addEventListener('message', handler),
+		(ws) => ws?.removeEventListener('message', handler)
+	)
+})
+
+const updateStore = <T extends { id: Id }>(store: Writable<T[]>, newData: T[] | undefined) => {
+	if (!newData) return
+
+	store.update((prev) => {
+		for (const data of newData) {
+			const index = findIndexForId(prev, data.id)
+			if (Array.isArray(index)) {
+				prev = prev.with(index[0], data)
+				continue
+			}
+			prev = insertBefore(prev, data, index as number)
+		}
+
+		return prev
+	})
+}
+
+export const populateStores = (
+	data?: Partial<{
+		servers: ServerWithChannels[]
+		channels: Channel[]
+		invites: Invite[]
+		messages: APIMessage[]
+	}>
+) => {
+	updateStore(allServers, data?.servers)
+	updateStore(allChannels, [
+		...(data?.servers?.flatMap((server) => server.channels) ?? []),
+		...(data?.channels ?? [])
+	])
+	updateStore(allMessages, data?.messages)
+}
+
+export const servers = derived([allServers, deletedServers], ([$allServers, $deletedServers]) =>
+	$allServers.filter((server) => !$deletedServers.has(server.id))
+)
+
+export const channels = derived(
+	[allChannels, currentServerId],
+	([$allChannels, $currentServerId]) =>
+		$allChannels.filter((channel) =>
+			$currentServerId === null ? channel.kind === 'DM' : channel.server_id === $currentServerId
+		)
+)
+
+export const invites = derived([allInvites, currentServerId], ([$allInvites, $currentServerId]) =>
+	$allInvites.filter((invite) => invite.server_id === $currentServerId)
+)
+
+export const messages = derived(
+	[allMessages, currentChannelId],
+	([$allMessages, $currentChannelId]) =>
+		$allMessages.filter((message) => message.channel_id === $currentChannelId)
+)
 
 export const isMobileUI = readable<boolean>(false, (set) => {
 	if (!browser) return

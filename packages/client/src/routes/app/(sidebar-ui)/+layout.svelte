@@ -16,15 +16,16 @@
 	import {
 		currentChannelId,
 		currentServerId,
-		makeStores,
 		isMobileUI,
-		type APIMessage
+		populateStores,
+		servers,
+		channels
 	} from '$lib/stores'
 	import { page } from '$app/stores'
 	import Portal from 'svelte-portal/src/Portal.svelte'
 	import { cn } from '$lib/cn'
-	import { onDestroy } from 'svelte'
 	import { get } from 'svelte/store'
+	import { onDestroy } from 'svelte'
 
 	let newServerModalOpen = false
 	let newServerModal: HTMLDialogElement
@@ -85,10 +86,7 @@
 
 	export let data: LayoutData
 
-	$: ({ servers, channels, allChannels, allMessages } = makeStores({
-		...data,
-		channels: [...data.servers.flatMap(({ channels }) => channels), ...data.channels]
-	}))
+	$: populateStores(data)
 
 	$: currentServerData = $servers.find(({ id }) => id === $currentServerId)
 
@@ -108,49 +106,24 @@
 
 	let currentView: 'server' | 'channel' = 'server'
 
-	if (Notification.permission === 'default') {
-		Notification.requestPermission()
-	}
-
-	const handleNewMessage = (m: APIMessage[]) => {
-		const newest = m[m.length - 1]
-		if (!newest) return
-		if (newest.user_id === data.me.id) return
-		if (newest.channel_id === get(currentChannelId) && document.visibilityState === 'visible')
-			return
-
-		if (Notification.permission === 'granted') {
-			const name = newest.member?.nickname ?? newest.user?.username ?? 'Deleted User'
-			const channel = get(allChannels).find(({ id }) => id === newest.channel_id)
-
-			new Notification(`${name}${channel && channel.kind !== 'DM' ? ` | #${channel.name}` : ''}`, {
-				body: newest.content,
-				timestamp: new Date(newest.created_at).getTime(),
-				icon: `/user-icons/${BigInt(newest.user_id ?? 1) % BigInt(4)}.svg`
-			}).addEventListener('click', () => {
-				if (!channel) return
-
-				goto(
-					channel.kind === 'DM'
-						? `/app/direct-messages/${channel.id}`
-						: `/app/servers/${channel.server_id}/channels/${channel.id}`,
-					{
-						invalidateAll: true
-					}
-				)
-			})
-		}
-	}
-
-	$: onDestroy(allMessages.subscribe(handleNewMessage))
+	onDestroy(
+		currentServerId.subscribe(() => {
+			if (get(currentServerId)) {
+				currentView = 'channel'
+			} else {
+				currentView = 'server'
+			}
+		})
+	)
 </script>
 
 <Modal
 	bind:showModal={mobileSidebarsModalOpen}
 	class="h-full min-w-0 w-full sm:w-1/2"
+	containerClass="flex flex-col"
 	bind:dialog={mobileSidebarsModal}
 >
-	<div class="w-full flex justify-between mb-5">
+	<div class="w-full flex justify-between mb-5 flex-shrink-0">
 		<button
 			type="button"
 			title={currentView === 'server' ? 'Close modal' : 'Server view'}
@@ -204,11 +177,17 @@
 	</div>
 	<div
 		bind:this={mobileServerListContainer}
-		class={cn('flex-col gap-3 items-center', currentView === 'server' ? 'flex' : 'hidden')}
+		class={cn(
+			'flex-col gap-3 items-center flex-grow overflow-hidden',
+			currentView === 'server' ? 'flex' : 'hidden'
+		)}
 	/>
 	<div
 		bind:this={mobileChannelListContainer}
-		class={cn('flex-col gap-3 items-center', currentView === 'channel' ? 'flex' : 'hidden')}
+		class={cn(
+			'flex-col gap-3 items-center flex-grow overflow-hidden',
+			currentView === 'channel' ? 'flex' : 'hidden'
+		)}
 	/>
 </Modal>
 
