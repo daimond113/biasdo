@@ -13,8 +13,8 @@
 	import type { Message } from '@biasdo/server-utils/src/Message'
 	import type { Member } from '@biasdo/server-utils/src/Member'
 	import type { User } from '@biasdo/server-utils/src/User'
-	import UserIcon from './UserIcon.svelte'
-	import { md } from './markdown'
+	import UserIcon from '$lib/UserIcon.svelte'
+	import { md } from '$lib/markdown'
 
 	export let data: Message & { member?: Member; user?: User }
 

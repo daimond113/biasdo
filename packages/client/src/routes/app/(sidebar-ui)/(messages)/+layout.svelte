@@ -2,9 +2,9 @@
 	import Paper from '$lib/Paper.svelte'
 	import SidebarButton from '$lib/SidebarButton.svelte'
 	import TextField from '$lib/TextField.svelte'
-	import Message from '$lib/Message.svelte'
+	import Message from './Message.svelte'
 
-	import { afterUpdate, beforeUpdate, onDestroy, tick } from 'svelte'
+	import { afterUpdate, beforeUpdate, getContext, onDestroy, tick } from 'svelte'
 	import type { LayoutData } from './$types'
 	import {
 		currentServerId,
@@ -22,7 +22,7 @@
 	import VirtualList from 'svelte-virtual-scroll-list'
 	import { afterNavigate } from '$app/navigation'
 	import type { User } from '@biasdo/server-utils/src/User'
-	import { get } from 'svelte/store'
+	import { get, type Writable } from 'svelte/store'
 
 	let vs: VirtualList
 
@@ -89,6 +89,8 @@
 			reset()
 		}
 	})
+
+	const membersOpen = getContext<Writable<boolean>>('membersOpen')
 </script>
 
 <svelte:head>
@@ -113,7 +115,30 @@
 	<span class="min-w-0 whitespace-nowrap overflow-hidden text-ellipsis"
 		>{currentChannelData?.topic ?? ''}</span
 	>
+	<button
+		class="ml-auto"
+		type="button"
+		on:click={() => membersOpen.update((prev) => !prev)}
+		title="Toggle members panel"
+	>
+		<svg
+			xmlns="http://www.w3.org/2000/svg"
+			width="24"
+			height="24"
+			viewBox="0 0 24 24"
+			fill="none"
+			stroke="currentColor"
+			stroke-width="2"
+			stroke-linecap="round"
+			stroke-linejoin="round"
+			class="lucide lucide-users"
+			><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path
+				d="M22 21v-2a4 4 0 0 0-3-3.87"
+			/><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg
+		>
+	</button>
 </Paper>
+
 <div class="flex-grow basis-0 overflow-hidden">
 	<VirtualList
 		data={$messages}
@@ -157,6 +182,7 @@
 		<Message {data} />
 	</VirtualList>
 </div>
+
 <Paper class="w-full flex-shrink-0 p-[0.375rem] min-h-[3.625rem]">
 	<form
 		use:form

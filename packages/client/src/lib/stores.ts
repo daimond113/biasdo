@@ -113,6 +113,33 @@ const findIndexForId = <T extends { id: Id }>(arr: T[], id: Id) => {
 	return left
 }
 
+const findIndexForStringId = <T extends { id: string; created_at: string }>(
+	arr: T[],
+	id: string,
+	date: string
+) => {
+	let left = 0
+	let right = arr.length - 1
+
+	const dateDate = new Date(date)
+
+	while (left <= right) {
+		const mid = left + Math.floor((right - left) / 2)
+		const midDate = new Date(arr[mid].created_at)
+
+		if (arr[mid].created_at === date && arr[mid].id === id) {
+			return [mid] as const // Return an array to easily distinguish from indexes that are not found
+		} else if (midDate < dateDate) {
+			left = mid + 1
+		} else {
+			right = mid - 1
+		}
+	}
+
+	// If no date is found that is larger than the input date, return the index where the new item should be inserted
+	return left
+}
+
 const insertBefore = <T>(array: T[], item: T, before: number) => {
 	const newArray = [...array]
 	newArray.splice(before, 0, item)
@@ -154,9 +181,26 @@ export const allServers = writable<ServerWithChannels[]>([], (_, update) => {
 	)
 })
 
-export const allChannels = writable<Channel[]>([], (_, update) => {
+type APIMember = Member & { user: User }
+
+export const allMembers = writable<APIMember[]>([], (_, update) => {
 	const handler = (event: MessageEvent) => {
-		const data = JSON.parse(event.data) as { type: string; data: Channel }
+		const data = JSON.parse(event.data) as { type: string; data: APIMember }
+		if (!data.type.startsWith('member_')) return
+		update((prev) => [...prev, data.data])
+	}
+
+	return ws.subscribe(
+		(ws) => ws?.addEventListener('message', handler),
+		(ws) => ws?.removeEventListener('message', handler)
+	)
+})
+
+type APIChannel = Channel & { recipients?: User[] }
+
+export const allChannels = writable<APIChannel[]>([], (_, update) => {
+	const handler = (event: MessageEvent) => {
+		const data = JSON.parse(event.data) as { type: string; data: APIChannel }
 		if (!data.type.startsWith('channel_')) return
 		update((prev) => [...prev, data.data])
 	}
@@ -227,12 +271,28 @@ export const allMessages = writable<APIMessage[]>([], (_, update) => {
 	)
 })
 
-const updateStore = <T extends { id: Id }>(store: Writable<T[]>, newData: T[] | undefined) => {
-	if (!newData) return
+type StringIdObject = { id: string; created_at: string }
+
+const updateStore = <
+	T extends NumericId extends true ? { id: Id } : StringIdObject,
+	NumericId extends boolean = true
+>(
+	store: Writable<T[]>,
+	newData: T[] | undefined,
+	numericId: NumericId = true as NumericId
+) => {
+	if (!newData || newData.length <= 0) return
 
 	store.update((prev) => {
 		for (const data of newData) {
-			const index = findIndexForId(prev, data.id)
+			const index = numericId
+				? findIndexForId(prev as { id: Id }[], data.id as Id)
+				: findIndexForStringId(
+						prev as StringIdObject[],
+						data.id,
+						(data as StringIdObject).created_at
+				  )
+
 			if (Array.isArray(index)) {
 				prev = prev.with(index[0], data)
 				continue
@@ -247,21 +307,28 @@ const updateStore = <T extends { id: Id }>(store: Writable<T[]>, newData: T[] | 
 export const populateStores = (
 	data?: Partial<{
 		servers: ServerWithChannels[]
+		members: Member[]
 		channels: Channel[]
 		invites: Invite[]
 		messages: APIMessage[]
 	}>
 ) => {
 	updateStore(allServers, data?.servers)
+	updateStore(allMembers, data?.members)
 	updateStore(allChannels, [
 		...(data?.servers?.flatMap((server) => server.channels) ?? []),
 		...(data?.channels ?? [])
 	])
 	updateStore(allMessages, data?.messages)
+	updateStore(allInvites, data?.invites, false)
 }
 
 export const servers = derived([allServers, deletedServers], ([$allServers, $deletedServers]) =>
 	$allServers.filter((server) => !$deletedServers.has(server.id))
+)
+
+export const members = derived([allMembers, currentServerId], ([$allMembers, $currentServerId]) =>
+	$allMembers.filter((member) => member.server_id === $currentServerId)
 )
 
 export const channels = derived(

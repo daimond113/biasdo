@@ -2,14 +2,15 @@
 	import { getPaperStyles } from '$lib'
 	import { cn } from './cn'
 
-	export let showModal: boolean
+	export let showModal: boolean | null
+	export let onlyWhen: boolean = true
 	let className: string | undefined = undefined
-	let containerClassName: string | undefined = undefined
-	export { className as class, containerClassName as containerClass }
+	export let containerClass: string | undefined = undefined
+	export { className as class }
 
 	export let dialog: HTMLDialogElement = undefined as never
 
-	$: if (dialog && showModal) dialog.showModal()
+	$: if (dialog && showModal && onlyWhen) dialog.showModal()
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-noninteractive-element-interactions -->
@@ -22,10 +23,7 @@
 	<!-- svelte-ignore a11y-no-static-element-interactions -->
 	<div
 		on:click|stopPropagation
-		class={getPaperStyles(
-			1,
-			cn('bg-[var(--modal-background)] p-6 w-full h-full', containerClassName)
-		)}
+		class={getPaperStyles(1, cn('bg-[var(--modal-background)] p-6 w-full h-full', containerClass))}
 	>
 		<slot />
 	</div>

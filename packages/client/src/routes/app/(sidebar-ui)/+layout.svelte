@@ -9,7 +9,7 @@
 	import { validator } from '@felte/validator-zod'
 	import { z } from 'zod'
 	import { credentialSubmitHandler } from '$lib'
-	import { goto } from '$app/navigation'
+	import { afterNavigate, goto } from '$app/navigation'
 	import type { Server } from '@biasdo/server-utils/src/Server'
 	import type { Channel } from '@biasdo/server-utils/src/Channel'
 	import type { LayoutData } from './$types'
@@ -19,13 +19,17 @@
 		isMobileUI,
 		populateStores,
 		servers,
+		members,
 		channels
 	} from '$lib/stores'
 	import { page } from '$app/stores'
 	import Portal from 'svelte-portal/src/Portal.svelte'
 	import { cn } from '$lib/cn'
-	import { get } from 'svelte/store'
-	import { onDestroy } from 'svelte'
+	import { get, writable } from 'svelte/store'
+	import { onDestroy, setContext } from 'svelte'
+	import UserIcon from '$lib/UserIcon.svelte'
+	import type { Member } from '@biasdo/server-utils/src/Member'
+	import VirtualList from 'svelte-virtual-scroll-list'
 
 	let newServerModalOpen = false
 	let newServerModal: HTMLDialogElement
@@ -86,9 +90,27 @@
 
 	export let data: LayoutData
 
-	$: populateStores(data)
+	let isFetching = false
+	let abortController = new AbortController()
+	let isFinished = false
+	let additionalMembers = [] as Member[]
+
+	afterNavigate(() => {
+		additionalMembers = []
+		isFinished = false
+		abortController.abort('Navigation interrupted')
+		abortController = new AbortController()
+	})
+
+	$: populateStores({
+		...data,
+		members: [...(data.members ?? []), ...additionalMembers]
+	})
 
 	$: currentServerData = $servers.find(({ id }) => id === $currentServerId)
+	$: currentChannelData = $channels.find(({ id }) => id === $currentChannelId)
+	// TODO: support recipients being added (group DMs)
+	$: recipients = currentChannelData?.kind === 'DM' ? currentChannelData.recipients ?? [] : $members
 
 	let mobileSidebarsModal: HTMLDialogElement
 	let mobileSidebarsModalOpen = false
@@ -100,9 +122,36 @@
 	}
 
 	let mobileServerListContainer: HTMLDivElement
-	let mobileChannelListContainer: HTMLDivElement
 	let desktopServerListContainer: HTMLDivElement
+
+	let mobileChannelListContainer: HTMLDivElement
 	let desktopChannelListContainer: HTMLDivElement
+
+	let mobileMemberListContainer: HTMLDivElement
+	let desktopMemberListContainer: HTMLDivElement
+
+	let mobileMembersModal: HTMLDialogElement
+
+	const membersOpen = writable<boolean | null>(null)
+
+	setContext('membersOpen', membersOpen)
+
+	onDestroy(
+		page.subscribe(({ data }) => {
+			if (data?.members) {
+				membersOpen.update((prev) => (prev === null ? true : prev))
+				return
+			}
+
+			membersOpen.set(null)
+		})
+	)
+
+	$: {
+		if (!$isMobileUI && $membersOpen) {
+			mobileMembersModal?.close()
+		}
+	}
 
 	let currentView: 'server' | 'channel' = 'server'
 
@@ -189,6 +238,15 @@
 			currentView === 'channel' ? 'flex' : 'hidden'
 		)}
 	/>
+</Modal>
+
+<Modal
+	bind:showModal={$membersOpen}
+	onlyWhen={$isMobileUI}
+	class="h-full min-w-0 w-full sm:w-1/2 overflow-hidden"
+	bind:dialog={mobileMembersModal}
+>
+	<div bind:this={mobileMemberListContainer} class="w-full h-full" />
 </Modal>
 
 <Modal bind:showModal={newServerModalOpen} bind:dialog={newServerModal}>
@@ -328,6 +386,60 @@
 	</div>
 </Portal>
 
+<Portal target={$isMobileUI ? mobileMemberListContainer : desktopMemberListContainer}>
+	<VirtualList
+		data={recipients}
+		let:data={memberOrUser}
+		let:index
+		on:bottom={() => {
+			if (currentChannelData?.kind === 'DM') return
+			if (isFetching || isFinished) return
+
+			isFetching = true
+
+			const lastId = get(members)[0]?.id
+			if (!lastId) {
+				isFetching = false
+				isFinished = true
+				return
+			}
+
+			fetch(
+				`${import.meta.env.VITE_API_URL}/v0/servers/${get(
+					currentServerId
+				)}/members?last_id=${lastId}`,
+				{
+					credentials: 'include',
+					signal: abortController.signal
+				}
+			)
+				.then((res) => res.json())
+				.then((data) => {
+					if (data.length === 0) {
+						isFinished = true
+					} else {
+						additionalMembers = [...additionalMembers, ...data]
+						isFinished = data.length !== 100
+					}
+				})
+				.finally(() => {
+					isFetching = false
+				})
+		}}
+	>
+		<SidebarButton notButton class={cn('w-full', index !== 0 && 'mt-3')}>
+			<UserIcon
+				member={'server_id' in memberOrUser ? memberOrUser : undefined}
+				user={memberOrUser.user ?? memberOrUser}
+				class="mr-1 w-6 h-6 rounded-md"
+			/>
+			<span class="min-w-0 whitespace-nowrap overflow-hidden text-ellipsis">
+				{memberOrUser.nickname ?? (memberOrUser.user ?? memberOrUser).username ?? 'Deleted User'}
+			</span>
+		</SidebarButton>
+	</VirtualList>
+</Portal>
+
 <div class={cn('flex gap-3 p-3 h-screen max-w-full', $isMobileUI ? 'flex-col' : 'items-center')}>
 	<button
 		title="Open menu"
@@ -353,12 +465,6 @@
 		</svg>
 	</button>
 
-	{#if import.meta.env.DEV}
-		<div class="fixed top-4 right-4 text-[var(--error-paper-text)] opacity-50">
-			{import.meta.env.VITE_APP_NAME} client beta. This is not a finished product.
-		</div>
-	{/if}
-
 	<Paper
 		class="h-full w-56 flex-shrink-0 p-3 flex-col gap-3 items-center hidden lg:flex"
 		bind:div={desktopServerListContainer}
@@ -374,4 +480,12 @@
 	>
 		<slot />
 	</main>
+
+	<Paper
+		class={cn(
+			'h-full w-56 flex-shrink-0 p-3 flex-col gap-3 items-center hidden',
+			$membersOpen && 'lg:block'
+		)}
+		bind:div={desktopMemberListContainer}
+	/>
 </div>
