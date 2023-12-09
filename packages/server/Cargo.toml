@@ -9,7 +9,7 @@ license = "MIT"
 [dependencies]
 actix-web = "4.4.0"
 actix-web-actors = "4.2.0"
-actix-cors = "0.6.4"
+actix-cors = "0.6.5"
 actix-session = { version = "0.8.0", features = ["actix", "cookie-session"] }
 actix-web-httpauth = "0.8.1"
 actix = "0.13.1"

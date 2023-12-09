@@ -2,13 +2,13 @@
   "name": "@biasdo/core",
   "license": "MIT",
   "devDependencies": {
-    "turbo": "^1.10.16"
+    "turbo": "^1.11.1"
   },
   "pnpm": {
     "patchedDependencies": {
       "svelte-portal@2.2.0": "patches/svelte-portal@2.2.0.patch",
       "svelte-virtual-scroll-list@1.3.0": "patches/svelte-virtual-scroll-list@1.3.0.patch",
-      "markdown-it-shikiji@0.7.6": "patches/markdown-it-shikiji@0.7.6.patch"
+      "markdown-it-shikiji@0.8.0": "patches/markdown-it-shikiji@0.8.0.patch"
     }
   }
 }

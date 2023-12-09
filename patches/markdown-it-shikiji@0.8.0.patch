@@ -12,15 +12,15 @@ index 767438879c2e425ebad65f53453ae755e105174b..8edd58b05d8fd30faa9b7f68fa0dbb80
        ...options,
        lang
 diff --git a/package.json b/package.json
-index 683e4ab0cd8fbc688206af232dc7580c767a040f..6a34c42cbe68e242aa65ab72f5f3648e74340880 100644
+index a0d1a4d3ca3392efec51b3e9853ed12016bb4a3d..638673b4746e17348b751ee991fef4156bc2e3ba 100644
 --- a/package.json
 +++ b/package.json
-@@ -29,7 +29,7 @@
-   "files": [
+@@ -30,7 +30,7 @@
      "dist"
    ],
--  "dependencies": {
-+  "peerDependencies": {
-     "markdown-it": "^13.0.2",
-     "shikiji": "0.7.6"
+   "dependencies": {
+-    "markdown-it": "^13.0.2",
++    "markdown-it": "^14.0.0",
+     "shikiji": "0.8.0"
    },
+   "devDependencies": {
