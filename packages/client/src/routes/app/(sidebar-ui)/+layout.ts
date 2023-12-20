@@ -7,41 +7,51 @@ import type { User } from '@biasdo/server-utils/src/User'
 export const ssr = false
 
 export const load: LayoutLoad = async ({ fetch }) => {
-	const res = await fetch(`${import.meta.env.VITE_API_URL}/v0/servers`, { credentials: 'include' })
+	const [serversRes, userRes, dmsRes] = await Promise.all([
+		fetch(`${import.meta.env.VITE_API_URL}/v0/servers`, { credentials: 'include' }).then(
+			async (res) => ({
+				ok: res.ok,
+				status: res.status,
+				response: (await res.json()) as (Server & { channels: Channel[] })[]
+			})
+		),
 
-	if (!res.ok) {
-		if (res.status === 401) {
-			throw redirect(302, '/auth')
+		fetch(`${import.meta.env.VITE_API_URL}/v0/me`, {
+			credentials: 'include'
+		}).then(async (res) => ({
+			ok: res.ok,
+			status: res.status,
+			response: (await res.json()) as User
+		})),
+
+		fetch(`${import.meta.env.VITE_API_URL}/v0/direct-messages/channels`, {
+			credentials: 'include'
+		}).then(async (res) => ({
+			ok: res.ok,
+			status: res.status,
+			response: (await res.json()) as (Channel & { kind: 'DM'; recipients: User[] })[]
+		}))
+	])
+
+	if (!serversRes.ok) {
+		if (serversRes.status === 401) {
+			redirect(302, '/auth')
 		}
 
-		throw error(res.status, 'An error occurred while fetching servers')
+		error(serversRes.status, 'An error occurred while fetching servers')
 	}
-
-	const servers = (await res.json()) as (Server & { channels: Channel[] })[]
-
-	const userRes = await fetch(`${import.meta.env.VITE_API_URL}/v0/me`, {
-		credentials: 'include'
-	})
 
 	if (!userRes.ok) {
-		throw error(userRes.status, 'An error occurred while fetching user data')
+		error(userRes.status, 'An error occurred while fetching user data')
 	}
-
-	const me = (await userRes.json()) as User
-
-	const dmsRes = await fetch(`${import.meta.env.VITE_API_URL}/v0/direct-messages/channels`, {
-		credentials: 'include'
-	})
 
 	if (!dmsRes.ok) {
-		throw error(dmsRes.status, 'An error occurred while fetching direct messages')
+		error(dmsRes.status, 'An error occurred while fetching direct messages')
 	}
 
-	const channels = (await dmsRes.json()) as (Channel & { kind: 'DM'; recipients: User[] })[]
-
 	return {
-		me,
-		servers,
-		channels
+		me: userRes.response,
+		servers: serversRes.response,
+		channels: dmsRes.response
 	}
 }

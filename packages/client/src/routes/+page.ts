@@ -10,7 +10,7 @@ export const load: PageLoad = async ({ fetch }) => {
 	})
 
 	if (!userRes.ok && userRes.status !== 401) {
-		throw error(userRes.status, 'An error occurred while fetching user data')
+		error(userRes.status, 'An error occurred while fetching user data');
 	}
 
 	const me = userRes.ok ? ((await userRes.json()) as User) : null

@@ -13,10 +13,10 @@ export const load: PageLoad = async ({ fetch, params }) => {
 	)
 
 	if (!res.ok) {
-		throw error(res.status, 'An error occurred while fetching channels')
+		error(res.status, 'An error occurred while fetching channels');
 	}
 
 	const channels = (await res.json()) as Channel[]
 
-	throw redirect(302, `/app/servers/${params.serverId}/channels/${channels[0].id}`)
+	redirect(302, `/app/servers/${params.serverId}/channels/${channels[0].id}`);
 }

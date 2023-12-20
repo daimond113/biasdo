@@ -10,7 +10,7 @@ export const load: PageLoad = async ({ fetch, params }) => {
 	})
 
 	if (!res.ok) {
-		throw error(res.status, 'An error occurred while fetching invites')
+		error(res.status, 'An error occurred while fetching invites');
 	}
 
 	const invites = (await res.json()) as Invite[]

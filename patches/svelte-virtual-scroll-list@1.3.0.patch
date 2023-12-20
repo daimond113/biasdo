@@ -1,7 +1,16 @@
 diff --git a/dist/VirtualScroll.svelte b/dist/VirtualScroll.svelte
-index dd0d175a45615889599eaa15ab275e373f8c06c1..6116d94027a0eca253d3dd2f13bc1a765800fc07 100644
+index dd0d175a45615889599eaa15ab275e373f8c06c1..121695d4bf6fca726b8ee7a290870c0365af584b 100644
 --- a/dist/VirtualScroll.svelte
 +++ b/dist/VirtualScroll.svelte
+@@ -64,7 +64,7 @@
+         buffer: Math.round(keeps / 3), // recommend for a third of keeps
+         uniqueIds: getUniqueIdFromDataSources(),
+     }, onRangeChanged)
+-    let root
++    export let root
+     let shepherd
+     const dispatch = createEventDispatcher()
+ 
 @@ -94,6 +94,18 @@
          }
      }
@@ -22,10 +31,18 @@ index dd0d175a45615889599eaa15ab275e373f8c06c1..6116d94027a0eca253d3dd2f13bc1a76
       * @type {() => number}
       */
 diff --git a/dist/VirtualScroll.svelte.d.ts b/dist/VirtualScroll.svelte.d.ts
-index b1d153a3fcf4bd281a89e340df5c74879860ce96..4e9e9591daa0286835387872a8a2ea1a9a90f7d7 100644
+index b1d153a3fcf4bd281a89e340df5c74879860ce96..258f0cbb0d73cf0aa760ddd37db803938b74391f 100644
 --- a/dist/VirtualScroll.svelte.d.ts
 +++ b/dist/VirtualScroll.svelte.d.ts
-@@ -21,6 +21,7 @@ export default class VirtualScroll extends SvelteComponentTyped<{
+@@ -12,6 +12,7 @@ export default class VirtualScroll extends SvelteComponentTyped<{
+     pageMode?: boolean | undefined;
+     topThreshold?: number | undefined;
+     bottomThreshold?: number | undefined;
++    root?: HTMLDivElement | undefined;
+     getSize?: ((id: number) => number) | undefined;
+     getSizes?: (() => number) | undefined;
+     getOffset?: (() => number) | undefined;
+@@ -21,6 +22,7 @@ export default class VirtualScroll extends SvelteComponentTyped<{
      scrollToOffset?: ((offset: number) => void) | undefined;
      scrollToIndex?: ((index: number) => void) | undefined;
      scrollToBottom?: (() => void) | undefined;
@@ -33,7 +50,7 @@ index b1d153a3fcf4bd281a89e340df5c74879860ce96..4e9e9591daa0286835387872a8a2ea1a
  }, {
      scroll: CustomEvent<any>;
      top: CustomEvent<any>;
-@@ -44,47 +45,49 @@ export default class VirtualScroll extends SvelteComponentTyped<{
+@@ -44,47 +46,50 @@ export default class VirtualScroll extends SvelteComponentTyped<{
      get scrollToOffset(): (offset: number) => void;
      get scrollToIndex(): (index: number) => void;
      get scrollToBottom(): () => void;
@@ -92,6 +109,7 @@ index b1d153a3fcf4bd281a89e340df5c74879860ce96..4e9e9591daa0286835387872a8a2ea1a
 +		pageMode?: boolean | undefined
 +		topThreshold?: number | undefined
 +		bottomThreshold?: number | undefined
++        root?: HTMLDivElement | undefined
 +		getSize?: ((id: number) => number) | undefined
 +		getSizes?: (() => number) | undefined
 +		getOffset?: (() => number) | undefined

@@ -12,14 +12,14 @@ export const load: PageLoad = async ({ fetch, params }) => {
 
 	if (!res.ok) {
 		if (res.status === 409) {
-			throw redirect(302, `/app/servers/${(await res.json()).server_id}`)
+			redirect(302, `/app/servers/${(await res.json()).server_id}`);
 		}
 
 		if (res.status === 401) {
-			throw redirect(302, '/auth')
+			redirect(302, '/auth');
 		}
 
-		throw error(res.status, 'An error occurred while fetching servers')
+		error(res.status, 'An error occurred while fetching servers');
 	}
 
 	const invite = (await res.json()) as Invite & { server: Server }

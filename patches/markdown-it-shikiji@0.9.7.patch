@@ -1,0 +1,12 @@
+diff --git a/dist/core.mjs b/dist/core.mjs
+index f0156d7059f274a5f826cd76a858f110676527b8..be4800240cea58abc2d9ba5197f4ac485812a95c 100644
+--- a/dist/core.mjs
++++ b/dist/core.mjs
+@@ -22,6 +22,7 @@ function setupMarkdownIt(markdownit, highlighter, options) {
+     parseMetaString
+   } = options;
+   markdownit.options.highlight = (code, lang = "text", attrs) => {
++    if (!highlighter.getLoadedLanguages().includes(lang)) lang = "text";
+     const meta = parseMetaString?.(attrs, code, lang) || {};
+     const codeOptions = {
+       ...options,

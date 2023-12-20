@@ -6,13 +6,28 @@ import { error } from '@sveltejs/kit'
 export const ssr = false
 
 export const load: LayoutLoad = async ({ fetch, params }) => {
-	const messagesRes = await fetch(
-		`${import.meta.env.VITE_API_URL}/v0/channels/${params.channelId}/messages`,
-		{ credentials: 'include' }
-	)
+	const [messagesRes, membersRes] = await Promise.all([
+		fetch(`${import.meta.env.VITE_API_URL}/v0/channels/${params.channelId}/messages`, {
+			credentials: 'include'
+		}).then(async (res) => ({
+			ok: res.ok,
+			status: res.status,
+			response: (await res.json()) as APIMessage[]
+		})),
+
+		params.serverId
+			? fetch(`${import.meta.env.VITE_API_URL}/v0/servers/${params.serverId}/members`, {
+					credentials: 'include'
+			  }).then(async (res) => ({
+					ok: res.ok,
+					status: res.status,
+					response: (await res.json()) as Member[]
+			  }))
+			: undefined
+	])
 
 	if (!messagesRes.ok) {
-		throw error(
+		error(
 			messagesRes.status,
 			messagesRes.status === 404
 				? 'Invalid server/channel id.'
@@ -20,25 +35,12 @@ export const load: LayoutLoad = async ({ fetch, params }) => {
 		)
 	}
 
-	const messages = (await messagesRes.json()) as APIMessage[]
-
-	let members: Member[] | undefined
-
-	if (params.serverId) {
-		const membersRes = await fetch(
-			`${import.meta.env.VITE_API_URL}/v0/servers/${params.serverId}/members`,
-			{ credentials: 'include' }
-		)
-
-		if (!membersRes.ok) {
-			throw error(membersRes.status, 'An error occurred while fetching members')
-		}
-
-		members = (await membersRes.json()) as Member[]
+	if (membersRes && !membersRes.ok) {
+		error(membersRes.status, 'An error occurred while fetching members')
 	}
 
 	return {
-		messages,
-		members
+		messages: messagesRes.response,
+		members: membersRes?.response
 	}
 }

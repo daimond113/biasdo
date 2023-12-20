@@ -8,7 +8,7 @@
     "patchedDependencies": {
       "svelte-portal@2.2.0": "patches/svelte-portal@2.2.0.patch",
       "svelte-virtual-scroll-list@1.3.0": "patches/svelte-virtual-scroll-list@1.3.0.patch",
-      "markdown-it-shikiji@0.8.0": "patches/markdown-it-shikiji@0.8.0.patch"
+      "markdown-it-shikiji@0.9.7": "patches/markdown-it-shikiji@0.9.7.patch"
     }
   }
 }
