@@ -1,0 +1,25 @@
+{
+  "db_name": "MySQL",
+  "query": "\nSELECT ServerMember.user_id\nFROM ServerMember\nINNER JOIN ServerMember AS UpdatedUser ON ServerMember.user_id=?\nWHERE ServerMember.server_id=UpdatedUser.server_id\n\nUNION\n    \nSELECT friend_id AS user_id\nFROM UserFriend\nWHERE user_id=?\n\nUNION\n\nSELECT user_id\nFROM UserFriend\nWHERE friend_id=?\n\nUNION\n\nSELECT receiver_id AS user_id\nFROM UserFriendRequest\nWHERE sender_id=?\n\nUNION\n\nSELECT sender_id AS user_id\nFROM UserFriendRequest\nWHERE receiver_id=?\n\nUNION\n\nSELECT Other.user_id\nFROM DMChannelRecipient\nINNER JOIN DMChannelRecipient AS Other ON DMChannelRecipient.channel_id=Other.channel_id\nWHERE DMChannelRecipient.user_id=?\n",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "user_id",
+        "type_info": {
+          "type": "LongLong",
+          "flags": "NOT_NULL | UNSIGNED",
+          "char_set": 63,
+          "max_size": 20
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 6
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "5593cf60b802c9bfe23b8d30d0cf2be476722a63cf7d35c0eaece691c8df75f0"
+}

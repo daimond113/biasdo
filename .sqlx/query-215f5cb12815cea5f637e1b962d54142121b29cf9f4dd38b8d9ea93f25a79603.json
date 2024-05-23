@@ -1,0 +1,25 @@
+{
+  "db_name": "MySQL",
+  "query": "SELECT Server.owner_id FROM ServerMember INNER JOIN Server ON ServerMember.server_id=Server.id WHERE ServerMember.user_id = ? AND ServerMember.server_id = ?",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "owner_id",
+        "type_info": {
+          "type": "LongLong",
+          "flags": "NOT_NULL | MULTIPLE_KEY | UNSIGNED | NO_DEFAULT_VALUE",
+          "char_set": 63,
+          "max_size": 20
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "215f5cb12815cea5f637e1b962d54142121b29cf9f4dd38b8d9ea93f25a79603"
+}

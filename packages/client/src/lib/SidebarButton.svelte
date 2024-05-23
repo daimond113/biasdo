@@ -1,37 +1,37 @@
 <script lang="ts">
-	import { cn } from './cn'
+	import { twMerge } from "tailwind-merge"
 
-	export let onClick: (() => void) | undefined = undefined
-	export let href: string | undefined = undefined
-	export let className: string | undefined = undefined
-	export let isActive = false
-	export let notButton = false
-	export let disabled = false
-
-	$: resolvedClassName = cn(
-		'rounded-lg p-2 h-10 border flex items-center w-full flex-shrink-0',
-		isActive
-			? 'border-[var(--secondary-button-active-outline)] bg-[var(--secondary-button-active)]'
-			: 'bg-[var(--paper-level-1)] border-[var(--paper-level-1-outline)]',
-		!notButton && !disabled && 'hover:brightness-110 active:brightness-90',
-		disabled && 'opacity-50 cursor-not-allowed',
-		'transition-all',
-		className
-	)
+	let className: string | undefined = undefined
 
 	export { className as class }
+
+	export let onClick: (() => void) | undefined = undefined
+	export let disabled: boolean = false
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	export let floatingRef: (...p: any[]) => void = () => {}
+
+	$: resolvedClassName = twMerge(
+		"bg-paper-2-bg flex h-[2.375rem] w-full shrink-0 items-center rounded-md px-2 transition-all",
+		disabled
+			? "opacity-50 cursor-not-allowed"
+			: "cursor-pointer hover:bg-paper-1-outline active:bg-paper-2-active",
+		className,
+	)
 </script>
 
-{#if notButton}
-	<div class={resolvedClassName}>
-		<slot />
-	</div>
-{:else if href}
-	<a class={resolvedClassName} {href} data-not-standard>
-		<slot />
-	</a>
-{:else}
-	<button class={resolvedClassName} type="button" on:click={onClick} {disabled}>
+{#if onClick}
+	<button
+		type="button"
+		on:click={onClick}
+		{...disabled ? { disabled: true } : {}}
+		{...$$restProps}
+		class={resolvedClassName}
+		use:floatingRef
+	>
 		<slot />
 	</button>
+{:else}
+	<div class={resolvedClassName} {...$$restProps}>
+		<slot />
+	</div>
 {/if}

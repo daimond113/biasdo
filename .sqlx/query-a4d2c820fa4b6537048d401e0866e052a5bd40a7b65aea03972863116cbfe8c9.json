@@ -1,0 +1,25 @@
+{
+  "db_name": "MySQL",
+  "query": "SELECT Channel.id\nFROM Channel\nINNER JOIN DMChannelRecipient AS Sender ON Sender.channel_id=Channel.id\nINNER JOIN DMChannelRecipient AS Receiver ON Receiver.channel_id=Channel.id\nWHERE (Sender.user_id, Receiver.user_id) = (?, ?) OR (Sender.user_id, Receiver.user_id) = (?, ?) AND Channel.kind = 'DM'\nLIMIT 1\n",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": {
+          "type": "LongLong",
+          "flags": "NOT_NULL | PRIMARY_KEY | UNSIGNED | NO_DEFAULT_VALUE",
+          "char_set": 63,
+          "max_size": 20
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "a4d2c820fa4b6537048d401e0866e052a5bd40a7b65aea03972863116cbfe8c9"
+}

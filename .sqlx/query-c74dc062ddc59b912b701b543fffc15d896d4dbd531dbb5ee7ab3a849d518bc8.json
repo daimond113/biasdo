@@ -1,0 +1,12 @@
+{
+  "db_name": "MySQL",
+  "query": "UPDATE ClientUserTokens SET access_token = ?, refresh_token = ?, scope = ?, expires_at = DEFAULT, access_expires_at = DEFAULT WHERE user_id = ? AND client_id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 5
+    },
+    "nullable": []
+  },
+  "hash": "c74dc062ddc59b912b701b543fffc15d896d4dbd531dbb5ee7ab3a849d518bc8"
+}

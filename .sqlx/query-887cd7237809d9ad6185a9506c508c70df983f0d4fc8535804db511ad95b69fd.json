@@ -1,0 +1,12 @@
+{
+  "db_name": "MySQL",
+  "query": "DELETE FROM ChannelMessage WHERE id = ? AND user_id = ? AND channel_id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "887cd7237809d9ad6185a9506c508c70df983f0d4fc8535804db511ad95b69fd"
+}

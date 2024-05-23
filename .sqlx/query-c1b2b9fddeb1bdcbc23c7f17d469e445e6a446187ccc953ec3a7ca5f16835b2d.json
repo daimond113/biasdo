@@ -1,0 +1,12 @@
+{
+  "db_name": "MySQL",
+  "query": "INSERT INTO ClientRedirect (client_id, uri) VALUES (?, ?)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "c1b2b9fddeb1bdcbc23c7f17d469e445e6a446187ccc953ec3a7ca5f16835b2d"
+}

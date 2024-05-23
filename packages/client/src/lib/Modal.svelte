@@ -1,16 +1,19 @@
 <script lang="ts">
-	import { getPaperStyles } from '$lib'
-	import { cn } from './cn'
+	import { twMerge } from "tailwind-merge"
 
 	export let showModal: boolean | null
-	export let onlyWhen: boolean = true
 	let className: string | undefined = undefined
-	export let containerClass: string | undefined = undefined
 	export { className as class }
 
 	export let dialog: HTMLDialogElement = undefined as never
 
-	$: if (dialog && showModal && onlyWhen) dialog.showModal()
+	$: if (dialog) {
+		if (showModal) {
+			dialog.showModal()
+		} else {
+			dialog.close()
+		}
+	}
 </script>
 
 <!-- svelte-ignore a11y-click-events-have-key-events a11y-no-noninteractive-element-interactions -->
@@ -18,41 +21,16 @@
 	bind:this={dialog}
 	on:close={() => (showModal = false)}
 	on:click|self={() => dialog.close()}
-	class={cn('backdrop:bg-[var(--modal-backdrop)] bg-transparent min-w-[24rem]', className)}
+	class="w-full max-w-96 bg-transparent md:max-w-[32rem] lg:max-w-[48rem]"
 >
 	<!-- svelte-ignore a11y-no-static-element-interactions -->
 	<div
+		class={twMerge(
+			"border-paper-1-outline bg-paper-1-bg overflow-auto rounded-2xl border p-16",
+			className,
+		)}
 		on:click|stopPropagation
-		class={getPaperStyles(1, cn('bg-[var(--modal-background)] p-6 w-full h-full', containerClass))}
 	>
 		<slot />
 	</div>
 </dialog>
-
-<style>
-	@keyframes zoom {
-		from {
-			transform: scale(0.95);
-		}
-		to {
-			transform: scale(1);
-		}
-	}
-
-	dialog[open] {
-		animation: zoom 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-	}
-
-	@keyframes fade {
-		from {
-			opacity: 0;
-		}
-		to {
-			opacity: 1;
-		}
-	}
-
-	dialog[open]::backdrop {
-		animation: fade 0.2s ease-out;
-	}
-</style>

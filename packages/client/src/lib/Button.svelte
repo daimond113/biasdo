@@ -1,33 +1,39 @@
 <script lang="ts">
-	import { cn } from './cn'
+	import { twMerge } from "tailwind-merge"
 
 	export let onClick: (() => void) | undefined = undefined
 	export let className: string | undefined = undefined
 	export let disabled: boolean = false
-	export let type: 'button' | 'submit' | 'reset' = 'button'
-	export let variant: 'primary' | 'secondary' | 'error' = 'primary'
+	export let type: "button" | "submit" | "reset" = "button"
+	export let variant: "primary" | "secondary" | "error" = "primary"
 	export let autofocus = false
 	export let href: string | undefined = undefined
 
-	$: resolvedClassName = cn(
-		'rounded-lg p-2 px-3 border',
-		variant === 'primary'
-			? 'bg-[var(--primary-button)] border-[var(--primary-button-outline)] text-[var(--primary-button-text)]'
-			: variant === 'secondary'
-			  ? 'bg-[var(--secondary-button-active)] border-[var(--secondary-button-active-outline)]'
-			  : 'bg-[var(--error-button)] border-[var(--error-button-outline)] text-[var(--error-paper-text)]',
-		disabled
-			? 'opacity-50 cursor-not-allowed'
-			: 'cursor-pointer hover:brightness-110 active:brightness-90',
-		'transition-all',
-		className
+	$: resolvedClassName = twMerge(
+		variant === "primary"
+			? "bg-paper-2-active"
+			: variant === "error"
+				? "bg-error-bg text-error-text"
+				: "bg-background text-alt-text",
+		!disabled &&
+			(variant === "error"
+				? "hover:bg-error-bg-hover active:bg-error-bg/80"
+				: "hover:bg-paper-2-bg active:bg-paper-2-active/20"),
+		disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer",
+		"rounded-md px-3 h-10 transition-all shrink-0",
+		className,
 	)
 
 	export { className as class }
 </script>
 
 {#if href}
-	<a data-not-standard class={resolvedClassName} {href} {...$$restProps}>
+	<a
+		data-not-standard
+		class={twMerge("flex items-center justify-center", resolvedClassName)}
+		{href}
+		{...$$restProps}
+	>
 		<slot />
 	</a>
 {:else}

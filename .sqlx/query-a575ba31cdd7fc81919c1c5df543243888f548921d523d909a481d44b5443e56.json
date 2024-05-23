@@ -1,0 +1,25 @@
+{
+  "db_name": "MySQL",
+  "query": "SELECT EXISTS(SELECT 1 FROM Client INNER JOIN ClientRedirect ON ClientRedirect.client_id=Client.id WHERE Client.id = ? AND ClientRedirect.uri = ?) AS `exists: bool`",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "exists: bool",
+        "type_info": {
+          "type": "Long",
+          "flags": "NOT_NULL | BINARY",
+          "char_set": 63,
+          "max_size": 1
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "a575ba31cdd7fc81919c1c5df543243888f548921d523d909a481d44b5443e56"
+}

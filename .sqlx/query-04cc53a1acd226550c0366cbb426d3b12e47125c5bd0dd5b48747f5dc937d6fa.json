@@ -1,0 +1,12 @@
+{
+  "db_name": "MySQL",
+  "query": "INSERT INTO AuthorizationCode (id, created_at, expires_at, client_id, user_id, scope, code_challenge, code_challenge_method) VALUES (?, DEFAULT, DEFAULT, ?, ?, ?, ?, ?)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 6
+    },
+    "nullable": []
+  },
+  "hash": "04cc53a1acd226550c0366cbb426d3b12e47125c5bd0dd5b48747f5dc937d6fa"
+}

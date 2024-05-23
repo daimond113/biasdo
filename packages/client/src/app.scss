@@ -1,0 +1,141 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+	@supports (height: 1svh) {
+		.h-screen {
+			height: 100svh;
+		}
+	}
+
+	.overflow-text {
+		@apply min-w-0 overflow-hidden text-ellipsis whitespace-nowrap;
+	}
+
+	.no-scrollbar {
+		scrollbar-width: none; /* Firefox */
+
+		&::-webkit-scrollbar {
+			background: transparent; /* Chrome/Safari/Webkit */
+			width: 0px;
+		}
+	}
+}
+
+.markdown-body {
+	@apply prose prose-biasdo lg:max-w-[100ch];
+
+	& > *:first-child {
+		@apply mt-0;
+	}
+
+	& > *:last-child {
+		@apply mb-0;
+	}
+}
+
+.virtual-scroll-root {
+	width: 100% !important;
+	height: 100% !important;
+}
+
+.carta-theme__biasdo {
+	&.carta-editor {
+		@apply bg-paper-2-bg w-full rounded-md;
+
+		::placeholder {
+			@apply text-placeholder-text;
+		}
+
+		.carta-wrapper {
+			@apply grow overflow-y-auto px-3 py-2;
+
+			.carta-container {
+				@apply max-h-60;
+			}
+		}
+
+		.carta-font-code {
+			@apply caret-text font-mono;
+		}
+
+		.carta-toolbar {
+			@apply hidden;
+		}
+	}
+}
+
+:root {
+	scrollbar-color: theme("colors.scrollbar.thumb")
+		theme("colors.scrollbar.track");
+}
+
+dialog {
+	@apply text-text;
+}
+
+html {
+	@apply bg-background text-text;
+}
+
+a:not([data-not-standard]) {
+	@apply text-link no-underline;
+}
+
+::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
+}
+
+::-webkit-scrollbar-track {
+	@apply bg-scrollbar-track;
+	border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+	@apply bg-scrollbar-thumb;
+	border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	@apply bg-scrollbar-thumb-hover;
+}
+
+h1 {
+	@apply text-2xl font-bold;
+}
+
+h2 {
+	@apply text-xl font-semibold;
+}
+
+dialog[open] {
+	@apply scale-100;
+}
+
+dialog {
+	@apply scale-0;
+	transition: all 250ms allow-discrete;
+}
+
+@starting-style {
+	dialog[open] {
+		@apply scale-0;
+	}
+}
+
+dialog::backdrop {
+	@apply bg-paper-1-bg/0;
+	transition: all 250ms allow-discrete;
+}
+
+dialog[open]::backdrop {
+	@apply bg-paper-1-bg/75;
+}
+
+@starting-style {
+	dialog[open]::backdrop {
+		@apply bg-paper-1-bg/0;
+	}
+}

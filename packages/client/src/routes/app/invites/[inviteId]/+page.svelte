@@ -1,40 +1,91 @@
 <script lang="ts">
-	import Paper from '$lib/Paper.svelte'
-	import Button from '$lib/Button.svelte'
-	import type { PageData } from './$types'
-	import { createForm } from 'felte'
-	import { credentialSubmitHandler } from '$lib'
-	import { goto } from '$app/navigation'
+	import { allInvites, allServers, populateStores } from "$lib/stores"
+	import { createForm } from "felte"
+	import { fetch } from "$lib/fetch"
+	import { getImageUrl } from "$lib/images"
+	import { goto } from "$app/navigation"
+	import { page } from "$app/stores"
 
-	export let data: PageData
+	import Button from "$lib/Button.svelte"
+	import ErrorPage from "$lib/ErrorPage.svelte"
+	import LoadingSpinner from "$lib/LoadingSpinner.svelte"
 
-	let formElement: HTMLFormElement
+	$: currentInviteId = $page.params.inviteId
+	$: currentInviteData = $allInvites.get(currentInviteId)
 
-	const { form } = createForm({
-		onSubmit: () => credentialSubmitHandler(formElement),
+	const { form, isSubmitting } = createForm({
+		onSubmit: async () =>
+			await fetch(`/invites/${currentInviteId}`, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+			}),
 		onSuccess: () => {
-			goto(`/app/servers/${data.invite.server_id}`)
-		}
+			goto(`/app/servers/${currentInviteData?.server.id}`)
+		},
 	})
+
+	let data: Promise<unknown> | undefined = undefined
+	let abortController: AbortController | undefined = undefined
+
+	$: {
+		abortController?.abort("Navigation interrupted")
+		abortController = new AbortController()
+
+		if (currentInviteId) {
+			data = populateStores(() => ({
+				invites: fetch(`/invites/${currentInviteId}`, {
+					signal: abortController!.signal,
+				}),
+			}))
+		}
+	}
+
+	$: {
+		if (
+			$allServers
+				.valuesArray()
+				.some(({ id }) => currentInviteData?.server.id === id)
+		) {
+			goto(`/app/servers/${currentInviteData?.server.id}`)
+		}
+	}
 </script>
 
-<div class="flex justify-center items-center h-screen">
-	<Paper class="w-[32rem] p-12 flex flex-col gap-4 text-center">
-		<h1>You have received an invite to</h1>
-		<div class="max-w-[32rem] break-words">
-			{data.invite.server.name}
+{#await data}
+	<div class="flex size-full items-center justify-center">
+		<LoadingSpinner />
+	</div>
+{:then}
+	<div class="flex size-full items-center justify-center">
+		<div
+			class="border-paper-1-outline bg-paper-1-bg w-full max-w-[48rem] shrink-0 overflow-auto rounded-2xl border p-16"
+		>
+			<h1 class="mb-2">Server Invite</h1>
+			<p class="mb-4">You've been invited to join:</p>
+			<div class="mb-4">
+				<img
+					src={getImageUrl("server", currentInviteData?.server)}
+					class="mr-2 inline-block size-24 rounded-md"
+					alt={`${currentInviteData?.server.name}'s icon`}
+				/>
+				<span class="text-xl">{currentInviteData?.server.name}</span>
+			</div>
+			<div class="mt-6 flex gap-4">
+				<Button class="mt-4 w-full shrink" variant="secondary" href="/app"
+					>Deny</Button
+				>
+				<form use:form class="contents">
+					<Button
+						class="mt-4 w-full shrink"
+						type="submit"
+						disabled={$isSubmitting}>Accept</Button
+					>
+				</form>
+			</div>
 		</div>
-		<div class="flex gap-2 w-full">
-			<form
-				class="contents"
-				use:form
-				bind:this={formElement}
-				action="{import.meta.env.VITE_API_URL}/v0/invites/{data.invite.id}/join"
-				method="post"
-			>
-				<Button class="flex-grow flex-shrink-0" type="submit">Accept</Button>
-			</form>
-			<Button class="flex-grow flex-shrink-0" variant="secondary" href="/app">Decline</Button>
-		</div>
-	</Paper>
-</div>
+	</div>
+{:catch error}
+	<ErrorPage {error} />
+{/await}

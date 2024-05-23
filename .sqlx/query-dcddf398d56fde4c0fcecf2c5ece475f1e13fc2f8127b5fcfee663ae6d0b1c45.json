@@ -1,0 +1,12 @@
+{
+  "db_name": "MySQL",
+  "query": "DELETE FROM Server WHERE id = ? AND owner_id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "dcddf398d56fde4c0fcecf2c5ece475f1e13fc2f8127b5fcfee663ae6d0b1c45"
+}

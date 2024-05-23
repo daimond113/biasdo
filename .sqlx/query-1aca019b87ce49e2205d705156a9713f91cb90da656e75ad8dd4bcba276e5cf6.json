@@ -1,0 +1,91 @@
+{
+  "db_name": "MySQL",
+  "query": "SELECT UserFriendRequest.sender_id, UserFriendRequest.receiver_id, UserFriendRequest.created_at,\nSender.username AS `sender_username`, Sender.display_name AS `sender_display_name`,\nReceiver.username AS `receiver_username`, Receiver.display_name AS `receiver_display_name`\nFROM UserFriendRequest\nINNER JOIN User AS Sender ON UserFriendRequest.sender_id=Sender.id\nINNER JOIN User AS Receiver ON UserFriendRequest.receiver_id=Receiver.id\nWHERE ? IN (UserFriendRequest.sender_id, UserFriendRequest.receiver_id)\n",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "sender_id",
+        "type_info": {
+          "type": "LongLong",
+          "flags": "NOT_NULL | PRIMARY_KEY | UNSIGNED | NO_DEFAULT_VALUE",
+          "char_set": 63,
+          "max_size": 20
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "receiver_id",
+        "type_info": {
+          "type": "LongLong",
+          "flags": "NOT_NULL | PRIMARY_KEY | MULTIPLE_KEY | UNSIGNED | NO_DEFAULT_VALUE",
+          "char_set": 63,
+          "max_size": 20
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "created_at",
+        "type_info": {
+          "type": "Timestamp",
+          "flags": "NOT_NULL | UNSIGNED | BINARY | TIMESTAMP",
+          "char_set": 63,
+          "max_size": 19
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "sender_username",
+        "type_info": {
+          "type": "VarString",
+          "flags": "NOT_NULL | UNIQUE_KEY | MULTIPLE_KEY | NO_DEFAULT_VALUE",
+          "char_set": 224,
+          "max_size": 128
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "sender_display_name",
+        "type_info": {
+          "type": "VarString",
+          "flags": "",
+          "char_set": 224,
+          "max_size": 128
+        }
+      },
+      {
+        "ordinal": 5,
+        "name": "receiver_username",
+        "type_info": {
+          "type": "VarString",
+          "flags": "NOT_NULL | UNIQUE_KEY | MULTIPLE_KEY | NO_DEFAULT_VALUE",
+          "char_set": 224,
+          "max_size": 128
+        }
+      },
+      {
+        "ordinal": 6,
+        "name": "receiver_display_name",
+        "type_info": {
+          "type": "VarString",
+          "flags": "",
+          "char_set": 224,
+          "max_size": 128
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true
+    ]
+  },
+  "hash": "1aca019b87ce49e2205d705156a9713f91cb90da656e75ad8dd4bcba276e5cf6"
+}

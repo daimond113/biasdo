@@ -1,0 +1,36 @@
+{
+  "db_name": "MySQL",
+  "query": "SELECT sender_id, receiver_id FROM UserFriendRequest WHERE (sender_id, receiver_id) = (?, ?) OR (sender_id, receiver_id) = (?, ?)",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "sender_id",
+        "type_info": {
+          "type": "LongLong",
+          "flags": "NOT_NULL | PRIMARY_KEY | UNSIGNED | NO_DEFAULT_VALUE",
+          "char_set": 63,
+          "max_size": 20
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "receiver_id",
+        "type_info": {
+          "type": "LongLong",
+          "flags": "NOT_NULL | PRIMARY_KEY | MULTIPLE_KEY | UNSIGNED | NO_DEFAULT_VALUE",
+          "char_set": 63,
+          "max_size": 20
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "8dd05101a46e1af538f063757d28e36e992531db6c62e1de174f50390bd32457"
+}

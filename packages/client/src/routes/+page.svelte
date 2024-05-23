@@ -1,44 +1,52 @@
 <script lang="ts">
-	import Button from '$lib/Button.svelte'
-	import type { PageData } from './$types'
+	import { me, populateStores } from "$lib/stores"
+	import { fetch } from "$lib/fetch"
+	import { onMount } from "svelte"
 
-	export let data: PageData
+	import Button from "$lib/Button.svelte"
+
+	onMount(() => {
+		const abortController = new AbortController()
+
+		if (localStorage.getItem("session"))
+			populateStores(
+				() => ({
+					me: fetch(`/users/@me`, {
+						signal: abortController.signal,
+					}),
+				}),
+				true,
+			)
+
+		return () => abortController.abort()
+	})
 </script>
 
-<svelte:head>
-	<title>{import.meta.env.VITE_APP_NAME}</title>
-</svelte:head>
-
-<div
-	class="w-full px-4 lg:px-32 h-screen flex flex-col gap-3 justify-center items-center lg:items-start"
->
-	<div class="flex items-center gap-2">
-		<img src="/logo.svg" class="w-12 h-12" alt="{import.meta.env.VITE_APP_NAME} logo" />
-		<h1 class="font-normal" style="font-family: var(--logo-font);">
-			{import.meta.env.VITE_APP_NAME}
-		</h1>
-	</div>
-	<p>A chat app made for users, by users</p>
-	<a href="https://www.daimond113.com" class="w-max">Made with ❤️ by daimond113</a>
-	{#if data.me}
-		<Button href="/app">Go to app</Button>
-	{:else}
-		<div class="flex gap-3">
-			<Button href="/auth?register=true">Register</Button>
-			<Button href="/auth" variant="secondary">Login</Button>
+<div class="flex h-screen flex-col">
+	<div
+		class="flex w-full grow flex-col items-center justify-center px-4 lg:items-start lg:px-32"
+	>
+		<img src="/logotype.svg" class="w-64" alt="biasdo logo" />
+		<p class="mt-2 text-xl font-medium">A chat app made for users, by users</p>
+		<div class="mt-4 flex gap-3">
+			<Button href="/register" variant="primary">Register</Button>
+			<Button href="/login" variant="secondary">Login</Button>
+			{#if $me}
+				<Button href="/app" variant="secondary">Go to app</Button>
+			{/if}
 		</div>
-	{/if}
-</div>
+	</div>
 
-<footer
-	class="fixed bottom-0 w-full px-4 lg:px-32 py-4 bg-[var(--paper-level-1)] flex flex-col gap-2"
->
-	<p>
-		Powered by a backend written in Rust using <a href="https://actix.rs">actix-web</a> with
-		third-party usage in mind, and a <a href="https://svelte.dev">Svelte</a> frontend
-	</p>
-	<p class="text-sm max-w-max break-words">
-		While the app is entirely free, hosting it still costs.
-		<a href="https://buymeacoff.ee/daimond113">Mind buying me a coffee?</a>
-	</p>
-</footer>
+	<footer
+		class="bg-paper-1-bg border-paper-1-outline fixed bottom-0 flex w-full shrink-0 flex-col gap-2 border-t px-4 py-4 lg:px-32"
+	>
+		<p>
+			Made with ❤️ by <a href="https://www.daimond113.com">daimond113</a>. If
+			you enjoy the app, consider
+			<a href="https://buymeacoff.ee/daimond113">donating</a> to help keep it running.
+		</p>
+		<p class="max-w-max break-words text-sm">
+			Use of this app is subject to the <a href="/tos">Terms of Service</a>.
+		</p>
+	</footer>
+</div>

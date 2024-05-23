@@ -1,0 +1,12 @@
+{
+  "db_name": "MySQL",
+  "query": "INSERT INTO Channel (id, name, kind, server_id) VALUES (?, 'general', 'text', ?)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "0b1e2c01e3567fc1a96c119dd14fb56ad6d17b589c7d4cfde4e112691db4c7e7"
+}

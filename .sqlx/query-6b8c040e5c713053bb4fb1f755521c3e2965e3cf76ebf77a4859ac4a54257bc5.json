@@ -1,0 +1,25 @@
+{
+  "db_name": "MySQL",
+  "query": "SELECT server_id FROM ServerMember WHERE user_id = ?",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "server_id",
+        "type_info": {
+          "type": "LongLong",
+          "flags": "NOT_NULL | PRIMARY_KEY | UNSIGNED | NO_DEFAULT_VALUE",
+          "char_set": 63,
+          "max_size": 20
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "6b8c040e5c713053bb4fb1f755521c3e2965e3cf76ebf77a4859ac4a54257bc5"
+}

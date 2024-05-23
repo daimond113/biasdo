@@ -1,0 +1,58 @@
+{
+  "db_name": "MySQL",
+  "query": "SELECT ServerMember.server_id, ServerMember.nickname, ServerMember.created_at AS `created_at: DateTime<Utc>`,\nDMChannelRecipient.user_id\nFROM Channel\nLEFT JOIN ServerMember ON ServerMember.server_id=Channel.server_id AND ServerMember.user_id=?\nLEFT JOIN DMChannelRecipient ON DMChannelRecipient.channel_id=Channel.id\nWHERE Channel.id = ?\n",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "server_id",
+        "type_info": {
+          "type": "LongLong",
+          "flags": "PRIMARY_KEY | UNSIGNED | NO_DEFAULT_VALUE",
+          "char_set": 63,
+          "max_size": 20
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "nickname",
+        "type_info": {
+          "type": "VarString",
+          "flags": "",
+          "char_set": 224,
+          "max_size": 128
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "created_at: DateTime<Utc>",
+        "type_info": {
+          "type": "Timestamp",
+          "flags": "UNSIGNED | BINARY | TIMESTAMP",
+          "char_set": 63,
+          "max_size": 19
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "user_id",
+        "type_info": {
+          "type": "LongLong",
+          "flags": "PRIMARY_KEY | MULTIPLE_KEY | UNSIGNED | NO_DEFAULT_VALUE",
+          "char_set": 63,
+          "max_size": 20
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "ad2df4d22791eb31e9afc8a7a313534eb5ca51f542312e76ff48b6a735061e9a"
+}

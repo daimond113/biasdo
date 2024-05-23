@@ -1,0 +1,12 @@
+{
+  "db_name": "MySQL",
+  "query": "REPLACE INTO ClientUserTokens (user_id, client_id, created_at, access_expires_at, expires_at, auth_code, access_token, refresh_token, scope) VALUES (?, ?, DEFAULT, DEFAULT, DEFAULT, ?, ?, ?, ?)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 6
+    },
+    "nullable": []
+  },
+  "hash": "f28838fef895007dab20147d5919553ae6781a503eaf67c0a55f8a9d2ad931c8"
+}

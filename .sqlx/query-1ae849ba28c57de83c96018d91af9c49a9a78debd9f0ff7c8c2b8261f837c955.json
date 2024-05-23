@@ -1,0 +1,12 @@
+{
+  "db_name": "MySQL",
+  "query": "DELETE ClientUserTokens FROM ClientUserTokens INNER JOIN AuthorizationCode ON AuthorizationCode.id=ClientUserTokens.auth_code WHERE ClientUserTokens.auth_code = ? AND AuthorizationCode.expires_at > NOW()",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": []
+  },
+  "hash": "1ae849ba28c57de83c96018d91af9c49a9a78debd9f0ff7c8c2b8261f837c955"
+}

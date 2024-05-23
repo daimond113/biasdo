@@ -1,0 +1,124 @@
+{
+  "db_name": "MySQL",
+  "query": "SELECT ChannelMessage.id, ChannelMessage.updated_at, ChannelMessage.content, ChannelMessage.kind, ChannelMessage.channel_id, ChannelMessage.user_id,\nUser.username, User.display_name,\nServerMember.nickname, ServerMember.created_at\nFROM ChannelMessage\nINNER JOIN User ON User.id=ChannelMessage.user_id\nLEFT JOIN ServerMember ON ServerMember.user_id=ChannelMessage.user_id AND ServerMember.server_id=?\nWHERE ChannelMessage.channel_id = ? AND ChannelMessage.id < ?\nORDER BY id DESC\nLIMIT ?\n",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": {
+          "type": "LongLong",
+          "flags": "NOT_NULL | PRIMARY_KEY | UNSIGNED | NO_DEFAULT_VALUE",
+          "char_set": 63,
+          "max_size": 20
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "updated_at",
+        "type_info": {
+          "type": "Timestamp",
+          "flags": "UNSIGNED | BINARY",
+          "char_set": 63,
+          "max_size": 19
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "content",
+        "type_info": {
+          "type": "Blob",
+          "flags": "NOT_NULL | BLOB | NO_DEFAULT_VALUE",
+          "char_set": 224,
+          "max_size": 262140
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "kind",
+        "type_info": {
+          "type": "String",
+          "flags": "NOT_NULL | ENUM | NO_DEFAULT_VALUE",
+          "char_set": 224,
+          "max_size": 16
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "channel_id",
+        "type_info": {
+          "type": "LongLong",
+          "flags": "NOT_NULL | MULTIPLE_KEY | UNSIGNED | NO_DEFAULT_VALUE",
+          "char_set": 63,
+          "max_size": 20
+        }
+      },
+      {
+        "ordinal": 5,
+        "name": "user_id",
+        "type_info": {
+          "type": "LongLong",
+          "flags": "NOT_NULL | MULTIPLE_KEY | UNSIGNED | NO_DEFAULT_VALUE",
+          "char_set": 63,
+          "max_size": 20
+        }
+      },
+      {
+        "ordinal": 6,
+        "name": "username",
+        "type_info": {
+          "type": "VarString",
+          "flags": "NOT_NULL | UNIQUE_KEY | MULTIPLE_KEY | NO_DEFAULT_VALUE",
+          "char_set": 224,
+          "max_size": 128
+        }
+      },
+      {
+        "ordinal": 7,
+        "name": "display_name",
+        "type_info": {
+          "type": "VarString",
+          "flags": "",
+          "char_set": 224,
+          "max_size": 128
+        }
+      },
+      {
+        "ordinal": 8,
+        "name": "nickname",
+        "type_info": {
+          "type": "VarString",
+          "flags": "",
+          "char_set": 224,
+          "max_size": 128
+        }
+      },
+      {
+        "ordinal": 9,
+        "name": "created_at",
+        "type_info": {
+          "type": "Timestamp",
+          "flags": "UNSIGNED | BINARY | TIMESTAMP",
+          "char_set": 63,
+          "max_size": 19
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": [
+      false,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "80c3f7f9687fe09f2114d8e4ea63d03f59ac31cebb9e509494c82643a5b07f7f"
+}

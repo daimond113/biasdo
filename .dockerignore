@@ -1,0 +1,15 @@
+.idea
+.vscode
+biasdo-maria
+node_modules
+fly.toml
+target
+.env
+packages
+patches
+.prettierignore
+.prettierrc.cjs
+eslint.config.js
+pnpm-lock.yaml
+pnpm-workspace.yaml
+README.md

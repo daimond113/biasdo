@@ -1,0 +1,25 @@
+{
+  "db_name": "MySQL",
+  "query": "SELECT EXISTS(SELECT 1 FROM Server WHERE id = ? AND owner_id = ?) AS `exists: bool`",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "exists: bool",
+        "type_info": {
+          "type": "Long",
+          "flags": "NOT_NULL | BINARY",
+          "char_set": 63,
+          "max_size": 1
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "57b78a46153555423ed7adf65d805e37c69f6d7ea69185025278fe24c5be2977"
+}

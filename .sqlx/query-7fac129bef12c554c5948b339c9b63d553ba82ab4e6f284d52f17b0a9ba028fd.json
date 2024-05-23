@@ -1,0 +1,58 @@
+{
+  "db_name": "MySQL",
+  "query": "SELECT user_id, scope, code_challenge, code_challenge_method FROM AuthorizationCode WHERE id = ? AND client_id = ? AND expires_at > NOW()",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "user_id",
+        "type_info": {
+          "type": "LongLong",
+          "flags": "NOT_NULL | MULTIPLE_KEY | UNSIGNED | NO_DEFAULT_VALUE",
+          "char_set": 63,
+          "max_size": 20
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "scope",
+        "type_info": {
+          "type": "String",
+          "flags": "NOT_NULL | SET | NO_DEFAULT_VALUE",
+          "char_set": 224,
+          "max_size": 436
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "code_challenge",
+        "type_info": {
+          "type": "VarString",
+          "flags": "",
+          "char_set": 224,
+          "max_size": 512
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "code_challenge_method",
+        "type_info": {
+          "type": "String",
+          "flags": "NOT_NULL | ENUM | NO_DEFAULT_VALUE",
+          "char_set": 224,
+          "max_size": 20
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  "hash": "7fac129bef12c554c5948b339c9b63d553ba82ab4e6f284d52f17b0a9ba028fd"
+}

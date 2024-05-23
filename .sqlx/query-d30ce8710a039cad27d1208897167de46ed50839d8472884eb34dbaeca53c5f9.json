@@ -1,0 +1,25 @@
+{
+  "db_name": "MySQL",
+  "query": "SELECT EXISTS(SELECT 1 FROM Client WHERE id = ?) AS `exists: bool`",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "exists: bool",
+        "type_info": {
+          "type": "Long",
+          "flags": "NOT_NULL | BINARY",
+          "char_set": 63,
+          "max_size": 1
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "d30ce8710a039cad27d1208897167de46ed50839d8472884eb34dbaeca53c5f9"
+}

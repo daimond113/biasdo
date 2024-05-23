@@ -1,0 +1,102 @@
+{
+  "db_name": "MySQL",
+  "query": "SELECT UserFriend.friend_id, UserFriend.user_id, UserFriend.created_at,\nFriend.username AS `friend_username`, Friend.display_name AS `friend_display_name`,\nUser.username AS `user_username`, User.display_name AS `user_display_name`,\nChannel.id AS `channel_id`\nFROM UserFriend\nINNER JOIN User AS Friend ON UserFriend.friend_id=Friend.id\nINNER JOIN User ON UserFriend.user_id=User.id\nINNER JOIN DMChannelRecipient AS UserRecipient ON UserRecipient.user_id=User.id\nINNER JOIN DMChannelRecipient AS FriendRecipient ON FriendRecipient.user_id=Friend.id\nINNER JOIN Channel ON UserRecipient.channel_id=Channel.id AND FriendRecipient.channel_id=Channel.id\nWHERE ? IN (UserFriend.user_id, UserFriend.friend_id) AND Channel.kind = 'DM'\n",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "friend_id",
+        "type_info": {
+          "type": "LongLong",
+          "flags": "NOT_NULL | PRIMARY_KEY | MULTIPLE_KEY | UNSIGNED | NO_DEFAULT_VALUE",
+          "char_set": 63,
+          "max_size": 20
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "user_id",
+        "type_info": {
+          "type": "LongLong",
+          "flags": "NOT_NULL | PRIMARY_KEY | UNSIGNED | NO_DEFAULT_VALUE",
+          "char_set": 63,
+          "max_size": 20
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "created_at",
+        "type_info": {
+          "type": "Timestamp",
+          "flags": "NOT_NULL | UNSIGNED | BINARY | TIMESTAMP",
+          "char_set": 63,
+          "max_size": 19
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "friend_username",
+        "type_info": {
+          "type": "VarString",
+          "flags": "NOT_NULL | UNIQUE_KEY | MULTIPLE_KEY | NO_DEFAULT_VALUE",
+          "char_set": 224,
+          "max_size": 128
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "friend_display_name",
+        "type_info": {
+          "type": "VarString",
+          "flags": "",
+          "char_set": 224,
+          "max_size": 128
+        }
+      },
+      {
+        "ordinal": 5,
+        "name": "user_username",
+        "type_info": {
+          "type": "VarString",
+          "flags": "NOT_NULL | UNIQUE_KEY | MULTIPLE_KEY | NO_DEFAULT_VALUE",
+          "char_set": 224,
+          "max_size": 128
+        }
+      },
+      {
+        "ordinal": 6,
+        "name": "user_display_name",
+        "type_info": {
+          "type": "VarString",
+          "flags": "",
+          "char_set": 224,
+          "max_size": 128
+        }
+      },
+      {
+        "ordinal": 7,
+        "name": "channel_id",
+        "type_info": {
+          "type": "LongLong",
+          "flags": "NOT_NULL | PRIMARY_KEY | UNSIGNED | NO_DEFAULT_VALUE",
+          "char_set": 63,
+          "max_size": 20
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      false,
+      true,
+      false
+    ]
+  },
+  "hash": "1bdc5392e6b2df0e16ef24cba88d523877ad1b15f458a6b04df847a968b3c969"
+}

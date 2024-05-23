@@ -1,0 +1,80 @@
+{
+  "db_name": "MySQL",
+  "query": "SELECT UserFriendRequest.sender_id, UserFriendRequest.receiver_id,\nSender.username AS `sender_username`, Sender.display_name AS `sender_display_name`,\nReceiver.username AS `receiver_username`, Receiver.display_name AS `receiver_display_name`\nFROM UserFriendRequest\nINNER JOIN User AS Sender ON UserFriendRequest.sender_id=Sender.id\nINNER JOIN User AS Receiver ON UserFriendRequest.receiver_id=Receiver.id\nWHERE (UserFriendRequest.sender_id, UserFriendRequest.receiver_id) = (?, ?) OR (UserFriendRequest.sender_id, UserFriendRequest.receiver_id) = (?, ?)\n",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "sender_id",
+        "type_info": {
+          "type": "LongLong",
+          "flags": "NOT_NULL | PRIMARY_KEY | UNSIGNED | NO_DEFAULT_VALUE",
+          "char_set": 63,
+          "max_size": 20
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "receiver_id",
+        "type_info": {
+          "type": "LongLong",
+          "flags": "NOT_NULL | PRIMARY_KEY | MULTIPLE_KEY | UNSIGNED | NO_DEFAULT_VALUE",
+          "char_set": 63,
+          "max_size": 20
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "sender_username",
+        "type_info": {
+          "type": "VarString",
+          "flags": "NOT_NULL | UNIQUE_KEY | MULTIPLE_KEY | NO_DEFAULT_VALUE",
+          "char_set": 224,
+          "max_size": 128
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "sender_display_name",
+        "type_info": {
+          "type": "VarString",
+          "flags": "",
+          "char_set": 224,
+          "max_size": 128
+        }
+      },
+      {
+        "ordinal": 4,
+        "name": "receiver_username",
+        "type_info": {
+          "type": "VarString",
+          "flags": "NOT_NULL | UNIQUE_KEY | MULTIPLE_KEY | NO_DEFAULT_VALUE",
+          "char_set": 224,
+          "max_size": 128
+        }
+      },
+      {
+        "ordinal": 5,
+        "name": "receiver_display_name",
+        "type_info": {
+          "type": "VarString",
+          "flags": "",
+          "char_set": 224,
+          "max_size": 128
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      false,
+      true
+    ]
+  },
+  "hash": "81abad5cdf7f7d5d990dc5b082ec71e7bc0d67a993767a3ea1d76568fe7752c1"
+}

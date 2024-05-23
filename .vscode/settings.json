@@ -1,8 +1,6 @@
 {
-    "rust-analyzer.linkedProjects": [
-        "packages/server/Cargo.toml",
-        ".\\packages\\server\\Cargo.toml"
-    ],
     "prettier.prettierPath": "node_modules/prettier/index.cjs",
-    "prettier.configPath": "packages/client/.prettierrc",
+    "cSpell.enableFiletypes": [
+        "!json"
+    ],
 }

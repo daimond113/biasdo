@@ -2,5 +2,5 @@
     "name": "@biasdo/server-utils",
     "description": "API Typings and utilities for TypeScript",
     "license": "MIT",
-    "version": "0.0.0"
+    "version": "0.2.0"
 }

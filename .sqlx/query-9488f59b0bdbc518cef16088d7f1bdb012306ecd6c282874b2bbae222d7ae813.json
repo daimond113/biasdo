@@ -1,0 +1,12 @@
+{
+  "db_name": "MySQL",
+  "query": "INSERT INTO UserFriend (user_id, friend_id, created_at) VALUES (?, ?, ?)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "9488f59b0bdbc518cef16088d7f1bdb012306ecd6c282874b2bbae222d7ae813"
+}

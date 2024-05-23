@@ -1,0 +1,36 @@
+{
+  "db_name": "MySQL",
+  "query": "SELECT client_id, scope  FROM ClientToken WHERE access_token = ? AND expires_at > NOW()",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "client_id",
+        "type_info": {
+          "type": "LongLong",
+          "flags": "NOT_NULL | MULTIPLE_KEY | UNSIGNED | NO_DEFAULT_VALUE",
+          "char_set": 63,
+          "max_size": 20
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "scope",
+        "type_info": {
+          "type": "String",
+          "flags": "NOT_NULL | SET | NO_DEFAULT_VALUE",
+          "char_set": 224,
+          "max_size": 436
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "702ae047ce656f8899125e5228af616da3a5e67a68f313e7c027b645f64f9de0"
+}

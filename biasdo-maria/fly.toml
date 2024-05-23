@@ -14,8 +14,8 @@ source = "mariadbdata"
 destination = "/data"
 
 [env]
-MYSQL_DATABASE = "biasdo"
-MYSQL_USER = "biasdo-server"
+MYSQL_DATABASE = "biasdo-v2"
+MYSQL_USER = "biasdo-backend"
 
 
 [build]

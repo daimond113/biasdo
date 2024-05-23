@@ -1,6 +1,6 @@
 
 dist
-.solid
+.svelte-kit
 .output
 .vercel
 .netlify
@@ -26,8 +26,7 @@ Thumbs.db
 stats.html
 .turbo
 target
-packages/server/src/prisma.rs
-packages/client/src/server-types.ts
-packages/client/src/lib/schemas
-packages/server/mysql-data
 .vite-inspect
+.env
+
+yarn.lock

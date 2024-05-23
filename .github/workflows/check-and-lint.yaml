@@ -1,0 +1,26 @@
+name: Test & Lint
+on:
+  - push
+  - pull_request
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Rust
+        uses: moonrepo/setup-rust@v1
+        with:
+          bins: sqlx-cli
+          components: rustfmt, clippy
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: Run clippy
+        run: cargo clippy --all --all-targets --all-features -- -D warnings
+
+      - name: Check sqlx queries
+        run: cargo sqlx prepare --check

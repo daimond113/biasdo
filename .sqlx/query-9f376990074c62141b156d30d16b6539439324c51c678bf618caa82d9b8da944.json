@@ -1,0 +1,25 @@
+{
+  "db_name": "MySQL",
+  "query": "SELECT name FROM Server WHERE id = ? AND owner_id = ?",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "name",
+        "type_info": {
+          "type": "VarString",
+          "flags": "NOT_NULL | NO_DEFAULT_VALUE",
+          "char_set": 224,
+          "max_size": 128
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "9f376990074c62141b156d30d16b6539439324c51c678bf618caa82d9b8da944"
+}

@@ -1,0 +1,15 @@
+name: biasdo-backend
+services:
+  mysql:
+    image: mariadb:latest
+    environment:
+      MARIADB_ROOT_PASSWORD: root
+    ports:
+      - '3306:3306'
+    networks:
+      - backend
+    restart: unless-stopped
+
+networks:
+  backend:
+    driver: bridge

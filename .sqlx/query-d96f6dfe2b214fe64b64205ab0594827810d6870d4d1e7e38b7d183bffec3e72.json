@@ -1,0 +1,36 @@
+{
+  "db_name": "MySQL",
+  "query": "SELECT user_id, scope FROM ClientUserTokens WHERE refresh_token = ? AND client_id = ? AND expires_at > NOW()",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "user_id",
+        "type_info": {
+          "type": "LongLong",
+          "flags": "NOT_NULL | PRIMARY_KEY | UNSIGNED | NO_DEFAULT_VALUE",
+          "char_set": 63,
+          "max_size": 20
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "scope",
+        "type_info": {
+          "type": "String",
+          "flags": "NOT_NULL | SET | NO_DEFAULT_VALUE",
+          "char_set": 224,
+          "max_size": 436
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "d96f6dfe2b214fe64b64205ab0594827810d6870d4d1e7e38b7d183bffec3e72"
+}

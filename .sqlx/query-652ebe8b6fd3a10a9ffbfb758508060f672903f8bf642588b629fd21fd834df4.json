@@ -1,0 +1,12 @@
+{
+  "db_name": "MySQL",
+  "query": "INSERT INTO UserFriendRequest (sender_id, receiver_id, created_at) VALUES (?, ?, ?)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "652ebe8b6fd3a10a9ffbfb758508060f672903f8bf642588b629fd21fd834df4"
+}

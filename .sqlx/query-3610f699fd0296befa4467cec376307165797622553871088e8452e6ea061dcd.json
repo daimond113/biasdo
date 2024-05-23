@@ -1,0 +1,12 @@
+{
+  "db_name": "MySQL",
+  "query": "INSERT INTO Client (id, name, secret, owner_id, client_uri, tos_uri, policy_uri) VALUES (?, ?, ?, ?, ?, ?, ?)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 7
+    },
+    "nullable": []
+  },
+  "hash": "3610f699fd0296befa4467cec376307165797622553871088e8452e6ea061dcd"
+}

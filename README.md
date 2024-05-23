@@ -1,26 +1,30 @@
-# biasdo
+<br />
+
+<div align="center">
+
+<img src="packages/client/static/logotype.svg" width="200" align="center" alt="biasdo">
+
+</div>
+
+<br />
 
 biasdo is an open source chat app made for users, by users.
 
-## Stack
+## Technologies
 
-biasdo is built with the following technologies:
+biasdo uses technologies made by the open source community, and a
+detailed list can be found in the [root package.json](package.json), [client package.json](packages/client/package.json), and [backend Cargo.toml](Cargo.toml), but the core technologies are:
 
-- actix-web
-- sqlx
-- MariaDB
-- Svelte
-- SvelteKit
-- TypeScript
-- TailwindCSS
+- [SvelteKit](https://kit.svelte.dev) for the frontend
+- [actix-web](https://actix.rs) for the backend
+- [SQLx](https://github.com/launchbadge/sqlx) for the type-safe database queries
+- [MariaDB](https://mariadb.org) as the database
 
-## Host
+## Public instance
 
-biasdo is hosted by [fly.io](https://fly.io) and [Vercel](https://vercel.com).
+The official public biasdo instance is hosted by [fly.io](https://fly.io) (backend) and [Vercel](https://vercel.com) (frontend). The instance is available at [biasdo.daimond113.com](https://biasdo.daimond113.com), and it's api at [api.biasdo.daimond113.com](https://api.biasdo.daimond113.com).
 
 ## Self-hosting
-
-A public instance of biasdo is available at [biasdo.daimond113.com](https://biasdo.daimond113.com), and it's api at [biasdo-api.daimond113.com](https://biasdo-api.daimond113.com). If you want to self-host biasdo, you can follow the instructions below.
 
 ### Client
 
@@ -28,8 +32,7 @@ A public instance of biasdo is available at [biasdo.daimond113.com](https://bias
 2. Go into the `packages/client` directory and create a `.env` file with the following contents:
 
 ```sh
-VITE_API_URL= # the url of the api, for example https://biasdo-api.daimond113.com (IMPORTANT: do not include a trailing slash)
-VITE_APP_NAME=biasdo # although you can change this to whatever you want, it would be nice if you kept it as biasdo
+VITE_API_URL= # the url of the api, for example https://api.biasdo.daimond113.com/v0 (IMPORTANT: do not include a trailing slash)
 ```
 
 3. Install the dependencies
@@ -38,17 +41,15 @@ VITE_APP_NAME=biasdo # although you can change this to whatever you want, it wou
 ### API
 
 1. Clone the repository
-2. Go into the `packages/server` directory and create a `.env` file with the following contents:
+2. Create a `.env` file with the following contents:
 
 ```sh
-DATABASE_URL= # the url of the database, for example mysql://root:password@localhost:3306/biasdo (IMPORTANT: the app uses MariaDB, and will NOT work with MySQL as it uses the RETURNING keyword)
+DATABASE_URL= # the url of the database, for example mysql://root:password@localhost:3306/biasdo (IMPORTANT: biasdo uses MariaDB, and has not been tested with MySQL)
 ```
 
 3. Install the dependencies
-4. Install the sqlx CLI by running `cargo install sqlx-cli`
-5. Run `cargo sqlx database create` to create the database
-6. Run `cargo sqlx migrate run` to run the migrations
-7. Now you can build and run the app like any other cargo project
+4. Create the database using `CREATE DATABASE <name in the url>`;
+5. Now you can build and run the app like any other Cargo project
 
 ## Contributing
 

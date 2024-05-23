@@ -1,0 +1,12 @@
+{
+  "db_name": "MySQL",
+  "query": "INSERT INTO ClientToken (access_token, client_id, created_at, expires_at, scope) VALUES (?, ?, DEFAULT, DEFAULT, ?)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "777ef02ecb3aa6b48f81d4f42f239e97e118aebe7bc433620bf4a0505010415b"
+}

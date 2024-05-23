@@ -1,0 +1,12 @@
+{
+  "db_name": "MySQL",
+  "query": "INSERT INTO ChannelMessage (id, updated_at, content, kind, channel_id, user_id) VALUES (?, NULL, ?, 'text', ?, ?)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": []
+  },
+  "hash": "e522a6ee2a810b31998680aa0633d9a93c53b1308bd799af49086ce9c4dbd1de"
+}

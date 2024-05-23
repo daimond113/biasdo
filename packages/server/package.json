@@ -1,9 +1,0 @@
-{
-    "name": "@biasdo/server",
-    "scripts": {
-        "build": "cargo build",
-        "dev:start": "docker-compose up --detach",
-        "dev:stop": "docker-compose stop",
-        "dev": "pnpm dev:start && cargo watch -x run"
-    }
-}

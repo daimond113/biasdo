@@ -1,0 +1,64 @@
+diff --git a/dist/MarkdownEditor.svelte b/dist/MarkdownEditor.svelte
+index 1a592235495a9c9d076fb33f8c1533355fbaf122..cbf6effc55cb17b52091fd20cabdf15c5d52cdb8 100644
+--- a/dist/MarkdownEditor.svelte
++++ b/dist/MarkdownEditor.svelte
+@@ -12,6 +12,7 @@ export let scroll = "sync";
+ export let disableToolbar = false;
+ export let placeholder = "";
+ export let textarea = {};
++export let onKeydown;
+ let userLabels = {};
+ export { userLabels as labels };
+ const labels = {
+@@ -93,6 +94,7 @@ onMount(() => carta.$setElement(editorElem));
+ 					bind:value
+ 					bind:resize={resizeInput}
+ 					bind:elem={inputElem}
++					{onKeydown}
+ 				>
+ 					<!-- Input extensions components -->
+ 					{#if mounted}
+diff --git a/dist/MarkdownEditor.svelte.d.ts b/dist/MarkdownEditor.svelte.d.ts
+index 4ed14dcdf07b028f4f4718b324840627598c7777..b86e735d675231752eafdab5d7ccc97ceec4e376 100644
+--- a/dist/MarkdownEditor.svelte.d.ts
++++ b/dist/MarkdownEditor.svelte.d.ts
+@@ -13,6 +13,7 @@ declare const __propDef: {
+         placeholder?: string | undefined;
+         textarea?: TextAreaProps | undefined;
+         labels?: Partial<Labels> | undefined;
++        onKeydown?: ((event: KeyboardEvent & { currentTarget: EventTarget & HTMLTextAreaElement }) => any) | undefined;
+     };
+     events: {
+         [evt: string]: CustomEvent<any>;
+diff --git a/dist/internal/components/Input.svelte b/dist/internal/components/Input.svelte
+index caccbe8e0e019ada654dc725bf683b8aa37b6ad4..ea9fa6f1909921639da0debf5209347c00cc4a1c 100644
+--- a/dist/internal/components/Input.svelte
++++ b/dist/internal/components/Input.svelte
+@@ -7,6 +7,7 @@ export let placeholder = "";
+ export let elem;
+ export let handleScroll;
+ export let props = {};
++export let onKeydown;
+ let textarea;
+ let highlighElem;
+ let highlighted = value;
+@@ -101,6 +102,7 @@ onMount(setInput);
+ 			bind:value
+ 			bind:this={textarea}
+ 			on:scroll={() => (textarea.scrollTop = 0)}
++			on:keydown={onKeydown}
+ 		/>
+ 	</div>
+ 
+diff --git a/dist/internal/components/Toolbar.svelte b/dist/internal/components/Toolbar.svelte
+index 075440b134c31e395b6565cdd237c05285f9b427..9111b3b480a88ffb1cafcf5003b4743064ff7049 100644
+--- a/dist/internal/components/Toolbar.svelte
++++ b/dist/internal/components/Toolbar.svelte
+@@ -18,6 +18,7 @@ let showMenu = false;
+ const IconPadding = 8;
+ const waitForDOMUpdate = () => new Promise(requestAnimationFrame);
+ const onResize = debounce(async () => {
++if (!toolbar || !iconsContainer) return;
+   const overflowing = () => toolbar.scrollWidth - toolbar.clientWidth > 0;
+   while (overflowing()) {
+     visibleIcons.pop();

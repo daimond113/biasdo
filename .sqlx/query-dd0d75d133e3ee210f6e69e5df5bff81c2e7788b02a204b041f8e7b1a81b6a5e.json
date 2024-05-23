@@ -1,0 +1,12 @@
+{
+  "db_name": "MySQL",
+  "query": "INSERT INTO DMChannelRecipient (channel_id, user_id) VALUES (?, ?), (?, ?)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": []
+  },
+  "hash": "dd0d75d133e3ee210f6e69e5df5bff81c2e7788b02a204b041f8e7b1a81b6a5e"
+}

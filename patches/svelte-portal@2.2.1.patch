@@ -1,0 +1,12 @@
+diff --git a/src/Portal.svelte b/src/Portal.svelte
+index 510a1a5f1ecc5d686562b15400ac4a942d547c41..680db0e04a66fd6936dd16a616a565aa9d5c8e22 100644
+--- a/src/Portal.svelte
++++ b/src/Portal.svelte
+@@ -57,6 +57,6 @@
+   export let target = "body";
+ </script>
+ 
+-<div use:portal={target} hidden>
++<div use:portal={target} hidden style="display: contents;">
+   <slot />
+ </div>

@@ -1,0 +1,12 @@
+{
+  "db_name": "MySQL",
+  "query": "DELETE FROM ServerMember WHERE server_id = ? AND user_id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "957cd5f50bcb42e8545fff7f09dfca3cc5795567636e1a1dcb18b8841c779678"
+}

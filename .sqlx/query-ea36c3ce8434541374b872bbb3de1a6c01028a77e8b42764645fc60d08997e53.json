@@ -1,0 +1,12 @@
+{
+  "db_name": "MySQL",
+  "query": "UPDATE User SET began_deletion_at = NOW() WHERE id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": []
+  },
+  "hash": "ea36c3ce8434541374b872bbb3de1a6c01028a77e8b42764645fc60d08997e53"
+}

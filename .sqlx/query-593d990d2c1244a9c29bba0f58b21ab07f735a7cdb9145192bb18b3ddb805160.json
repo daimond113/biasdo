@@ -1,0 +1,25 @@
+{
+  "db_name": "MySQL",
+  "query": "SELECT user_id FROM UserSession WHERE id = ? AND expires_at > NOW()",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "user_id",
+        "type_info": {
+          "type": "LongLong",
+          "flags": "NOT_NULL | MULTIPLE_KEY | UNSIGNED | NO_DEFAULT_VALUE",
+          "char_set": 63,
+          "max_size": 20
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "593d990d2c1244a9c29bba0f58b21ab07f735a7cdb9145192bb18b3ddb805160"
+}

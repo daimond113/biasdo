@@ -1,16 +1,39 @@
 <script lang="ts">
-	import { page } from '$app/stores'
+	import BoxLayout from "$lib/BoxLayout.svelte"
+	import Button from "$lib/Button.svelte"
+	import { page } from "$app/stores"
+
+	let message: string
+
+	$: {
+		const text = $page.error?.message
+		let json
+		try {
+			json = text && JSON.parse(text)
+		} catch {}
+
+		message =
+			json?.error_description ??
+			json?.error ??
+			json?.errors ??
+			json?.message ??
+			text
+	}
+
+	$: {
+		if ($page.status === 401) {
+			localStorage.removeItem("session")
+		}
+	}
 </script>
 
-<div class="w-full h-screen flex flex-col items-center justify-center gap-2">
-	<div class="flex">
-		<img src="/logo.svg" class="w-6 h-6 mr-1 rounded-md" alt={import.meta.env.VITE_APP_NAME} />
-		<span
-			class="min-w-0 whitespace-nowrap overflow-hidden text-ellipsis"
-			style="font-family: var(--logo-font);">{import.meta.env.VITE_APP_NAME}</span
-		>
-	</div>
+<BoxLayout>
 	<h1>{$page.status}</h1>
-	<p>{$page.error?.message}</p>
-	<a href="/app">Go back to the main page</a>
-</div>
+	<p>{message}</p>
+	<div class="mt-4 flex gap-2">
+		<Button href="/">Go home</Button>
+		{#if $page.status === 401}
+			<Button href="/login" variant="secondary">Login</Button>
+		{/if}
+	</div>
+</BoxLayout>

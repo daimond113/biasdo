@@ -1,0 +1,12 @@
+{
+  "db_name": "MySQL",
+  "query": "UPDATE UserSession INNER JOIN User ON UserSession.user_id=User.id SET UserSession.expires_at = DEFAULT, User.began_deletion_at = NULL WHERE UserSession.id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": []
+  },
+  "hash": "681df428c25723edbdb6d884ecba8b3e5ab9467592c9411c5a41f2ea790dcd8c"
+}

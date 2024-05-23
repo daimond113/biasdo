@@ -1,0 +1,58 @@
+{
+  "db_name": "MySQL",
+  "query": "SELECT Channel.id,\nUser.id AS user_id, User.username, User.display_name\nFROM DMChannelRecipient\nINNER JOIN Channel ON DMChannelRecipient.channel_id=Channel.id AND Channel.kind='DM'\nINNER JOIN DMChannelRecipient AS OtherRecipient ON Channel.id=OtherRecipient.channel_id AND OtherRecipient.user_id!=DMChannelRecipient.user_id\nINNER JOIN User ON OtherRecipient.user_id=User.id\nWHERE DMChannelRecipient.user_id = ?\n",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": {
+          "type": "LongLong",
+          "flags": "NOT_NULL | PRIMARY_KEY | UNSIGNED | NO_DEFAULT_VALUE",
+          "char_set": 63,
+          "max_size": 20
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "user_id",
+        "type_info": {
+          "type": "LongLong",
+          "flags": "NOT_NULL | PRIMARY_KEY | UNSIGNED | NO_DEFAULT_VALUE",
+          "char_set": 63,
+          "max_size": 20
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "username",
+        "type_info": {
+          "type": "VarString",
+          "flags": "NOT_NULL | UNIQUE_KEY | MULTIPLE_KEY | NO_DEFAULT_VALUE",
+          "char_set": 224,
+          "max_size": 128
+        }
+      },
+      {
+        "ordinal": 3,
+        "name": "display_name",
+        "type_info": {
+          "type": "VarString",
+          "flags": "",
+          "char_set": 224,
+          "max_size": 128
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "0949aee2ce7773a8245b1e90637fdf897fe5217040d424f2a8743336207c9d0c"
+}

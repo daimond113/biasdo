@@ -1,0 +1,12 @@
+{
+  "db_name": "MySQL",
+  "query": "INSERT INTO ServerMember (server_id, user_id, created_at, nickname) VALUES (?, ?, ?, NULL)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "09bfba968aa011c80fba2ed63e0c594a72d4750a8fbab81195c9a0f1e24e7df2"
+}

@@ -1,0 +1,12 @@
+{
+  "db_name": "MySQL",
+  "query": "DELETE FROM UserFriendRequest WHERE sender_id = ? AND receiver_id = ?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "adf77e45e3c483ffb3c3f342a83fd1d305cc8af5723d6ffbd87d98cc19f7df49"
+}

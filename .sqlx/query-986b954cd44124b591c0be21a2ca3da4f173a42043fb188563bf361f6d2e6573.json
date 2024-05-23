@@ -1,0 +1,12 @@
+{
+  "db_name": "MySQL",
+  "query": "DELETE FROM ServerInvite WHERE id = ? AND server_id = ? AND expires_at > NOW()",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "986b954cd44124b591c0be21a2ca3da4f173a42043fb188563bf361f6d2e6573"
+}

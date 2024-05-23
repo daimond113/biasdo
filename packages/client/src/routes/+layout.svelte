@@ -1,7 +1,6 @@
 <script>
-	import '../app.css'
-	import '@fontsource-variable/inter'
-	import '@fontsource/rammetto-one'
+	import "../app.scss"
+	import "@fontsource-variable/inter"
 </script>
 
 <slot />

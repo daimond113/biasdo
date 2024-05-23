@@ -1,0 +1,36 @@
+{
+  "db_name": "MySQL",
+  "query": "SELECT ServerMember.server_id, DMChannelRecipient.user_id\nFROM Channel\nLEFT JOIN ServerMember ON ServerMember.server_id=Channel.server_id AND ServerMember.user_id=?\nLEFT JOIN DMChannelRecipient ON DMChannelRecipient.channel_id=Channel.id\nWHERE Channel.id = ?\n",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "server_id",
+        "type_info": {
+          "type": "LongLong",
+          "flags": "PRIMARY_KEY | UNSIGNED | NO_DEFAULT_VALUE",
+          "char_set": 63,
+          "max_size": 20
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "user_id",
+        "type_info": {
+          "type": "LongLong",
+          "flags": "PRIMARY_KEY | MULTIPLE_KEY | UNSIGNED | NO_DEFAULT_VALUE",
+          "char_set": 63,
+          "max_size": 20
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      true,
+      true
+    ]
+  },
+  "hash": "3955eda5ad8eef747b7903d116d598da81337a0c59c814f30daa2ad63c3fbd16"
+}

@@ -1,0 +1,25 @@
+{
+  "db_name": "MySQL",
+  "query": "\nSELECT EXISTS(\n    SELECT 1\n    FROM (\n        SELECT sender_id, receiver_id FROM UserFriendRequest\n        UNION\n        SELECT user_id AS `sender_id`, friend_id AS `receiver_id` FROM UserFriend\n    ) AS Friend\n    WHERE (sender_id, receiver_id) = (?, ?) OR (sender_id, receiver_id) = (?, ?)\n) AS `exists: bool`",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "exists: bool",
+        "type_info": {
+          "type": "Long",
+          "flags": "NOT_NULL | BINARY",
+          "char_set": 63,
+          "max_size": 1
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "10e51d6c003b25695791f0d38ab9da169ab90c91f7abed3b239d59036429d61a"
+}
