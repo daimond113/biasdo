@@ -46,7 +46,9 @@
 			<a href="https://buymeacoff.ee/daimond113">donating</a> to help keep it running.
 		</p>
 		<p class="max-w-max break-words text-sm">
-			Use of this app is subject to the <a href="/tos">Terms of Service</a>.
+			Use of this app is subject to the <a href="/tos" rel="terms-of-service"
+				>Terms of Service</a
+			>.
 		</p>
 	</footer>
 </div>

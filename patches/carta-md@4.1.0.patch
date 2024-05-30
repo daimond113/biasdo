@@ -1,11 +1,11 @@
 diff --git a/dist/MarkdownEditor.svelte b/dist/MarkdownEditor.svelte
-index 1a592235495a9c9d076fb33f8c1533355fbaf122..cbf6effc55cb17b52091fd20cabdf15c5d52cdb8 100644
+index 679fad89f0022c0a3c90c0a463b46d1aaa935f82..e613c1ffe16e74b8578c3adca681c6b53431406a 100644
 --- a/dist/MarkdownEditor.svelte
 +++ b/dist/MarkdownEditor.svelte
-@@ -12,6 +12,7 @@ export let scroll = "sync";
- export let disableToolbar = false;
+@@ -13,6 +13,7 @@ export let disableToolbar = false;
  export let placeholder = "";
  export let textarea = {};
+ export let selectedTab = "write";
 +export let onKeydown;
  let userLabels = {};
  export { userLabels as labels };
@@ -19,14 +19,14 @@ index 1a592235495a9c9d076fb33f8c1533355fbaf122..cbf6effc55cb17b52091fd20cabdf15c
  					<!-- Input extensions components -->
  					{#if mounted}
 diff --git a/dist/MarkdownEditor.svelte.d.ts b/dist/MarkdownEditor.svelte.d.ts
-index 4ed14dcdf07b028f4f4718b324840627598c7777..b86e735d675231752eafdab5d7ccc97ceec4e376 100644
+index 99f03fb3c1d45e9d5e4811854fa5e8ff3d7ae74a..6956735d253eb08e728155b4a466362299a95538 100644
 --- a/dist/MarkdownEditor.svelte.d.ts
 +++ b/dist/MarkdownEditor.svelte.d.ts
-@@ -13,6 +13,7 @@ declare const __propDef: {
-         placeholder?: string | undefined;
+@@ -14,6 +14,7 @@ declare const __propDef: {
          textarea?: TextAreaProps | undefined;
+         selectedTab?: "preview" | "write" | undefined;
          labels?: Partial<Labels> | undefined;
-+        onKeydown?: ((event: KeyboardEvent & { currentTarget: EventTarget & HTMLTextAreaElement }) => any) | undefined;
++        onKeydown?: ((e: KeyboardEvent & { currentTarget: EventTarget & HTMLTextAreaElement }) => any) | undefined;
      };
      events: {
          [evt: string]: CustomEvent<any>;

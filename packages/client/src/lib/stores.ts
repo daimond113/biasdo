@@ -78,14 +78,15 @@ let reauthCount = 0
 		}
 
 		if (!localStorage.getItem("session")) {
-			const shouldEnd = ++reauthCount >= 2
-			console.error(
-				`[WebSocket]: No session found, ${shouldEnd ? "no longer " : ""}retrying...`,
-			)
+			const shouldNavigate = ++reauthCount >= 2
+			console.error(`[WebSocket]: No session found, retrying...`)
 
-			if (shouldEnd) {
+			if (shouldNavigate) {
+				console.error(
+					"[WebSocket]: No session found after 3 retries, navigating to /",
+				)
 				reauthCount = 0
-				return goto("/")
+				goto("/")
 			}
 
 			reopenTimeout = setTimeout(open, getReopenTimeout())
@@ -176,8 +177,11 @@ const updateCollection = <
 	return collection
 }
 
+const defaultCompare = (a: `${number}`, b: `${number}`) =>
+	Number(BigInt(a) - BigInt(b))
+
 export const allServers = writable<Collection<Server>>(
-	new BTreeMap(),
+	new BTreeMap([], defaultCompare),
 	(_, update) =>
 		wsUpdateMessage((data) => {
 			if (data.type === "server_create") {
@@ -199,8 +203,15 @@ export const allServers = writable<Collection<Server>>(
 
 export type APIMember = ServerMember & { user: User; id: `${number}-${number}` }
 
+const memberCompare = (a: `${number}-${number}`, b: `${number}-${number}`) => {
+	const [serverA, userA] = a.split("-").map((n) => BigInt(n))
+	const [serverB, userB] = b.split("-").map((n) => BigInt(n))
+
+	return Number(serverA - serverB) || Number(userA - userB)
+}
+
 export const allMembers = writable<BTreeMap<`${number}-${number}`, APIMember>>(
-	new BTreeMap(),
+	new BTreeMap([], memberCompare),
 	(_, update) =>
 		wsUpdateMessage((data) => {
 			if (data.type === "member_create") {
@@ -235,7 +246,7 @@ export const allMembers = writable<BTreeMap<`${number}-${number}`, APIMember>>(
 export type APIChannel = Channel & { recipients?: `${number}`[] }
 
 export const allChannels = writable<Collection<APIChannel>>(
-	new BTreeMap(),
+	new BTreeMap([], defaultCompare),
 	(_, update) =>
 		wsUpdateMessage((data) => {
 			if (data.type === "channel_create") {
@@ -332,7 +343,7 @@ const newMessageNotification = (message: Message) => {
 }
 
 export const allMessages = writable<Collection<Message>>(
-	new BTreeMap(),
+	new BTreeMap([], defaultCompare),
 	(_, update) =>
 		wsUpdateMessage((data) => {
 			if (data.type === "message_create") {
@@ -370,7 +381,7 @@ export const allMessages = writable<Collection<Message>>(
 )
 
 export const allUsers = writable<Collection<User>>(
-	new BTreeMap(),
+	new BTreeMap([], defaultCompare),
 	(_, update) =>
 		wsUpdateMessage((data) => {
 			if (data.type === "user_update") {
@@ -381,7 +392,7 @@ export const allUsers = writable<Collection<User>>(
 
 export const allFriendRequests = writable<
 	Collection<UserFriendRequest & { id: `${number}` }>
->(new BTreeMap(), (_, update) =>
+>(new BTreeMap([], defaultCompare), (_, update) =>
 	wsUpdateMessage((data) => {
 		if (data.type === "friend_request_create") {
 			const id = [data.data.sender.id, data.data.receiver.id].find(
@@ -408,7 +419,7 @@ export const allFriendRequests = writable<
 
 export const allFriends = writable<
 	Collection<UserFriend & { id: `${number}` }>
->(new BTreeMap(), (_, update) =>
+>(new BTreeMap([], defaultCompare), (_, update) =>
 	wsUpdateMessage((data) => {
 		if (data.type === "friend_create") {
 			const id = [data.data.user.id, data.data.friend.id].find(
@@ -497,6 +508,8 @@ export const filterResponse = async <T>(
 
 	if (!response.ok) {
 		throw new Error(json ?? text, {
+			// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+			// @ts-ignore
 			code: response.status,
 		})
 	}
@@ -663,14 +676,14 @@ export const messages = derived(
 )
 
 export const invalidateAll = () => {
-	allServers.update(() => new BTreeMap())
-	allMembers.update(() => new BTreeMap())
-	allChannels.update(() => new BTreeMap())
+	allServers.update(() => new BTreeMap([], defaultCompare))
+	allMembers.update(() => new BTreeMap([], memberCompare))
+	allChannels.update(() => new BTreeMap([], defaultCompare))
 	allInvites.update(() => new Map())
-	allMessages.update(() => new BTreeMap())
-	allUsers.update(() => new BTreeMap())
-	allFriendRequests.update(() => new BTreeMap())
-	allFriends.update(() => new BTreeMap())
+	allMessages.update(() => new BTreeMap([], defaultCompare))
+	allUsers.update(() => new BTreeMap([], defaultCompare))
+	allFriendRequests.update(() => new BTreeMap([], defaultCompare))
+	allFriends.update(() => new BTreeMap([], defaultCompare))
 	wsStore.update((ws) => {
 		ws?.close(3001)
 		reopenCount = 0
@@ -681,12 +694,14 @@ export const invalidateAll = () => {
 
 export const currentServerData = derived(
 	[servers, currentServerId],
-	([$servers, $currentServerId]) => $servers.get($currentServerId),
+	([$servers, $currentServerId]) =>
+		$currentServerId && $servers.get($currentServerId),
 )
 
 export const currentChannelData = derived(
 	[channels, currentChannelId],
-	([$channels, $currentChannelId]) => $channels.get($currentChannelId),
+	([$channels, $currentChannelId]) =>
+		$currentChannelId && $channels.get($currentChannelId),
 )
 
 export const isMobileUI = readable<boolean>(false, (set) => {
@@ -712,6 +727,7 @@ export const me = derived(
 export const membersSidebarOpen = writable<boolean>(false)
 
 // used for debugging
+// @ts-expect-error used for debugging
 globalThis.__stores = {
 	currentServerId,
 	currentChannelId,
@@ -733,4 +749,5 @@ globalThis.__stores = {
 	wsStore,
 	page,
 }
+// @ts-expect-error used for debugging
 globalThis.__storeGet = get
