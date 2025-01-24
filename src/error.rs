@@ -1,5 +1,4 @@
-use actix_web::body::BoxBody;
-use actix_web::{HttpResponse, ResponseError};
+use actix_web::{body::BoxBody, HttpResponse, ResponseError};
 use log::error;
 use serde::Serialize;
 use thiserror::Error;
