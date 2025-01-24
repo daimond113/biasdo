@@ -339,7 +339,7 @@ fn main() -> std::io::Result<()> {
 	log_builder.parse_env(pretty_env_logger::env_logger::Env::default().default_filter_or("info"));
 
 	if with_sentry {
-		let logger = sentry_log::SentryLogger::with_dest(log_builder.build());
+		let logger = sentry::integrations::log::SentryLogger::with_dest(log_builder.build());
 		log::set_boxed_logger(Box::new(logger)).unwrap();
 		log::set_max_level(log::LevelFilter::Info);
 	} else {
