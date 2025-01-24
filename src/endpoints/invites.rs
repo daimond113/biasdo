@@ -1,7 +1,7 @@
 use actix_web::{web, HttpResponse, Responder};
 use cuid2::CuidConstructor;
-use once_cell::sync::Lazy;
 use sqlx::{mysql::MySqlDatabaseError, query};
+use std::sync::LazyLock;
 
 use crate::{
 	error::{Error, ErrorResponse},
@@ -18,8 +18,8 @@ use crate::{
 	AppState,
 };
 
-static INVITE_GENERATOR: Lazy<CuidConstructor> =
-	Lazy::new(|| CuidConstructor::new().with_length(24));
+static INVITE_GENERATOR: LazyLock<CuidConstructor> =
+	LazyLock::new(|| CuidConstructor::new().with_length(24));
 
 pub async fn create_invite(
 	identity: web::ReqData<Identity>,

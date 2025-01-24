@@ -1,12 +1,10 @@
-use std::collections::HashSet;
-
 use actix_web::{web, HttpResponse, Responder};
 use cuid2::CuidConstructor;
-use once_cell::sync::Lazy;
 use serde::Deserialize;
 use serde_json::json;
 use serde_with::{formats::SpaceSeparator, serde_as, StringWithSeparator};
 use sqlx::query;
+use std::{collections::HashSet, sync::LazyLock};
 use url::Url;
 
 use crate::{
@@ -17,7 +15,8 @@ use crate::{
 	AppState,
 };
 
-static CODE_GENERATOR: Lazy<CuidConstructor> = Lazy::new(|| CuidConstructor::new().with_length(32));
+static CODE_GENERATOR: LazyLock<CuidConstructor> =
+	LazyLock::new(|| CuidConstructor::new().with_length(32));
 
 #[serde_as]
 #[derive(Debug, Deserialize)]

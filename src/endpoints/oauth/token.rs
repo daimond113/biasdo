@@ -8,12 +8,11 @@ use crate::{
 use actix_web::{web, HttpResponse, Responder};
 use base64::Engine;
 use cuid2::CuidConstructor;
-use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use serde_with::{formats::SpaceSeparator, serde_as, StringWithSeparator};
 use sha2::{Digest, Sha256};
 use sqlx::query;
-use std::collections::HashSet;
+use std::{collections::HashSet, sync::LazyLock};
 
 #[serde_as]
 #[derive(Debug, Deserialize)]
@@ -36,8 +35,8 @@ pub enum GrantType {
 	},
 }
 
-static TOKEN_GENERATOR: Lazy<CuidConstructor> =
-	Lazy::new(|| CuidConstructor::new().with_length(64));
+static TOKEN_GENERATOR: LazyLock<CuidConstructor> =
+	LazyLock::new(|| CuidConstructor::new().with_length(64));
 
 #[derive(Debug, Serialize)]
 struct TokenResponse {

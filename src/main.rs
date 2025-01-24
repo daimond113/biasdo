@@ -8,11 +8,10 @@ use crate::{middleware::TokenKey, models::scope::Scope};
 use actix_cors::Cors;
 use actix_governor::{Governor, GovernorConfigBuilder};
 use actix_web::{
-	middleware::{Compress, Condition, Logger, NormalizePath, TrailingSlash},
+	middleware::{from_fn, Compress, Condition, Logger, NormalizePath, TrailingSlash},
 	rt::System,
 	web, App, HttpServer,
 };
-use actix_web_lab::middleware::from_fn;
 use dashmap::DashMap;
 use log::info;
 use snowflaked::Generator;
@@ -93,7 +92,7 @@ async fn run(with_sentry: bool) -> std::io::Result<()> {
 	let generic_governor_config = GovernorConfigBuilder::default()
 		.key_extractor(TokenKey)
 		.burst_size(250)
-		.per_second(5)
+		.requests_per_second(50)
 		.use_headers()
 		.finish()
 		.unwrap();

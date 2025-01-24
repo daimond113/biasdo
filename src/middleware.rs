@@ -5,9 +5,9 @@ use actix_web::{
 	body::MessageBody,
 	dev::{ServiceRequest, ServiceResponse},
 	http::header::AUTHORIZATION,
+	middleware::Next,
 	web, Error as ActixError, HttpMessage, HttpResponse, ResponseError,
 };
-use actix_web_lab::middleware::Next;
 use base64::Engine;
 use sqlx::query;
 

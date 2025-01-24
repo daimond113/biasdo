@@ -1,12 +1,13 @@
-use std::{collections::HashSet, sync::Mutex};
-
 use actix_web::{web, HttpResponse, Responder};
 use cuid2::CuidConstructor;
-use once_cell::sync::Lazy;
 use password_auth::generate_hash;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use sqlx::{mysql::MySqlDatabaseError, query, Executor, MySql};
+use std::{
+	collections::HashSet,
+	sync::{LazyLock, Mutex},
+};
 use validator::{Validate, ValidationError};
 
 use crate::{
@@ -43,8 +44,8 @@ pub struct RegistrationBody {
 	email: String,
 }
 
-static SESSION_ID_GENERATOR: Lazy<CuidConstructor> =
-	Lazy::new(|| CuidConstructor::new().with_length(64));
+static SESSION_ID_GENERATOR: LazyLock<CuidConstructor> =
+	LazyLock::new(|| CuidConstructor::new().with_length(64));
 
 #[derive(Debug, Serialize)]
 struct SessionBody {

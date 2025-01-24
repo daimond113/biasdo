@@ -1,11 +1,12 @@
-use std::{collections::HashMap, sync::Mutex};
-
 use actix_web::{web, HttpResponse, Responder};
 use cuid2::CuidConstructor;
-use once_cell::sync::Lazy;
 use serde::Deserialize;
 use serde_json::Value;
 use sqlx::query;
+use std::{
+	collections::HashMap,
+	sync::{LazyLock, Mutex},
+};
 use url::Url;
 use validator::Validate;
 
@@ -34,8 +35,8 @@ pub struct RegisterClientBody {
 	client_type: ClientType,
 }
 
-static CLIENT_SECRET_GENERATOR: Lazy<CuidConstructor> =
-	Lazy::new(|| CuidConstructor::new().with_length(64));
+static CLIENT_SECRET_GENERATOR: LazyLock<CuidConstructor> =
+	LazyLock::new(|| CuidConstructor::new().with_length(64));
 
 pub async fn register_client(
 	identity: web::ReqData<Identity>,
