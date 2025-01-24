@@ -1,4 +1,4 @@
-FROM rust:1.77-bullseye AS builder
+FROM rust:1.84-bullseye AS builder
 
 WORKDIR /usr/src/backend
 

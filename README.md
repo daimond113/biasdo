@@ -22,7 +22,7 @@ detailed list can be found in the [root package.json](package.json), [client pac
 
 ## Public instance
 
-The official public biasdo instance is hosted by [fly.io](https://fly.io) (backend) and [Vercel](https://vercel.com) (frontend). The instance is available at [biasdo.daimond113.com](https://biasdo.daimond113.com), and it's api at [api.biasdo.daimond113.com](https://api.biasdo.daimond113.com).
+The official public biasdo instance is hosted on a Raspberry PI for the backend and [Vercel](https://vercel.com) for the frontend. The instance is available at [biasdo.daimond113.com](https://biasdo.daimond113.com), and it's api at [biasdo-api.daimond113.com](https://biasdo-api.daimond113.com).
 
 ## Self-hosting
 
@@ -32,7 +32,7 @@ The official public biasdo instance is hosted by [fly.io](https://fly.io) (backe
 2. Go into the `packages/client` directory and create a `.env` file with the following contents:
 
 ```sh
-VITE_API_URL= # the url of the api, for example https://api.biasdo.daimond113.com/v0 (IMPORTANT: do not include a trailing slash)
+VITE_API_URL= # the url of the api, for example https://biasdo-api.daimond113.com/v0 (IMPORTANT: do not include a trailing slash)
 ```
 
 3. Install the dependencies

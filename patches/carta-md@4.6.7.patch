@@ -1,0 +1,52 @@
+diff --git a/dist/MarkdownEditor.svelte b/dist/MarkdownEditor.svelte
+index 55c967685e7a845c6b15bddaf113ce636a9a9834..21beb0bb49d2f357460153d254b914ff37824aef 100644
+--- a/dist/MarkdownEditor.svelte
++++ b/dist/MarkdownEditor.svelte
+@@ -20,6 +20,7 @@ export let disableToolbar = false;
+ export let placeholder = "";
+ export let textarea = {};
+ export let selectedTab = "write";
++export let onKeydown;
+ let userLabels = {};
+ export { userLabels as labels };
+ const labels = {
+@@ -96,6 +97,7 @@ onMount(() => mounted = true);
+ 				bind:resize={resizeInput}
+ 				bind:elem={inputElem}
+ 				on:scroll={handleScroll}
++				{onKeydown}
+ 			>
+ 				<!-- Input extensions components -->
+ 				{#if mounted}
+diff --git a/dist/MarkdownEditor.svelte.d.ts b/dist/MarkdownEditor.svelte.d.ts
+index b17d80c57804055fb217b08976ebd6bd8eb7e9ac..324623df568ca688272d34f39983482450eebdc1 100644
+--- a/dist/MarkdownEditor.svelte.d.ts
++++ b/dist/MarkdownEditor.svelte.d.ts
+@@ -39,6 +39,7 @@ declare const __propDef: {
+         /**
+              * The labels to use for the editor.
+              */ labels?: Partial<Labels> | undefined;
++        onKeydown?: ((e: KeyboardEvent & { currentTarget: EventTarget & HTMLTextAreaElement }) => any) | undefined;
+     };
+     events: {
+         [evt: string]: CustomEvent<any>;
+diff --git a/dist/internal/components/Input.svelte b/dist/internal/components/Input.svelte
+index b2c23521db0b9d3e350e0efcd29dfb535165fb45..e2fdb7a900205f2117b4c1c80c6a41e9d84c7eb5 100644
+--- a/dist/internal/components/Input.svelte
++++ b/dist/internal/components/Input.svelte
+@@ -13,6 +13,7 @@ export let value = "";
+ export let placeholder = "";
+ export let elem;
+ export let props = {};
++export let onKeydown;
+ export let hidden = false;
+ let textarea;
+ let highlightElem;
+@@ -134,6 +135,7 @@ onMount(() => {
+ 			bind:value
+ 			bind:this={textarea}
+ 			on:scroll={() => (textarea.scrollTop = 0)}
++			on:keydown={onKeydown}
+ 		></textarea>
+ 	</div>
+ 

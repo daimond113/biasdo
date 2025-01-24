@@ -31,7 +31,7 @@ index dd0d175a45615889599eaa15ab275e373f8c06c1..121695d4bf6fca726b8ee7a290870c03
       * @type {() => number}
       */
 diff --git a/dist/VirtualScroll.svelte.d.ts b/dist/VirtualScroll.svelte.d.ts
-index b1d153a3fcf4bd281a89e340df5c74879860ce96..258f0cbb0d73cf0aa760ddd37db803938b74391f 100644
+index b1d153a3fcf4bd281a89e340df5c74879860ce96..5812f900ee3454a6ad7d059e68a6aafa2bb21660 100644
 --- a/dist/VirtualScroll.svelte.d.ts
 +++ b/dist/VirtualScroll.svelte.d.ts
 @@ -12,6 +12,7 @@ export default class VirtualScroll extends SvelteComponentTyped<{
@@ -50,7 +50,7 @@ index b1d153a3fcf4bd281a89e340df5c74879860ce96..258f0cbb0d73cf0aa760ddd37db80393
  }, {
      scroll: CustomEvent<any>;
      top: CustomEvent<any>;
-@@ -44,47 +46,50 @@ export default class VirtualScroll extends SvelteComponentTyped<{
+@@ -44,6 +46,7 @@ export default class VirtualScroll extends SvelteComponentTyped<{
      get scrollToOffset(): (offset: number) => void;
      get scrollToIndex(): (index: number) => void;
      get scrollToBottom(): () => void;
@@ -58,83 +58,19 @@ index b1d153a3fcf4bd281a89e340df5c74879860ce96..258f0cbb0d73cf0aa760ddd37db80393
  }
  export type VirtualScrollProps = typeof __propDef.props;
  export type VirtualScrollEvents = typeof __propDef.events;
- export type VirtualScrollSlots = typeof __propDef.slots;
- import { SvelteComponentTyped } from "svelte";
- declare const __propDef: {
--    props: {
--        data: Array<any>;
--        keeps?: number | undefined;
--        key?: string | undefined;
--        estimateSize?: number | undefined;
--        isHorizontal?: boolean | undefined;
--        start?: number | undefined;
--        offset?: number | undefined;
--        pageMode?: boolean | undefined;
--        topThreshold?: number | undefined;
--        bottomThreshold?: number | undefined;
--        getSize?: ((id: number) => number) | undefined;
--        getSizes?: (() => number) | undefined;
--        getOffset?: (() => number) | undefined;
--        getClientSize?: (() => number) | undefined;
--        getScrollSize?: (() => number) | undefined;
--        updatePageModeFront?: (() => void) | undefined;
--        scrollToOffset?: ((offset: number) => void) | undefined;
--        scrollToIndex?: ((index: number) => void) | undefined;
--        scrollToBottom?: (() => void) | undefined;
--    };
--    events: {
--        scroll: CustomEvent<any>;
--        top: CustomEvent<any>;
--        bottom: CustomEvent<any>;
--    } & {
--        [evt: string]: CustomEvent<any>;
--    };
--    slots: {
--        header: {};
--        default: {
--            data: any;
--            index: any;
--        };
--        footer: {};
--    };
--};
-+	props: {
-+		data: Array<any>
-+		keeps?: number | undefined
-+		key?: string | undefined
-+		estimateSize?: number | undefined
-+		isHorizontal?: boolean | undefined
-+		start?: number | undefined
-+		offset?: number | undefined
-+		pageMode?: boolean | undefined
-+		topThreshold?: number | undefined
-+		bottomThreshold?: number | undefined
-+        root?: HTMLDivElement | undefined
-+		getSize?: ((id: number) => number) | undefined
-+		getSizes?: (() => number) | undefined
-+		getOffset?: (() => number) | undefined
-+		getClientSize?: (() => number) | undefined
-+		getScrollSize?: (() => number) | undefined
-+		updatePageModeFront?: (() => void) | undefined
-+		scrollToOffset?: ((offset: number) => void) | undefined
-+		scrollToIndex?: ((index: number) => void) | undefined
-+		scrollToBottom?: (() => void) | undefined
-+		getOffsetDimension?: () => number
-+	}
-+	events: {
-+		scroll: CustomEvent<any>
-+		top: CustomEvent<any>
-+		bottom: CustomEvent<any>
-+	} & {
-+		[evt: string]: CustomEvent<any>
-+	}
-+	slots: {
-+		header: {}
-+		default: {
-+			data: any
-+			index: any
-+		}
-+		footer: {}
-+	}
-+}
- export {};
+@@ -61,6 +64,7 @@ declare const __propDef: {
+         pageMode?: boolean | undefined;
+         topThreshold?: number | undefined;
+         bottomThreshold?: number | undefined;
++        root?: HTMLDivElement | undefined;
+         getSize?: ((id: number) => number) | undefined;
+         getSizes?: (() => number) | undefined;
+         getOffset?: (() => number) | undefined;
+@@ -70,6 +74,7 @@ declare const __propDef: {
+         scrollToOffset?: ((offset: number) => void) | undefined;
+         scrollToIndex?: ((index: number) => void) | undefined;
+         scrollToBottom?: (() => void) | undefined;
++        getOffsetDimension?: () => number
+     };
+     events: {
+         scroll: CustomEvent<any>;
