@@ -6,8 +6,8 @@ use ts_rs::TS;
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, TS, Hash)]
 #[ts(export)]
 pub struct Invite {
-    pub id: String,
-    pub server: Server,
-    pub created_at: DateTime<Utc>,
-    pub expires_at: DateTime<Utc>,
+	pub id: String,
+	pub server: Server,
+	pub created_at: DateTime<Utc>,
+	pub expires_at: DateTime<Utc>,
 }

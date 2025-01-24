@@ -1,25 +1,25 @@
 use crate::{
-    error::Error,
-    middleware::Identity,
-    models::{
-        channel::{Channel, ChannelKind},
-        scope::{HasScope, ReadWrite, Scope},
-        user::User,
-    },
-    AppState,
+	error::Error,
+	middleware::Identity,
+	models::{
+		channel::{Channel, ChannelKind},
+		scope::{HasScope, ReadWrite, Scope},
+		user::User,
+	},
+	AppState,
 };
 use actix_web::{web, HttpResponse, Responder};
 use sqlx::query;
 
 pub async fn get_direct_channels(
-    identity: web::ReqData<Identity>,
-    app_state: web::Data<AppState>,
+	identity: web::ReqData<Identity>,
+	app_state: web::Data<AppState>,
 ) -> Result<impl Responder, Error> {
-    let Some(user_id) = identity.has_scope(Scope::Friends(ReadWrite::Read)) else {
-        return Ok(HttpResponse::Forbidden().finish());
-    };
+	let Some(user_id) = identity.has_scope(Scope::Friends(ReadWrite::Read)) else {
+		return Ok(HttpResponse::Forbidden().finish());
+	};
 
-    let channels = query!(
+	let channels = query!(
         r#"SELECT Channel.id,
 User.id AS user_id, User.username, User.display_name
 FROM DMChannelRecipient
@@ -33,20 +33,20 @@ WHERE DMChannelRecipient.user_id = ?
     .fetch_all(&app_state.db)
     .await?;
 
-    Ok(HttpResponse::Ok().json(
-        channels
-            .into_iter()
-            .map(|row| Channel {
-                id: row.id,
-                name: "".to_string(),
-                kind: ChannelKind::DM,
-                server_id: None,
-                user: Some(User {
-                    id: row.user_id,
-                    username: row.username,
-                    display_name: row.display_name,
-                }),
-            })
-            .collect::<Vec<_>>(),
-    ))
+	Ok(HttpResponse::Ok().json(
+		channels
+			.into_iter()
+			.map(|row| Channel {
+				id: row.id,
+				name: "".to_string(),
+				kind: ChannelKind::DM,
+				server_id: None,
+				user: Some(User {
+					id: row.user_id,
+					username: row.username,
+					display_name: row.display_name,
+				}),
+			})
+			.collect::<Vec<_>>(),
+	))
 }

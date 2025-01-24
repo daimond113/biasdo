@@ -46,26 +46,26 @@ macro_rules! update_structure {
 
 pub fn trim_string<'de, D>(deserializer: D) -> Result<String, D::Error>
 where
-    D: Deserializer<'de>,
+	D: Deserializer<'de>,
 {
-    let s = String::deserialize(deserializer)?;
-    Ok(s.trim().to_string())
+	let s = String::deserialize(deserializer)?;
+	Ok(s.trim().to_string())
 }
 
 pub fn trim_opt_string<'de, D>(deserializer: D) -> Result<Option<String>, D::Error>
 where
-    D: Deserializer<'de>,
+	D: Deserializer<'de>,
 {
-    let s = Option::<String>::deserialize(deserializer)?;
-    Ok(s.map(|s| s.trim().to_string()))
+	let s = Option::<String>::deserialize(deserializer)?;
+	Ok(s.map(|s| s.trim().to_string()))
 }
 
 // https://github.com/serde-rs/serde/issues/984
 pub fn deserialize_some_trimmed<'de, D>(deserializer: D) -> Result<Option<Option<String>>, D::Error>
 where
-    D: Deserializer<'de>,
+	D: Deserializer<'de>,
 {
-    Deserialize::deserialize(deserializer)
-        .map(|s: Option<String>| s.map(|s| s.to_string().trim().to_string()))
-        .map(Some)
+	Deserialize::deserialize(deserializer)
+		.map(|s: Option<String>| s.map(|s| s.to_string().trim().to_string()))
+		.map(Some)
 }

@@ -13,12 +13,12 @@ pub mod user;
 
 // sending 64-bit integers will not work in JavaScript and other languages
 pub fn id_str<S: Serializer>(id: &u64, s: S) -> Result<S::Ok, S::Error> {
-    s.serialize_str(&id.to_string())
+	s.serialize_str(&id.to_string())
 }
 
 pub fn opt_id_str<S: Serializer>(id: &Option<u64>, s: S) -> Result<S::Ok, S::Error> {
-    match id {
-        Some(id) => s.serialize_str(&id.to_string()),
-        None => s.serialize_none(),
-    }
+	match id {
+		Some(id) => s.serialize_str(&id.to_string()),
+		None => s.serialize_none(),
+	}
 }

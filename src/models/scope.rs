@@ -5,19 +5,19 @@ use ts_rs::TS;
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, TS)]
 pub enum ReadWrite {
-    Read,
-    Write,
+	Read,
+	Write,
 }
 
 impl std::ops::Not for ReadWrite {
-    type Output = Self;
+	type Output = Self;
 
-    fn not(self) -> Self::Output {
-        match self {
-            ReadWrite::Read => ReadWrite::Write,
-            ReadWrite::Write => ReadWrite::Read,
-        }
-    }
+	fn not(self) -> Self::Output {
+		match self {
+			ReadWrite::Read => ReadWrite::Write,
+			ReadWrite::Write => ReadWrite::Read,
+		}
+	}
 }
 
 macro_rules! scopes {
@@ -175,72 +175,72 @@ macro_rules! scopes {
 }
 
 scopes! {
-    Scope,
-    mut Profile = "profile",
-    mut Servers = "servers",
-    mut Messages = "messages",
-    mut Friends = "friends",
+	Scope,
+	mut Profile = "profile",
+	mut Servers = "servers",
+	mut Messages = "messages",
+	mut Friends = "friends",
 }
 
 pub trait HasScope {
-    type Output;
+	type Output;
 
-    fn has_scope(&self, scope: Scope) -> Option<Self::Output>;
+	fn has_scope(&self, scope: Scope) -> Option<Self::Output>;
 }
 
 impl HasScope for Identity {
-    type Output = u64;
+	type Output = u64;
 
-    fn has_scope(&self, scope: Scope) -> Option<u64> {
-        match self {
-            Identity::User((id, scopes)) => match scopes {
-                Some(scopes) => {
-                    if scopes.contains(&scope) {
-                        Some(*id)
-                    } else if let Some(access) = scope.access() {
-                        // if the user has Write access, they can also read
-                        if access == ReadWrite::Read && scopes.contains(&!scope) {
-                            Some(*id)
-                        } else {
-                            None
-                        }
-                    } else {
-                        None
-                    }
-                }
-                None => Some(*id),
-            },
-            Identity::Client(_) => None,
-        }
-    }
+	fn has_scope(&self, scope: Scope) -> Option<u64> {
+		match self {
+			Identity::User((id, scopes)) => match scopes {
+				Some(scopes) => {
+					if scopes.contains(&scope) {
+						Some(*id)
+					} else if let Some(access) = scope.access() {
+						// if the user has Write access, they can also read
+						if access == ReadWrite::Read && scopes.contains(&!scope) {
+							Some(*id)
+						} else {
+							None
+						}
+					} else {
+						None
+					}
+				}
+				None => Some(*id),
+			},
+			Identity::Client(_) => None,
+		}
+	}
 }
 
 impl HasScope for HashSet<Scope> {
-    type Output = ();
+	type Output = ();
 
-    fn has_scope(&self, scope: Scope) -> Option<()> {
-        if self.contains(&scope) {
-            Some(())
-        } else if let Some(access) = scope.access() {
-            // if the user has Write access, they can also read
-            if access == ReadWrite::Read && self.contains(&!scope) {
-                Some(())
-            } else {
-                None
-            }
-        } else {
-            None
-        }
-    }
+	fn has_scope(&self, scope: Scope) -> Option<()> {
+		if self.contains(&scope) {
+			Some(())
+		} else if let Some(access) = scope.access() {
+			// if the user has Write access, they can also read
+			if access == ReadWrite::Read && self.contains(&!scope) {
+				Some(())
+			} else {
+				None
+			}
+		} else {
+			None
+		}
+	}
 }
 
 impl HasScope for Option<HashSet<Scope>> {
-    type Output = ();
+	type Output = ();
 
-    fn has_scope(&self, scope: Scope) -> Option<()> {
-        match self {
-            Some(scopes) => scopes.has_scope(scope),
-            None => Some(()),
-        }
-    }
+	fn has_scope(&self, scope: Scope) -> Option<()> {
+		match self {
+			Some(scopes) => scopes.has_scope(scope),
+			None => Some(()),
+		}
+	}
 }

@@ -6,8 +6,8 @@ use ts_rs::TS;
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, TS, Hash)]
 #[ts(export)]
 pub struct UserFriend {
-    pub user: User,
-    pub friend: User,
-    pub created_at: DateTime<Utc>,
-    pub channel: Channel,
+	pub user: User,
+	pub friend: User,
+	pub created_at: DateTime<Utc>,
+	pub channel: Channel,
 }
