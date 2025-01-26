@@ -58,3 +58,5 @@ impl ResponseError for BackendError {
 		}
 	}
 }
+
+pub type ApiResult = Result<HttpResponse, BackendError>;

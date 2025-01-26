@@ -1,10 +1,10 @@
-use actix_web::{web, HttpResponse, Responder};
+use actix_web::{web, HttpResponse};
 use serde::Deserialize;
 use sqlx::query;
 use validator::Validate;
 
 use crate::{
-	error::BackendError,
+	error::ApiResult,
 	middleware::Identity,
 	models::{
 		scope::{HasScope, ReadWrite, Scope},
@@ -46,7 +46,7 @@ pub async fn get_members(
 	app_state: web::Data<AppState>,
 	path: web::Path<u64>,
 	query: web::Query<GetMembersQuery>,
-) -> Result<impl Responder, BackendError> {
+) -> ApiResult {
 	query.validate()?;
 
 	let Some(user_id) = identity.has_scope(Scope::Servers(ReadWrite::Read)) else {
@@ -100,7 +100,7 @@ pub async fn get_member(
 	identity: web::ReqData<Identity>,
 	app_state: web::Data<AppState>,
 	path: web::Path<(u64, u64)>,
-) -> Result<impl Responder, BackendError> {
+) -> ApiResult {
 	let Some(user_id) = identity.has_scope(Scope::Servers(ReadWrite::Read)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
@@ -150,7 +150,7 @@ pub async fn update_member(
 	app_state: web::Data<AppState>,
 	path: web::Path<(u64, u64)>,
 	body: web::Json<UpdateMemberBody>,
-) -> Result<impl Responder, BackendError> {
+) -> ApiResult {
 	body.validate()?;
 
 	let Some(user_id) = identity.has_scope(Scope::Servers(ReadWrite::Write)) else {

@@ -1,9 +1,9 @@
-use actix_web::{web, HttpResponse, Responder};
+use actix_web::{web, HttpResponse};
 use sqlx::{mysql::MySqlDatabaseError, query};
 use std::sync::Mutex;
 
 use crate::{
-	error::{BackendError, ErrorResponse},
+	error::{ApiResult, ErrorResponse},
 	middleware::Identity,
 	models::{
 		channel::{Channel, ChannelKind},
@@ -37,7 +37,7 @@ macro_rules! user_friend_request_row {
 pub async fn get_friend_requests(
 	identity: web::ReqData<Identity>,
 	app_state: web::Data<AppState>,
-) -> Result<impl Responder, BackendError> {
+) -> ApiResult {
 	let Some(user_id) = identity.has_scope(Scope::Friends(ReadWrite::Read)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
@@ -68,7 +68,7 @@ pub async fn get_friend_request(
 	identity: web::ReqData<Identity>,
 	app_state: web::Data<AppState>,
 	path: web::Path<u64>,
-) -> Result<impl Responder, BackendError> {
+) -> ApiResult {
 	let Some(user_id) = identity.has_scope(Scope::Friends(ReadWrite::Read)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
@@ -101,7 +101,7 @@ pub async fn create_friend_request(
 	identity: web::ReqData<Identity>,
 	app_state: web::Data<AppState>,
 	path: web::Path<u64>,
-) -> Result<impl Responder, BackendError> {
+) -> ApiResult {
 	let Some(user_id) = identity.has_scope(Scope::Friends(ReadWrite::Write)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
@@ -185,7 +185,7 @@ pub async fn delete_friend_request(
 	identity: web::ReqData<Identity>,
 	app_state: web::Data<AppState>,
 	path: web::Path<u64>,
-) -> Result<impl Responder, BackendError> {
+) -> ApiResult {
 	let Some(user_id) = identity.has_scope(Scope::Friends(ReadWrite::Write)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
@@ -229,7 +229,7 @@ pub async fn accept_friend_request(
 	app_state: web::Data<AppState>,
 	path: web::Path<u64>,
 	generator: web::Data<Mutex<snowflaked::Generator>>,
-) -> Result<impl Responder, BackendError> {
+) -> ApiResult {
 	let Some(user_id) = identity.has_scope(Scope::Friends(ReadWrite::Write)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};

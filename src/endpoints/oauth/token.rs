@@ -1,11 +1,11 @@
 use crate::{
 	endpoints::oauth::{CodeChallengeMethod, ErrorResponse},
-	error::BackendError,
+	error::ApiResult,
 	middleware::Identity,
 	models::scope::Scope,
 	AppState,
 };
-use actix_web::{web, HttpResponse, Responder};
+use actix_web::{web, HttpResponse};
 use base64::Engine;
 use cuid2::CuidConstructor;
 use serde::{Deserialize, Serialize};
@@ -71,7 +71,7 @@ pub async fn exchange_token(
 	app_state: web::Data<AppState>,
 	body: web::Form<GrantType>,
 	identity: web::ReqData<Option<Identity>>,
-) -> Result<impl Responder, BackendError> {
+) -> ApiResult {
 	let identity = identity.into_inner();
 
 	match body.into_inner() {

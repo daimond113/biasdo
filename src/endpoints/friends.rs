@@ -1,5 +1,5 @@
 use crate::{
-	error::BackendError,
+	error::ApiResult,
 	middleware::Identity,
 	models::{
 		channel::{Channel, ChannelKind},
@@ -10,7 +10,7 @@ use crate::{
 	ws::{send_updates, WsUpdateEvent},
 	AppState,
 };
-use actix_web::{web, HttpResponse, Responder};
+use actix_web::{web, HttpResponse};
 use sqlx::query;
 
 macro_rules! user_friend_row {
@@ -43,7 +43,7 @@ macro_rules! user_friend_row {
 pub async fn get_friends(
 	identity: web::ReqData<Identity>,
 	app_state: web::Data<AppState>,
-) -> Result<impl Responder, BackendError> {
+) -> ApiResult {
 	let Some(user_id) = identity.has_scope(Scope::Friends(ReadWrite::Read)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
@@ -78,7 +78,7 @@ pub async fn get_friend(
 	identity: web::ReqData<Identity>,
 	app_state: web::Data<AppState>,
 	path: web::Path<u64>,
-) -> Result<impl Responder, BackendError> {
+) -> ApiResult {
 	let Some(user_id) = identity.has_scope(Scope::Friends(ReadWrite::Read)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
@@ -115,7 +115,7 @@ pub async fn delete_friend(
 	identity: web::ReqData<Identity>,
 	app_state: web::Data<AppState>,
 	path: web::Path<u64>,
-) -> Result<impl Responder, BackendError> {
+) -> ApiResult {
 	let Some(user_id) = identity.has_scope(Scope::Friends(ReadWrite::Write)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};

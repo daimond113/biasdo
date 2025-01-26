@@ -1,4 +1,4 @@
-use actix_web::{web, HttpResponse, Responder};
+use actix_web::{web, HttpResponse};
 use cuid2::CuidConstructor;
 use serde::Deserialize;
 use serde_json::Value;
@@ -11,7 +11,7 @@ use url::Url;
 use validator::Validate;
 
 use crate::{
-	error::BackendError, middleware::Identity, models::client::Client, update_structure, AppState,
+	error::ApiResult, middleware::Identity, models::client::Client, update_structure, AppState,
 };
 
 #[derive(Debug, Deserialize, Default)]
@@ -43,7 +43,7 @@ pub async fn register_client(
 	generator: web::Data<Mutex<snowflaked::Generator>>,
 	app_state: web::Data<AppState>,
 	body: web::Json<RegisterClientBody>,
-) -> Result<impl Responder, BackendError> {
+) -> ApiResult {
 	body.validate()?;
 
 	let user_id = match identity.into_inner() {
@@ -110,7 +110,7 @@ pub async fn register_client(
 pub async fn get_clients(
 	identity: web::ReqData<Identity>,
 	app_state: web::Data<AppState>,
-) -> Result<impl Responder, BackendError> {
+) -> ApiResult {
 	let user_id = match identity.into_inner() {
 		Identity::User((id, None)) => id,
 		_ => return Ok(HttpResponse::Forbidden().finish()),
@@ -149,7 +149,7 @@ pub async fn get_client(
 	identity: web::ReqData<Identity>,
 	app_state: web::Data<AppState>,
 	client_id: web::Path<u64>,
-) -> Result<impl Responder, BackendError> {
+) -> ApiResult {
 	let user_id = match identity.into_inner() {
 		Identity::User((id, None)) => id,
 		_ => return Ok(HttpResponse::Forbidden().finish()),
@@ -203,7 +203,7 @@ pub async fn update_client(
 	app_state: web::Data<AppState>,
 	client_id: web::Path<u64>,
 	body: web::Json<UpdateClientBody>,
-) -> Result<impl Responder, BackendError> {
+) -> ApiResult {
 	body.validate()?;
 
 	let user_id = match identity.into_inner() {
@@ -293,7 +293,7 @@ pub async fn delete_client(
 	identity: web::ReqData<Identity>,
 	app_state: web::Data<AppState>,
 	client_id: web::Path<u64>,
-) -> Result<impl Responder, BackendError> {
+) -> ApiResult {
 	let user_id = match identity.into_inner() {
 		Identity::User((id, None)) => id,
 		_ => return Ok(HttpResponse::Forbidden().finish()),

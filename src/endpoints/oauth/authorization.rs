@@ -1,4 +1,4 @@
-use actix_web::{web, HttpResponse, Responder};
+use actix_web::{web, HttpResponse};
 use cuid2::CuidConstructor;
 use serde::Deserialize;
 use serde_json::json;
@@ -9,7 +9,7 @@ use url::Url;
 
 use crate::{
 	endpoints::oauth::{CodeChallengeMethod, ErrorResponse},
-	error::BackendError,
+	error::ApiResult,
 	middleware::Identity,
 	models::{client::Client, scope::Scope},
 	AppState,
@@ -38,7 +38,7 @@ pub async fn get_authorize_info(
 	identity: web::ReqData<Identity>,
 	app_state: web::Data<AppState>,
 	query: web::Query<AuthorizeQuery>,
-) -> Result<impl Responder, BackendError> {
+) -> ApiResult {
 	if !matches!(identity.into_inner(), Identity::User(_)) {
 		return Ok(HttpResponse::Forbidden().finish());
 	}
@@ -82,7 +82,7 @@ pub async fn authorize_client(
 	identity: web::ReqData<Identity>,
 	app_state: web::Data<AppState>,
 	query: Result<web::Query<AuthorizeQuery>, actix_web::Error>,
-) -> Result<impl Responder, BackendError> {
+) -> ApiResult {
 	let Ok(web::Query(AuthorizeQuery {
 		client_id,
 		scope,

@@ -1,5 +1,5 @@
 use crate::{
-	error::BackendError,
+	error::ApiResult,
 	middleware::Identity,
 	models::{
 		channel::{Channel, ChannelKind},
@@ -8,13 +8,13 @@ use crate::{
 	},
 	AppState,
 };
-use actix_web::{web, HttpResponse, Responder};
+use actix_web::{web, HttpResponse};
 use sqlx::query;
 
 pub async fn get_direct_channels(
 	identity: web::ReqData<Identity>,
 	app_state: web::Data<AppState>,
-) -> Result<impl Responder, BackendError> {
+) -> ApiResult {
 	let Some(user_id) = identity.has_scope(Scope::Friends(ReadWrite::Read)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};

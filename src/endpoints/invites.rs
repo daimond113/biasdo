@@ -1,10 +1,10 @@
-use actix_web::{web, HttpResponse, Responder};
+use actix_web::{web, HttpResponse};
 use cuid2::CuidConstructor;
 use sqlx::{mysql::MySqlDatabaseError, query};
 use std::sync::LazyLock;
 
 use crate::{
-	error::{BackendError, ErrorResponse},
+	error::{ApiResult, ErrorResponse},
 	middleware::Identity,
 	models::{
 		channel::Channel,
@@ -25,7 +25,7 @@ pub async fn create_invite(
 	identity: web::ReqData<Identity>,
 	app_state: web::Data<AppState>,
 	path: web::Path<u64>,
-) -> Result<impl Responder, BackendError> {
+) -> ApiResult {
 	let Some(user_id) = identity.has_scope(Scope::Servers(ReadWrite::Write)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
@@ -96,7 +96,7 @@ pub async fn get_invites(
 	identity: web::ReqData<Identity>,
 	app_state: web::Data<AppState>,
 	path: web::Path<u64>,
-) -> Result<impl Responder, BackendError> {
+) -> ApiResult {
 	if identity
 		.has_scope(Scope::Servers(ReadWrite::Read))
 		.is_none()
@@ -141,7 +141,7 @@ pub async fn get_invite(
 	identity: web::ReqData<Identity>,
 	app_state: web::Data<AppState>,
 	path: web::Path<String>,
-) -> Result<impl Responder, BackendError> {
+) -> ApiResult {
 	if identity
 		.has_scope(Scope::Servers(ReadWrite::Read))
 		.is_none()
@@ -176,7 +176,7 @@ pub async fn delete_invite(
 	identity: web::ReqData<Identity>,
 	app_state: web::Data<AppState>,
 	path: web::Path<(u64, String)>,
-) -> Result<impl Responder, BackendError> {
+) -> ApiResult {
 	let Some(user_id) = identity.has_scope(Scope::Servers(ReadWrite::Write)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
@@ -222,7 +222,7 @@ pub async fn accept_invite(
 	identity: web::ReqData<Identity>,
 	app_state: web::Data<AppState>,
 	path: web::Path<String>,
-) -> Result<impl Responder, BackendError> {
+) -> ApiResult {
 	let Some(user_id) = identity.has_scope(Scope::Servers(ReadWrite::Write)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
