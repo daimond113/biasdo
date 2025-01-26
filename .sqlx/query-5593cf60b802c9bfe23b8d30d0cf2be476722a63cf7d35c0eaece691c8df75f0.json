@@ -9,7 +9,6 @@
         "type_info": {
           "type": "LongLong",
           "flags": "NOT_NULL | UNSIGNED",
-          "char_set": 63,
           "max_size": 20
         }
       }

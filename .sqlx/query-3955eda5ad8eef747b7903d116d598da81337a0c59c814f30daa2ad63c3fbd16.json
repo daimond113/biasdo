@@ -9,7 +9,6 @@
         "type_info": {
           "type": "LongLong",
           "flags": "PRIMARY_KEY | UNSIGNED | NO_DEFAULT_VALUE",
-          "char_set": 63,
           "max_size": 20
         }
       },
@@ -19,7 +18,6 @@
         "type_info": {
           "type": "LongLong",
           "flags": "PRIMARY_KEY | MULTIPLE_KEY | UNSIGNED | NO_DEFAULT_VALUE",
-          "char_set": 63,
           "max_size": 20
         }
       }
