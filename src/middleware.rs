@@ -11,7 +11,7 @@ use actix_web::{
 use base64::Engine;
 use sqlx::query;
 
-use crate::{error::Error, models::scope::Scope, AppState};
+use crate::{error::BackendError, models::scope::Scope, AppState};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Identity {
@@ -48,7 +48,7 @@ pub struct Token(pub String);
 async fn basic_token(
 	token: &str,
 	app_state: &web::Data<AppState>,
-) -> Result<Option<Identity>, Error> {
+) -> Result<Option<Identity>, BackendError> {
 	let token = match base64::engine::general_purpose::URL_SAFE_NO_PAD.decode(token.as_bytes()) {
 		Ok(token) => token,
 		Err(_) => return Ok(None),
@@ -87,7 +87,7 @@ fn scopes_from_string(scopes: &str) -> HashSet<Scope> {
 async fn bearer_token(
 	token: &str,
 	app_state: &web::Data<AppState>,
-) -> Result<Option<Identity>, Error> {
+) -> Result<Option<Identity>, BackendError> {
 	if token.starts_with("u.") {
 		let Some(record) = query!(
             "SELECT user_id, scope FROM ClientUserTokens WHERE access_token = ? AND access_expires_at > NOW() AND expires_at > NOW()",
@@ -122,7 +122,7 @@ async fn bearer_token(
 async fn other_token(
 	token: &str,
 	app_state: &web::Data<AppState>,
-) -> Result<Option<Identity>, Error> {
+) -> Result<Option<Identity>, BackendError> {
 	let Some(session_record) = query!(
 		"SELECT user_id FROM UserSession WHERE id = ? AND expires_at > NOW()",
 		token
@@ -146,7 +146,7 @@ async fn other_token(
 pub async fn get_identity(
 	token: &str,
 	app_state: &web::Data<AppState>,
-) -> Result<Option<(Identity, Token)>, Error> {
+) -> Result<Option<(Identity, Token)>, BackendError> {
 	let identity = if let Some(token) = token.strip_prefix("Basic ") {
 		basic_token(token, app_state).await?
 	} else if let Some(token) = token.strip_prefix("Bearer ") {
@@ -164,7 +164,7 @@ pub async fn get_identity(
 async fn get_identity_from_req(
 	req: &ServiceRequest,
 	app_state: &web::Data<AppState>,
-) -> Result<Option<Option<(Identity, Token)>>, Error> {
+) -> Result<Option<Option<(Identity, Token)>>, BackendError> {
 	let Some(token) = req
 		.headers()
 		.get(AUTHORIZATION)

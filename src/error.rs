@@ -1,10 +1,9 @@
 use actix_web::{body::BoxBody, HttpResponse, ResponseError};
-use log::error;
 use serde::Serialize;
 use thiserror::Error;
 
 #[derive(Debug, Error)]
-pub enum Error {
+pub enum BackendError {
 	#[error("an error occurred while querying the database")]
 	DB(#[from] sqlx::Error),
 
@@ -20,28 +19,10 @@ pub struct ErrorResponse {
 	pub error: String,
 }
 
-impl ResponseError for Error {
+impl ResponseError for BackendError {
 	fn error_response(&self) -> HttpResponse<BoxBody> {
 		match self {
-			Error::DB(e) => error!("Database error: {e:?}"),
-			Error::Password(e) => {
-				return match e {
-					password_auth::VerifyError::Parse(err) => {
-						error!("Password parse error: {err:?}");
-
-						HttpResponse::InternalServerError().finish()
-					}
-					// the passwords didn't match, no need to log that
-					_ => HttpResponse::Unauthorized().json(ErrorResponse {
-						error: "Invalid username or password".to_string(),
-					}),
-				};
-			}
-			_ => (),
-		}
-
-		match self {
-			Error::Validation(err) => {
+			BackendError::Validation(err) => {
 				let mut error_string = String::new();
 				let field_errors = err.field_errors();
 
@@ -61,6 +42,17 @@ impl ResponseError for Error {
 				HttpResponse::BadRequest().json(ErrorResponse {
 					error: error_string,
 				})
+			}
+			BackendError::Password(e) => {
+				match e {
+					password_auth::VerifyError::Parse(_) => {
+						HttpResponse::InternalServerError().finish()
+					}
+					// the passwords didn't match, no need to log that
+					_ => HttpResponse::Unauthorized().json(ErrorResponse {
+						error: "Invalid username or password".to_string(),
+					}),
+				}
 			}
 			_ => HttpResponse::InternalServerError().finish(),
 		}

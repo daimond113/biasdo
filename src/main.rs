@@ -8,12 +8,11 @@ use crate::{middleware::TokenKey, models::scope::Scope};
 use actix_cors::Cors;
 use actix_governor::{Governor, GovernorConfigBuilder};
 use actix_web::{
-	middleware::{from_fn, Compress, Condition, Logger, NormalizePath, TrailingSlash},
+	middleware::{from_fn, Compress, NormalizePath, TrailingSlash},
 	rt::System,
 	web, App, HttpServer,
 };
 use dashmap::DashMap;
-use log::info;
 use snowflaked::Generator;
 use sqlx::{mysql::MySqlPoolOptions, MySqlPool};
 use std::{
@@ -21,6 +20,10 @@ use std::{
 	hash::{DefaultHasher, Hash, Hasher},
 	sync::Mutex,
 	time::{Duration, UNIX_EPOCH},
+};
+use tracing_subscriber::{
+	filter::LevelFilter, fmt::format::FmtSpan, layer::SubscriberExt, util::SubscriberInitExt,
+	EnvFilter,
 };
 
 type Session = (Option<HashSet<Scope>>, actix_ws::Session);
@@ -66,7 +69,7 @@ macro_rules! benv {
     };
 }
 
-async fn run(with_sentry: bool) -> std::io::Result<()> {
+async fn run() -> std::io::Result<()> {
 	let address = benv!("ADDRESS" => "127.0.0.1");
 	let port: u16 = benv!(parse "PORT" => "8080");
 
@@ -97,22 +100,17 @@ async fn run(with_sentry: bool) -> std::io::Result<()> {
 		.finish()
 		.unwrap();
 
-	info!("listening on {address}:{port}");
-
 	HttpServer::new(move || {
 		let mut hasher = DefaultHasher::new();
-		if let Ok(machine_id) = benv!("FLY_MACHINE_ID") {
-			machine_id.hash(&mut hasher);
-		}
 		std::thread::current().id().hash(&mut hasher);
 		// the max instance is 2^10-1
 		let instance = (hasher.finish() % 1024) as u16;
 
 		App::new()
-			.wrap(Condition::new(with_sentry, sentry_actix::Sentry::new()))
+			.wrap(sentry_actix::Sentry::with_transaction())
 			.wrap(NormalizePath::new(TrailingSlash::Trim))
 			.wrap(Cors::permissive())
-			.wrap(Logger::default())
+			.wrap(tracing_actix_web::TracingLogger::default())
 			.wrap(Compress::default())
 			.app_data(app_data.clone())
 			.app_data(web::Data::new(Mutex::new(
@@ -330,35 +328,44 @@ async fn run(with_sentry: bool) -> std::io::Result<()> {
 // "Note: Macros like #[tokio::main] and #[actix_web::main] are not supported. The Sentry client must be initialized before the async runtime is started so that all threads are correctly connected to the Hub."
 // https://docs.sentry.io/platforms/rust/guides/actix-web/
 fn main() -> std::io::Result<()> {
-	dotenvy::dotenv().ok();
+	let _ = dotenvy::dotenv();
 
-	let sentry_url = benv!("SENTRY_URL").ok();
-	let with_sentry = sentry_url.is_some();
+	let tracing_env_filter = EnvFilter::builder()
+		.with_default_directive(LevelFilter::INFO.into())
+		.from_env_lossy()
+		.add_directive("reqwest=info".parse().unwrap())
+		.add_directive("rustls=info".parse().unwrap())
+		.add_directive("tokio_util=info".parse().unwrap())
+		.add_directive("goblin=info".parse().unwrap())
+		.add_directive("tower=info".parse().unwrap())
+		.add_directive("hyper=info".parse().unwrap())
+		.add_directive("h2=info".parse().unwrap());
 
-	let mut log_builder = pretty_env_logger::formatted_builder();
-	log_builder.parse_env(pretty_env_logger::env_logger::Env::default().default_filter_or("info"));
+	tracing_subscriber::registry()
+		.with(tracing_env_filter)
+		.with(
+			tracing_subscriber::fmt::layer()
+				.compact()
+				.with_span_events(FmtSpan::NEW | FmtSpan::CLOSE),
+		)
+		.with(sentry::integrations::tracing::layer())
+		.init();
 
-	if with_sentry {
-		let logger = sentry::integrations::log::SentryLogger::with_dest(log_builder.build());
-		log::set_boxed_logger(Box::new(logger)).unwrap();
-		log::set_max_level(log::LevelFilter::Info);
+	let guard = sentry::init(sentry::ClientOptions {
+		release: sentry::release_name!(),
+		dsn: benv!(parse "SENTRY_DSN").ok(),
+		session_mode: sentry::SessionMode::Request,
+		traces_sample_rate: 1.0,
+		debug: true,
+		..Default::default()
+	});
+
+	if guard.is_enabled() {
+		std::env::set_var("RUST_BACKTRACE", "full");
+		tracing::info!("sentry initialized");
 	} else {
-		log_builder.try_init().unwrap();
+		tracing::info!("sentry **NOT** initialized");
 	}
 
-	let _guard = if let Some(sentry_url) = sentry_url {
-		std::env::set_var("RUST_BACKTRACE", "1");
-
-		Some(sentry::init((
-			sentry_url,
-			sentry::ClientOptions {
-				release: sentry::release_name!(),
-				..Default::default()
-			},
-		)))
-	} else {
-		None
-	};
-
-	System::new().block_on(run(with_sentry))
+	System::new().block_on(run())
 }

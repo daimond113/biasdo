@@ -1,6 +1,6 @@
 use crate::{
 	endpoints::oauth::{CodeChallengeMethod, ErrorResponse},
-	error::Error,
+	error::BackendError,
 	middleware::Identity,
 	models::scope::Scope,
 	AppState,
@@ -71,7 +71,7 @@ pub async fn exchange_token(
 	app_state: web::Data<AppState>,
 	body: web::Form<GrantType>,
 	identity: web::ReqData<Option<Identity>>,
-) -> Result<impl Responder, Error> {
+) -> Result<impl Responder, BackendError> {
 	let identity = identity.into_inner();
 
 	match body.into_inner() {

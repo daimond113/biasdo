@@ -4,7 +4,7 @@ use sqlx::query;
 use validator::Validate;
 
 use crate::{
-	error::Error,
+	error::BackendError,
 	middleware::Identity,
 	models::{
 		scope::{HasScope, ReadWrite, Scope},
@@ -46,7 +46,7 @@ pub async fn get_members(
 	app_state: web::Data<AppState>,
 	path: web::Path<u64>,
 	query: web::Query<GetMembersQuery>,
-) -> Result<impl Responder, Error> {
+) -> Result<impl Responder, BackendError> {
 	query.validate()?;
 
 	let Some(user_id) = identity.has_scope(Scope::Servers(ReadWrite::Read)) else {
@@ -100,7 +100,7 @@ pub async fn get_member(
 	identity: web::ReqData<Identity>,
 	app_state: web::Data<AppState>,
 	path: web::Path<(u64, u64)>,
-) -> Result<impl Responder, Error> {
+) -> Result<impl Responder, BackendError> {
 	let Some(user_id) = identity.has_scope(Scope::Servers(ReadWrite::Read)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
@@ -150,7 +150,7 @@ pub async fn update_member(
 	app_state: web::Data<AppState>,
 	path: web::Path<(u64, u64)>,
 	body: web::Json<UpdateMemberBody>,
-) -> Result<impl Responder, Error> {
+) -> Result<impl Responder, BackendError> {
 	body.validate()?;
 
 	let Some(user_id) = identity.has_scope(Scope::Servers(ReadWrite::Write)) else {

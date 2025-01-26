@@ -11,7 +11,7 @@ use std::{
 use validator::{Validate, ValidationError};
 
 use crate::{
-	error::{Error, ErrorResponse},
+	error::{BackendError, ErrorResponse},
 	middleware::{Identity, Token},
 	models::{
 		scope::{HasScope, ReadWrite, Scope},
@@ -55,7 +55,7 @@ struct SessionBody {
 async fn create_session<'a, E: Executor<'a, Database = MySql>>(
 	executor: E,
 	user_id: u64,
-) -> Result<SessionBody, Error> {
+) -> Result<SessionBody, BackendError> {
 	let session_id = SESSION_ID_GENERATOR.create_id();
 
 	query!(
@@ -73,7 +73,7 @@ pub async fn register_user(
 	body: web::Json<RegistrationBody>,
 	app_state: web::Data<AppState>,
 	generator: web::Data<Mutex<snowflaked::Generator>>,
-) -> Result<impl Responder, Error> {
+) -> Result<impl Responder, BackendError> {
 	body.validate()?;
 
 	let mut tx = app_state.db.begin().await?;
@@ -126,7 +126,7 @@ pub struct LoginBody {
 pub async fn login_user(
 	body: web::Json<LoginBody>,
 	app_state: web::Data<AppState>,
-) -> Result<impl Responder, Error> {
+) -> Result<impl Responder, BackendError> {
 	body.validate()?;
 
 	let Some(user_record) = query!(
@@ -150,7 +150,7 @@ pub async fn get_user(
 	app_state: web::Data<AppState>,
 	user_id: web::Path<u64>,
 	identity: web::ReqData<Identity>,
-) -> Result<impl Responder, Error> {
+) -> Result<impl Responder, BackendError> {
 	if !matches!(identity.into_inner(), Identity::User((_, _))) {
 		return Ok(HttpResponse::Forbidden().finish());
 	}
@@ -178,7 +178,7 @@ pub async fn get_user_by_username(
 	app_state: web::Data<AppState>,
 	username: web::Path<String>,
 	identity: web::ReqData<Identity>,
-) -> Result<impl Responder, Error> {
+) -> Result<impl Responder, BackendError> {
 	if !matches!(identity.into_inner(), Identity::User((_, _))) {
 		return Ok(HttpResponse::Forbidden().finish());
 	}
@@ -203,7 +203,7 @@ pub async fn get_user_by_username(
 pub async fn get_current_user(
 	app_state: web::Data<AppState>,
 	identity: web::ReqData<Identity>,
-) -> Result<impl Responder, Error> {
+) -> Result<impl Responder, BackendError> {
 	let Some(user_id) = identity.has_scope(Scope::Profile(ReadWrite::Read)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
@@ -248,7 +248,7 @@ pub async fn update_user(
 	app_state: web::Data<AppState>,
 	identity: web::ReqData<Identity>,
 	body: web::Json<UpdateUserBody>,
-) -> Result<impl Responder, Error> {
+) -> Result<impl Responder, BackendError> {
 	body.validate()?;
 
 	let Some(user_id) = identity.has_scope(Scope::Profile(ReadWrite::Write)) else {
@@ -354,7 +354,7 @@ WHERE DMChannelRecipient.user_id=?
 pub async fn delete_user(
 	app_state: web::Data<AppState>,
 	identity: web::ReqData<Identity>,
-) -> Result<impl Responder, Error> {
+) -> Result<impl Responder, BackendError> {
 	let user_id = match identity.into_inner() {
 		Identity::User((id, None)) => id,
 		_ => return Ok(HttpResponse::Forbidden().finish()),
@@ -388,7 +388,7 @@ pub async fn logout_user(
 	identity: web::ReqData<Identity>,
 	query: web::Query<LogoutQuery>,
 	token: web::ReqData<Token>,
-) -> Result<impl Responder, Error> {
+) -> Result<impl Responder, BackendError> {
 	let user_id = match identity.into_inner() {
 		Identity::User((id, None)) => id,
 		_ => return Ok(HttpResponse::Forbidden().finish()),

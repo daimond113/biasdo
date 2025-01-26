@@ -1,5 +1,5 @@
 use crate::{
-	error::Error,
+	error::BackendError,
 	middleware::Identity,
 	models::{
 		channel::{Channel, ChannelKind},
@@ -14,7 +14,7 @@ use sqlx::query;
 pub async fn get_direct_channels(
 	identity: web::ReqData<Identity>,
 	app_state: web::Data<AppState>,
-) -> Result<impl Responder, Error> {
+) -> Result<impl Responder, BackendError> {
 	let Some(user_id) = identity.has_scope(Scope::Friends(ReadWrite::Read)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};

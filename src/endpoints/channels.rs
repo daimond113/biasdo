@@ -1,5 +1,5 @@
 use crate::{
-	error::{Error, ErrorResponse},
+	error::{BackendError, ErrorResponse},
 	middleware::Identity,
 	models::{
 		channel::{Channel, ChannelKind},
@@ -28,7 +28,7 @@ pub async fn create_channel(
 	generator: web::Data<Mutex<snowflaked::Generator>>,
 	body: web::Json<CreateChannelBody>,
 	path: web::Path<u64>,
-) -> Result<impl Responder, Error> {
+) -> Result<impl Responder, BackendError> {
 	body.validate()?;
 
 	let Some(user_id) = identity.has_scope(Scope::Servers(ReadWrite::Write)) else {
@@ -99,7 +99,7 @@ pub async fn get_channels(
 	identity: web::ReqData<Identity>,
 	app_state: web::Data<AppState>,
 	path: web::Path<u64>,
-) -> Result<impl Responder, Error> {
+) -> Result<impl Responder, BackendError> {
 	let Some(user_id) = identity.has_scope(Scope::Servers(ReadWrite::Read)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
@@ -143,7 +143,7 @@ pub async fn get_channel(
 	identity: web::ReqData<Identity>,
 	app_state: web::Data<AppState>,
 	path: web::Path<(u64, u64)>,
-) -> Result<impl Responder, Error> {
+) -> Result<impl Responder, BackendError> {
 	let Some(user_id) = identity.has_scope(Scope::Servers(ReadWrite::Read)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
@@ -191,7 +191,7 @@ pub async fn update_channel(
 	app_state: web::Data<AppState>,
 	body: web::Json<UpdateChannelBody>,
 	path: web::Path<(u64, u64)>,
-) -> Result<impl Responder, Error> {
+) -> Result<impl Responder, BackendError> {
 	body.validate()?;
 
 	let Some(user_id) = identity.has_scope(Scope::Servers(ReadWrite::Write)) else {
@@ -243,7 +243,7 @@ pub async fn delete_channel(
 	identity: web::ReqData<Identity>,
 	app_state: web::Data<AppState>,
 	path: web::Path<(u64, u64)>,
-) -> Result<impl Responder, Error> {
+) -> Result<impl Responder, BackendError> {
 	let Some(user_id) = identity.has_scope(Scope::Servers(ReadWrite::Write)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};

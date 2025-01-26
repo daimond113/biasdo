@@ -42,9 +42,12 @@ chrono = { version = "0.4.39", features = ["serde"] }
 validator = { version = "0.20.0", features = ["derive"] }
 ts-rs = { version = "10.1.0", features = ["chrono-impl", "url-impl"] }
 
-sentry = { version = "0.36.0", default-features = false, features = ["backtrace", "contexts", "debug-images", "panic", "reqwest", "rustls", "log"] }
+tracing = { version = "0.1.41", features = ["attributes"] }
+tracing-subscriber = { version = "0.3.19", features = ["env-filter"] }
+tracing-actix-web = "0.7.15"
+
+sentry = { version = "0.36.0", default-features = false, features = ["backtrace", "contexts", "debug-images", "panic", "reqwest", "rustls", "tracing"] }
 sentry-actix = "0.36.0"
-log = "0.4.25"
-pretty_env_logger = "0.5.0"
+
 indexmap = "2.7.1"
 dashmap = { version = "6.1.0", features = ["inline"] }

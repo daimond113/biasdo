@@ -7,7 +7,7 @@ use sqlx::{query, query_as};
 use validator::Validate;
 
 use crate::{
-	error::Error,
+	error::BackendError,
 	middleware::Identity,
 	models::{
 		message::{Message, MessageKind},
@@ -33,7 +33,7 @@ pub async fn create_message(
 	generator: web::Data<Mutex<snowflaked::Generator>>,
 	body: web::Json<CreateMessageBody>,
 	path: web::Path<u64>,
-) -> Result<impl Responder, Error> {
+) -> Result<impl Responder, BackendError> {
 	body.validate()?;
 
 	let Some(user_id) = identity.has_scope(Scope::Messages(ReadWrite::Write)) else {
@@ -172,7 +172,7 @@ pub async fn get_messages(
 	app_state: web::Data<AppState>,
 	path: web::Path<u64>,
 	query: web::Query<GetMessagesQuery>,
-) -> Result<impl Responder, Error> {
+) -> Result<impl Responder, BackendError> {
 	query.validate()?;
 
 	let Some(user_id) = identity.has_scope(Scope::Messages(ReadWrite::Read)) else {
@@ -247,7 +247,7 @@ pub async fn get_message(
 	identity: web::ReqData<Identity>,
 	app_state: web::Data<AppState>,
 	path: web::Path<(u64, u64)>,
-) -> Result<impl Responder, Error> {
+) -> Result<impl Responder, BackendError> {
 	let Some(user_id) = identity.has_scope(Scope::Messages(ReadWrite::Read)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
@@ -317,7 +317,7 @@ pub async fn update_message(
 	app_state: web::Data<AppState>,
 	path: web::Path<(u64, u64)>,
 	body: web::Json<UpdateMessageBody>,
-) -> Result<impl Responder, Error> {
+) -> Result<impl Responder, BackendError> {
 	body.validate()?;
 
 	let Some(user_id) = identity.has_scope(Scope::Messages(ReadWrite::Write)) else {
@@ -398,7 +398,7 @@ pub async fn delete_message(
 	identity: web::ReqData<Identity>,
 	app_state: web::Data<AppState>,
 	path: web::Path<(u64, u64)>,
-) -> Result<impl Responder, Error> {
+) -> Result<impl Responder, BackendError> {
 	let Some(user_id) = identity.has_scope(Scope::Messages(ReadWrite::Write)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};

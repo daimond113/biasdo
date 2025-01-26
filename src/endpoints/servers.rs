@@ -1,5 +1,5 @@
 use crate::{
-	error::Error,
+	error::BackendError,
 	middleware::Identity,
 	models::{
 		channel::{Channel, ChannelKind},
@@ -31,7 +31,7 @@ pub async fn create_server(
 	app_state: web::Data<AppState>,
 	generator: web::Data<Mutex<snowflaked::Generator>>,
 	body: web::Json<CreateServerBody>,
-) -> Result<impl Responder, Error> {
+) -> Result<impl Responder, BackendError> {
 	body.validate()?;
 
 	let Some(user_id) = identity.has_scope(Scope::Servers(ReadWrite::Write)) else {
@@ -129,7 +129,7 @@ pub async fn create_server(
 pub async fn get_servers(
 	identity: web::ReqData<Identity>,
 	app_state: web::Data<AppState>,
-) -> Result<impl Responder, Error> {
+) -> Result<impl Responder, BackendError> {
 	let Some(user_id) = identity.has_scope(Scope::Servers(ReadWrite::Read)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
@@ -153,7 +153,7 @@ pub async fn get_server(
 	identity: web::ReqData<Identity>,
 	app_state: web::Data<AppState>,
 	server_id: web::Path<u64>,
-) -> Result<impl Responder, Error> {
+) -> Result<impl Responder, BackendError> {
 	let Some(user_id) = identity.has_scope(Scope::Servers(ReadWrite::Read)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
@@ -186,7 +186,7 @@ pub async fn update_server(
 	app_state: web::Data<AppState>,
 	server_id: web::Path<u64>,
 	body: web::Json<UpdateServerBody>,
-) -> Result<impl Responder, Error> {
+) -> Result<impl Responder, BackendError> {
 	body.validate()?;
 	let Some(user_id) = identity.has_scope(Scope::Servers(ReadWrite::Write)) else {
 		return Ok(HttpResponse::Forbidden().finish());
@@ -231,7 +231,7 @@ pub async fn leave_server(
 	identity: web::ReqData<Identity>,
 	app_state: web::Data<AppState>,
 	server_id: web::Path<u64>,
-) -> Result<impl Responder, Error> {
+) -> Result<impl Responder, BackendError> {
 	let Some(user_id) = identity.has_scope(Scope::Servers(ReadWrite::Write)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
@@ -286,7 +286,7 @@ pub async fn delete_server(
 	identity: web::ReqData<Identity>,
 	app_state: web::Data<AppState>,
 	server_id: web::Path<u64>,
-) -> Result<impl Responder, Error> {
+) -> Result<impl Responder, BackendError> {
 	let Some(user_id) = identity.has_scope(Scope::Servers(ReadWrite::Write)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
