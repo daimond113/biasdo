@@ -109,7 +109,7 @@ pub async fn authorize_client(
 	}
 
 	let user_id = match identity.into_inner() {
-		Identity::User((id, None)) => id,
+		Identity::User(id) => id,
 		_ => return Ok(HttpResponse::Forbidden().finish()),
 	};
 

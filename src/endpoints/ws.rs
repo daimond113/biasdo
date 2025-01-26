@@ -92,7 +92,8 @@ async fn ws_handler(
 								}
 
 								let (user_id, scopes) = match get_identity(&token, &app_state).await {
-									Ok(Some((Identity::User(identity), _))) => identity,
+									Ok(Some((Identity::User(id), _))) => (id, None),
+									Ok(Some((Identity::UserByClient((id, scopes)), _))) => (id, Some(scopes)),
 									_ => {
 										break Some(CloseReason {
 											code: CloseCode::Policy,

@@ -3,7 +3,7 @@ use crate::{
 	middleware::Identity,
 	models::{
 		channel::{Channel, ChannelKind},
-		scope::{HasScope, ReadWrite, Scope},
+		scope::{ReadWrite, Scope},
 		user::User,
 	},
 	AppState,
@@ -15,7 +15,7 @@ pub async fn get_direct_channels(
 	identity: web::ReqData<Identity>,
 	app_state: web::Data<AppState>,
 ) -> ApiResult {
-	let Some(user_id) = identity.has_scope(Scope::Friends(ReadWrite::Read)) else {
+	let Some(user_id) = identity.is_user_like_with_scope(Scope::Friends(ReadWrite::Read)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
 

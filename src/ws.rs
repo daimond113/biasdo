@@ -11,7 +11,7 @@ use crate::{
 		friendrequest::UserFriendRequest,
 		invite::Invite,
 		message::Message,
-		scope::{HasScope, ReadWrite, Scope},
+		scope::{has_scope, ReadWrite, Scope},
 		server::Server,
 		servermember::ServerMember,
 	},
@@ -183,8 +183,9 @@ pub fn send_updates<I: IntoIterator<Item = WsUpdateEvent>, J: IntoIterator<Item 
 		if let Some(rf) = app_state.user_connections.get(&user_id) {
 			for (scopes, session) in rf.values() {
 				for (scope, json) in &events {
-					if scopes.has_scope(*scope).is_none() {
-						continue;
+					match scopes {
+						Some(scopes) if !has_scope(scopes, *scope) => continue,
+						_ => {}
 					}
 
 					let mut session = session.clone();

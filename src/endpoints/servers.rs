@@ -3,7 +3,7 @@ use crate::{
 	middleware::Identity,
 	models::{
 		channel::{Channel, ChannelKind},
-		scope::{HasScope, ReadWrite, Scope},
+		scope::{ReadWrite, Scope},
 		server::Server,
 		servermember::ServerMember,
 	},
@@ -34,7 +34,7 @@ pub async fn create_server(
 ) -> ApiResult {
 	body.validate()?;
 
-	let Some(user_id) = identity.has_scope(Scope::Servers(ReadWrite::Write)) else {
+	let Some(user_id) = identity.is_user_like_with_scope(Scope::Servers(ReadWrite::Write)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
 
@@ -130,7 +130,7 @@ pub async fn get_servers(
 	identity: web::ReqData<Identity>,
 	app_state: web::Data<AppState>,
 ) -> ApiResult {
-	let Some(user_id) = identity.has_scope(Scope::Servers(ReadWrite::Read)) else {
+	let Some(user_id) = identity.is_user_like_with_scope(Scope::Servers(ReadWrite::Read)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
 
@@ -154,7 +154,7 @@ pub async fn get_server(
 	app_state: web::Data<AppState>,
 	server_id: web::Path<u64>,
 ) -> ApiResult {
-	let Some(user_id) = identity.has_scope(Scope::Servers(ReadWrite::Read)) else {
+	let Some(user_id) = identity.is_user_like_with_scope(Scope::Servers(ReadWrite::Read)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
 
@@ -188,7 +188,7 @@ pub async fn update_server(
 	body: web::Json<UpdateServerBody>,
 ) -> ApiResult {
 	body.validate()?;
-	let Some(user_id) = identity.has_scope(Scope::Servers(ReadWrite::Write)) else {
+	let Some(user_id) = identity.is_user_like_with_scope(Scope::Servers(ReadWrite::Write)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
 
@@ -232,7 +232,7 @@ pub async fn leave_server(
 	app_state: web::Data<AppState>,
 	server_id: web::Path<u64>,
 ) -> ApiResult {
-	let Some(user_id) = identity.has_scope(Scope::Servers(ReadWrite::Write)) else {
+	let Some(user_id) = identity.is_user_like_with_scope(Scope::Servers(ReadWrite::Write)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
 
@@ -287,7 +287,7 @@ pub async fn delete_server(
 	app_state: web::Data<AppState>,
 	server_id: web::Path<u64>,
 ) -> ApiResult {
-	let Some(user_id) = identity.has_scope(Scope::Servers(ReadWrite::Write)) else {
+	let Some(user_id) = identity.is_user_like_with_scope(Scope::Servers(ReadWrite::Write)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
 

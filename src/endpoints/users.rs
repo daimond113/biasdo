@@ -14,7 +14,7 @@ use crate::{
 	error::{ApiResult, BackendError, ErrorResponse},
 	middleware::{Identity, Token},
 	models::{
-		scope::{HasScope, ReadWrite, Scope},
+		scope::{ReadWrite, Scope},
 		user::User,
 	},
 	update_structure,
@@ -148,7 +148,7 @@ pub async fn get_user(
 	user_id: web::Path<u64>,
 	identity: web::ReqData<Identity>,
 ) -> ApiResult {
-	if !matches!(identity.into_inner(), Identity::User((_, _))) {
+	if !identity.is_user_like() {
 		return Ok(HttpResponse::Forbidden().finish());
 	}
 
@@ -176,7 +176,7 @@ pub async fn get_user_by_username(
 	username: web::Path<String>,
 	identity: web::ReqData<Identity>,
 ) -> ApiResult {
-	if !matches!(identity.into_inner(), Identity::User((_, _))) {
+	if !identity.is_user_like() {
 		return Ok(HttpResponse::Forbidden().finish());
 	}
 
@@ -201,7 +201,7 @@ pub async fn get_current_user(
 	app_state: web::Data<AppState>,
 	identity: web::ReqData<Identity>,
 ) -> ApiResult {
-	let Some(user_id) = identity.has_scope(Scope::Profile(ReadWrite::Read)) else {
+	let Some(user_id) = identity.is_user_like_with_scope(Scope::Profile(ReadWrite::Read)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
 
@@ -248,7 +248,7 @@ pub async fn update_user(
 ) -> ApiResult {
 	body.validate()?;
 
-	let Some(user_id) = identity.has_scope(Scope::Profile(ReadWrite::Write)) else {
+	let Some(user_id) = identity.is_user_like_with_scope(Scope::Profile(ReadWrite::Write)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
 
@@ -353,7 +353,7 @@ pub async fn delete_user(
 	identity: web::ReqData<Identity>,
 ) -> ApiResult {
 	let user_id = match identity.into_inner() {
-		Identity::User((id, None)) => id,
+		Identity::User(id) => id,
 		_ => return Ok(HttpResponse::Forbidden().finish()),
 	};
 
@@ -387,7 +387,7 @@ pub async fn logout_user(
 	token: web::ReqData<Token>,
 ) -> ApiResult {
 	let user_id = match identity.into_inner() {
-		Identity::User((id, None)) => id,
+		Identity::User(id) => id,
 		_ => return Ok(HttpResponse::Forbidden().finish()),
 	};
 

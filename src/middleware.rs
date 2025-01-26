@@ -15,30 +15,42 @@ use crate::{error::BackendError, models::scope::Scope, AppState};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Identity {
-	User((u64, Option<HashSet<Scope>>)),
-	Client((u64, Option<HashSet<Scope>>)),
+	User(u64),
+	Client(u64),
+	// Bearer tokens
+	// refers to the fact a client is acting on behalf of a user, not the user itself
+	UserByClient((u64, HashSet<Scope>)),
+	ClientByClient((u64, HashSet<Scope>)),
 }
 
 impl Hash for Identity {
 	fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
 		match self {
-			Identity::User((id, scopes)) => {
+			Identity::User(id) => {
 				id.hash(state);
-				if let Some(scopes) = scopes {
-					for scope in scopes {
-						scope.hash(state);
-					}
+			}
+			Identity::Client(id) => {
+				id.hash(state);
+			}
+			Identity::UserByClient((id, scopes)) => {
+				id.hash(state);
+				for scope in scopes {
+					scope.hash(state);
 				}
 			}
-			Identity::Client((id, scopes)) => {
+			Identity::ClientByClient((id, scopes)) => {
 				id.hash(state);
-				if let Some(scopes) = scopes {
-					for scope in scopes {
-						scope.hash(state);
-					}
+				for scope in scopes {
+					scope.hash(state);
 				}
 			}
 		}
+	}
+}
+
+impl Identity {
+	pub fn is_user_like(&self) -> bool {
+		matches!(self, Identity::User(_) | Identity::UserByClient(_))
 	}
 }
 
@@ -73,7 +85,7 @@ async fn basic_token(
 		return Ok(None);
 	}
 
-	Ok(Some(Identity::Client((client_id.parse().unwrap(), None))))
+	Ok(Some(Identity::Client(client_id.parse().unwrap())))
 }
 
 fn scopes_from_string(scopes: &str) -> HashSet<Scope> {
@@ -98,13 +110,13 @@ async fn bearer_token(
                 return Ok(None);
             };
 
-		Ok(Some(Identity::User((
+		Ok(Some(Identity::UserByClient((
 			record.user_id,
-			Some(scopes_from_string(&record.scope)),
+			scopes_from_string(&record.scope),
 		))))
 	} else {
 		let Some(record) = query!(
-            "SELECT client_id, scope  FROM ClientToken WHERE access_token = ? AND expires_at > NOW()",
+            "SELECT client_id, scope FROM ClientToken WHERE access_token = ? AND expires_at > NOW()",
             token
         )
             .fetch_optional(&app_state.db)
@@ -112,9 +124,9 @@ async fn bearer_token(
                 return Ok(None);
             };
 
-		Ok(Some(Identity::Client((
+		Ok(Some(Identity::ClientByClient((
 			record.client_id,
-			Some(scopes_from_string(&record.scope)),
+			scopes_from_string(&record.scope),
 		))))
 	}
 }
@@ -140,7 +152,7 @@ async fn other_token(
     .execute(&app_state.db)
     .await?;
 
-	Ok(Some(Identity::User((session_record.user_id, None))))
+	Ok(Some(Identity::User(session_record.user_id)))
 }
 
 pub async fn get_identity(

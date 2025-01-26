@@ -4,7 +4,7 @@ use crate::{
 	models::{
 		channel::{Channel, ChannelKind},
 		friend::UserFriend,
-		scope::{HasScope, ReadWrite, Scope},
+		scope::{ReadWrite, Scope},
 		user::User,
 	},
 	ws::{send_updates, WsUpdateEvent},
@@ -44,7 +44,7 @@ pub async fn get_friends(
 	identity: web::ReqData<Identity>,
 	app_state: web::Data<AppState>,
 ) -> ApiResult {
-	let Some(user_id) = identity.has_scope(Scope::Friends(ReadWrite::Read)) else {
+	let Some(user_id) = identity.is_user_like_with_scope(Scope::Friends(ReadWrite::Read)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
 
@@ -79,7 +79,7 @@ pub async fn get_friend(
 	app_state: web::Data<AppState>,
 	path: web::Path<u64>,
 ) -> ApiResult {
-	let Some(user_id) = identity.has_scope(Scope::Friends(ReadWrite::Read)) else {
+	let Some(user_id) = identity.is_user_like_with_scope(Scope::Friends(ReadWrite::Read)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
 
@@ -116,7 +116,7 @@ pub async fn delete_friend(
 	app_state: web::Data<AppState>,
 	path: web::Path<u64>,
 ) -> ApiResult {
-	let Some(user_id) = identity.has_scope(Scope::Friends(ReadWrite::Write)) else {
+	let Some(user_id) = identity.is_user_like_with_scope(Scope::Friends(ReadWrite::Write)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
 

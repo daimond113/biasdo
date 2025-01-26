@@ -3,7 +3,7 @@ use crate::{
 	middleware::Identity,
 	models::{
 		channel::{Channel, ChannelKind},
-		scope::{HasScope, ReadWrite, Scope},
+		scope::{ReadWrite, Scope},
 	},
 	update_structure,
 	ws::{send_updates, WsUpdateEvent},
@@ -31,7 +31,7 @@ pub async fn create_channel(
 ) -> ApiResult {
 	body.validate()?;
 
-	let Some(user_id) = identity.has_scope(Scope::Servers(ReadWrite::Write)) else {
+	let Some(user_id) = identity.is_user_like_with_scope(Scope::Servers(ReadWrite::Write)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
 
@@ -100,7 +100,7 @@ pub async fn get_channels(
 	app_state: web::Data<AppState>,
 	path: web::Path<u64>,
 ) -> ApiResult {
-	let Some(user_id) = identity.has_scope(Scope::Servers(ReadWrite::Read)) else {
+	let Some(user_id) = identity.is_user_like_with_scope(Scope::Servers(ReadWrite::Read)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
 
@@ -144,7 +144,7 @@ pub async fn get_channel(
 	app_state: web::Data<AppState>,
 	path: web::Path<(u64, u64)>,
 ) -> ApiResult {
-	let Some(user_id) = identity.has_scope(Scope::Servers(ReadWrite::Read)) else {
+	let Some(user_id) = identity.is_user_like_with_scope(Scope::Servers(ReadWrite::Read)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
 
@@ -194,7 +194,7 @@ pub async fn update_channel(
 ) -> ApiResult {
 	body.validate()?;
 
-	let Some(user_id) = identity.has_scope(Scope::Servers(ReadWrite::Write)) else {
+	let Some(user_id) = identity.is_user_like_with_scope(Scope::Servers(ReadWrite::Write)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
 
@@ -244,7 +244,7 @@ pub async fn delete_channel(
 	app_state: web::Data<AppState>,
 	path: web::Path<(u64, u64)>,
 ) -> ApiResult {
-	let Some(user_id) = identity.has_scope(Scope::Servers(ReadWrite::Write)) else {
+	let Some(user_id) = identity.is_user_like_with_scope(Scope::Servers(ReadWrite::Write)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
 

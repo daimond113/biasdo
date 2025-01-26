@@ -51,7 +51,7 @@ fn get_client_id(client_id: Option<u64>, identity: Option<Identity>) -> Result<u
 	match (client_id, identity) {
 		(Some(id), None) => Ok(id),
 		(None, Some(identity)) => match identity {
-			Identity::Client((id, None)) => Ok(id),
+			Identity::Client(id) => Ok(id),
 			_ => Err(HttpResponse::Forbidden().finish()),
 		},
 		(Some(_), Some(_)) => Err(HttpResponse::BadRequest().json(ErrorResponse {
@@ -262,7 +262,7 @@ pub async fn exchange_token(
 			};
 
 			let client_id = match client_id {
-				Identity::Client((id, None)) => id,
+				Identity::Client(id) => id,
 				_ => {
 					return Ok(HttpResponse::Forbidden().finish());
 				}

@@ -7,7 +7,7 @@ use crate::{
 	error::ApiResult,
 	middleware::Identity,
 	models::{
-		scope::{HasScope, ReadWrite, Scope},
+		scope::{ReadWrite, Scope},
 		servermember::ServerMember,
 		user::User,
 	},
@@ -49,7 +49,7 @@ pub async fn get_members(
 ) -> ApiResult {
 	query.validate()?;
 
-	let Some(user_id) = identity.has_scope(Scope::Servers(ReadWrite::Read)) else {
+	let Some(user_id) = identity.is_user_like_with_scope(Scope::Servers(ReadWrite::Read)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
 
@@ -101,7 +101,7 @@ pub async fn get_member(
 	app_state: web::Data<AppState>,
 	path: web::Path<(u64, u64)>,
 ) -> ApiResult {
-	let Some(user_id) = identity.has_scope(Scope::Servers(ReadWrite::Read)) else {
+	let Some(user_id) = identity.is_user_like_with_scope(Scope::Servers(ReadWrite::Read)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
 
@@ -153,7 +153,7 @@ pub async fn update_member(
 ) -> ApiResult {
 	body.validate()?;
 
-	let Some(user_id) = identity.has_scope(Scope::Servers(ReadWrite::Write)) else {
+	let Some(user_id) = identity.is_user_like_with_scope(Scope::Servers(ReadWrite::Write)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
 

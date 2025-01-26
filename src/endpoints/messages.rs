@@ -11,7 +11,7 @@ use crate::{
 	middleware::Identity,
 	models::{
 		message::{Message, MessageKind},
-		scope::{HasScope, ReadWrite, Scope},
+		scope::{ReadWrite, Scope},
 		servermember::ServerMember,
 		user::User,
 	},
@@ -36,7 +36,7 @@ pub async fn create_message(
 ) -> ApiResult {
 	body.validate()?;
 
-	let Some(user_id) = identity.has_scope(Scope::Messages(ReadWrite::Write)) else {
+	let Some(user_id) = identity.is_user_like_with_scope(Scope::Messages(ReadWrite::Write)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
 
@@ -175,7 +175,7 @@ pub async fn get_messages(
 ) -> ApiResult {
 	query.validate()?;
 
-	let Some(user_id) = identity.has_scope(Scope::Messages(ReadWrite::Read)) else {
+	let Some(user_id) = identity.is_user_like_with_scope(Scope::Messages(ReadWrite::Read)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
 
@@ -248,7 +248,7 @@ pub async fn get_message(
 	app_state: web::Data<AppState>,
 	path: web::Path<(u64, u64)>,
 ) -> ApiResult {
-	let Some(user_id) = identity.has_scope(Scope::Messages(ReadWrite::Read)) else {
+	let Some(user_id) = identity.is_user_like_with_scope(Scope::Messages(ReadWrite::Read)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
 
@@ -320,7 +320,7 @@ pub async fn update_message(
 ) -> ApiResult {
 	body.validate()?;
 
-	let Some(user_id) = identity.has_scope(Scope::Messages(ReadWrite::Write)) else {
+	let Some(user_id) = identity.is_user_like_with_scope(Scope::Messages(ReadWrite::Write)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
 
@@ -399,7 +399,7 @@ pub async fn delete_message(
 	app_state: web::Data<AppState>,
 	path: web::Path<(u64, u64)>,
 ) -> ApiResult {
-	let Some(user_id) = identity.has_scope(Scope::Messages(ReadWrite::Write)) else {
+	let Some(user_id) = identity.is_user_like_with_scope(Scope::Messages(ReadWrite::Write)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
 

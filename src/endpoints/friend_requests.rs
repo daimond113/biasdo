@@ -9,7 +9,7 @@ use crate::{
 		channel::{Channel, ChannelKind},
 		friend::UserFriend,
 		friendrequest::UserFriendRequest,
-		scope::{HasScope, ReadWrite, Scope},
+		scope::{ReadWrite, Scope},
 		user::User,
 	},
 	ws::{send_updates, WsUpdateEvent},
@@ -38,7 +38,7 @@ pub async fn get_friend_requests(
 	identity: web::ReqData<Identity>,
 	app_state: web::Data<AppState>,
 ) -> ApiResult {
-	let Some(user_id) = identity.has_scope(Scope::Friends(ReadWrite::Read)) else {
+	let Some(user_id) = identity.is_user_like_with_scope(Scope::Friends(ReadWrite::Read)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
 
@@ -69,7 +69,7 @@ pub async fn get_friend_request(
 	app_state: web::Data<AppState>,
 	path: web::Path<u64>,
 ) -> ApiResult {
-	let Some(user_id) = identity.has_scope(Scope::Friends(ReadWrite::Read)) else {
+	let Some(user_id) = identity.is_user_like_with_scope(Scope::Friends(ReadWrite::Read)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
 
@@ -102,7 +102,7 @@ pub async fn create_friend_request(
 	app_state: web::Data<AppState>,
 	path: web::Path<u64>,
 ) -> ApiResult {
-	let Some(user_id) = identity.has_scope(Scope::Friends(ReadWrite::Write)) else {
+	let Some(user_id) = identity.is_user_like_with_scope(Scope::Friends(ReadWrite::Write)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
 
@@ -186,7 +186,7 @@ pub async fn delete_friend_request(
 	app_state: web::Data<AppState>,
 	path: web::Path<u64>,
 ) -> ApiResult {
-	let Some(user_id) = identity.has_scope(Scope::Friends(ReadWrite::Write)) else {
+	let Some(user_id) = identity.is_user_like_with_scope(Scope::Friends(ReadWrite::Write)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
 
@@ -230,7 +230,7 @@ pub async fn accept_friend_request(
 	path: web::Path<u64>,
 	generator: web::Data<Mutex<snowflaked::Generator>>,
 ) -> ApiResult {
-	let Some(user_id) = identity.has_scope(Scope::Friends(ReadWrite::Write)) else {
+	let Some(user_id) = identity.is_user_like_with_scope(Scope::Friends(ReadWrite::Write)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
 

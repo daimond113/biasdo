@@ -182,65 +182,25 @@ scopes! {
 	mut Friends = "friends",
 }
 
-pub trait HasScope {
-	type Output;
-
-	fn has_scope(&self, scope: Scope) -> Option<Self::Output>;
-}
-
-impl HasScope for Identity {
-	type Output = u64;
-
-	fn has_scope(&self, scope: Scope) -> Option<u64> {
-		match self {
-			Identity::User((id, scopes)) => match scopes {
-				Some(scopes) => {
-					if scopes.contains(&scope) {
-						Some(*id)
-					} else if let Some(access) = scope.access() {
-						// if the user has Write access, they can also read
-						if access == ReadWrite::Read && scopes.contains(&!scope) {
-							Some(*id)
-						} else {
-							None
-						}
-					} else {
-						None
-					}
-				}
-				None => Some(*id),
-			},
-			Identity::Client(_) => None,
-		}
+pub fn has_scope(scopes: &HashSet<Scope>, scope: Scope) -> bool {
+	if scopes.contains(&scope) {
+		true
+	} else if let Some(access) = scope.access() {
+		// if the user has Write access, they can also read
+		access == ReadWrite::Read && scopes.contains(&!scope)
+	} else {
+		false
 	}
 }
 
-impl HasScope for HashSet<Scope> {
-	type Output = ();
-
-	fn has_scope(&self, scope: Scope) -> Option<()> {
-		if self.contains(&scope) {
-			Some(())
-		} else if let Some(access) = scope.access() {
-			// if the user has Write access, they can also read
-			if access == ReadWrite::Read && self.contains(&!scope) {
-				Some(())
-			} else {
-				None
+impl Identity {
+	pub fn is_user_like_with_scope(&self, scope: Scope) -> Option<u64> {
+		match self {
+			Identity::User(user_id) => Some(*user_id),
+			Identity::UserByClient((user_id, scopes)) => {
+				has_scope(scopes, scope).then_some(*user_id)
 			}
-		} else {
-			None
-		}
-	}
-}
-
-impl HasScope for Option<HashSet<Scope>> {
-	type Output = ();
-
-	fn has_scope(&self, scope: Scope) -> Option<()> {
-		match self {
-			Some(scopes) => scopes.has_scope(scope),
-			None => Some(()),
+			_ => None,
 		}
 	}
 }

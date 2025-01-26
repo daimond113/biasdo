@@ -9,7 +9,7 @@ use crate::{
 	models::{
 		channel::Channel,
 		invite::Invite,
-		scope::{HasScope, ReadWrite, Scope},
+		scope::{ReadWrite, Scope},
 		server::Server,
 		servermember::ServerMember,
 		user::User,
@@ -26,7 +26,7 @@ pub async fn create_invite(
 	app_state: web::Data<AppState>,
 	path: web::Path<u64>,
 ) -> ApiResult {
-	let Some(user_id) = identity.has_scope(Scope::Servers(ReadWrite::Write)) else {
+	let Some(user_id) = identity.is_user_like_with_scope(Scope::Servers(ReadWrite::Write)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
 
@@ -98,7 +98,7 @@ pub async fn get_invites(
 	path: web::Path<u64>,
 ) -> ApiResult {
 	if identity
-		.has_scope(Scope::Servers(ReadWrite::Read))
+		.is_user_like_with_scope(Scope::Servers(ReadWrite::Read))
 		.is_none()
 	{
 		return Ok(HttpResponse::Forbidden().finish());
@@ -143,7 +143,7 @@ pub async fn get_invite(
 	path: web::Path<String>,
 ) -> ApiResult {
 	if identity
-		.has_scope(Scope::Servers(ReadWrite::Read))
+		.is_user_like_with_scope(Scope::Servers(ReadWrite::Read))
 		.is_none()
 	{
 		return Ok(HttpResponse::Forbidden().finish());
@@ -177,7 +177,7 @@ pub async fn delete_invite(
 	app_state: web::Data<AppState>,
 	path: web::Path<(u64, String)>,
 ) -> ApiResult {
-	let Some(user_id) = identity.has_scope(Scope::Servers(ReadWrite::Write)) else {
+	let Some(user_id) = identity.is_user_like_with_scope(Scope::Servers(ReadWrite::Write)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
 
@@ -223,7 +223,7 @@ pub async fn accept_invite(
 	app_state: web::Data<AppState>,
 	path: web::Path<String>,
 ) -> ApiResult {
-	let Some(user_id) = identity.has_scope(Scope::Servers(ReadWrite::Write)) else {
+	let Some(user_id) = identity.is_user_like_with_scope(Scope::Servers(ReadWrite::Write)) else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
 

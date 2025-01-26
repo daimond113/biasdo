@@ -47,7 +47,7 @@ pub async fn register_client(
 	body.validate()?;
 
 	let user_id = match identity.into_inner() {
-		Identity::User((id, None)) => id,
+		Identity::User(id) => id,
 		_ => return Ok(HttpResponse::Forbidden().finish()),
 	};
 
@@ -112,7 +112,7 @@ pub async fn get_clients(
 	app_state: web::Data<AppState>,
 ) -> ApiResult {
 	let user_id = match identity.into_inner() {
-		Identity::User((id, None)) => id,
+		Identity::User(id) => id,
 		_ => return Ok(HttpResponse::Forbidden().finish()),
 	};
 
@@ -151,7 +151,7 @@ pub async fn get_client(
 	client_id: web::Path<u64>,
 ) -> ApiResult {
 	let user_id = match identity.into_inner() {
-		Identity::User((id, None)) => id,
+		Identity::User(id) => id,
 		_ => return Ok(HttpResponse::Forbidden().finish()),
 	};
 
@@ -207,7 +207,7 @@ pub async fn update_client(
 	body.validate()?;
 
 	let user_id = match identity.into_inner() {
-		Identity::User((id, None)) => id,
+		Identity::User(id) => id,
 		_ => return Ok(HttpResponse::Forbidden().finish()),
 	};
 
@@ -295,7 +295,7 @@ pub async fn delete_client(
 	client_id: web::Path<u64>,
 ) -> ApiResult {
 	let user_id = match identity.into_inner() {
-		Identity::User((id, None)) => id,
+		Identity::User(id) => id,
 		_ => return Ok(HttpResponse::Forbidden().finish()),
 	};
 
