@@ -33,6 +33,7 @@ base64 = "0.22.1"
 password-auth = "1.0.0"
 cuid2 = "0.1.4"
 snowflaked = "1.0.3"
+webauthn-rs = { version = "0.5.1", features = ["danger-allow-state-serialisation"] }
 
 thiserror = "2.0.11"
 dotenvy = "0.15.7"

@@ -25,6 +25,7 @@ use tracing_subscriber::{
 	filter::LevelFilter, fmt::format::FmtSpan, layer::SubscriberExt, util::SubscriberInitExt,
 	EnvFilter,
 };
+use webauthn_rs::{Webauthn, WebauthnBuilder};
 
 type Session = (Option<HashSet<Scope>>, actix_ws::Session);
 
@@ -34,6 +35,7 @@ pub struct AppState {
 	pub server_connections: DashMap<u64, HashSet<u64>>,
 	// user id -> ws(s) // multiple sessions
 	pub user_connections: DashMap<u64, HashMap<u64, Session>>,
+	pub webauthn: Webauthn,
 }
 
 #[macro_export]
@@ -86,10 +88,17 @@ async fn run() -> std::io::Result<()> {
 		.await
 		.expect("Failed to run migrations");
 
+	let webauthn_origin: url::Url = benv!(parse required "WEBAUTHN_ORIGIN");
+
 	let app_data = web::Data::new(AppState {
 		db: pool,
 		server_connections: DashMap::new(),
 		user_connections: DashMap::new(),
+		webauthn: WebauthnBuilder::new(webauthn_origin.host_str().unwrap(), &webauthn_origin)
+			.expect("invalid webauthn config")
+			.rp_name("biasdo")
+			.build()
+			.expect("failed to build webauthn config"),
 	});
 
 	let generic_governor_config = GovernorConfigBuilder::default()
@@ -129,6 +138,20 @@ async fn run() -> std::io::Result<()> {
 				web::scope("/v0")
 					.route("/register", web::post().to(endpoints::users::register_user))
 					.route("/login", web::post().to(endpoints::users::login_user))
+					.route(
+						"/webauthn/register-start",
+						web::post()
+							.to(endpoints::webauthn::start_register_passkey)
+							.wrap(Governor::new(&generic_governor_config))
+							.wrap(from_fn(middleware::authentication)),
+					)
+					.route(
+						"/webauthn/register-finish",
+						web::post()
+							.to(endpoints::webauthn::finish_register_passkey)
+							.wrap(Governor::new(&generic_governor_config))
+							.wrap(from_fn(middleware::authentication)),
+					)
 					.route(
 						"/logout",
 						web::post()

@@ -10,6 +10,7 @@ pub mod messages;
 pub mod oauth;
 pub mod servers;
 pub mod users;
+pub mod webauthn;
 pub mod ws;
 
 #[macro_export]
