@@ -1,5 +1,6 @@
 use serde::Serializer;
 
+pub mod auth;
 pub mod channel;
 pub mod client;
 pub mod friend;

@@ -103,6 +103,47 @@
 		display_name: $me?.display_name ?? undefined,
 		email: $me?.email,
 	})
+
+	let passkeyError: string | undefined
+	const addPasskey = async () => {
+		const req = await fetch(`/webauthn/register-start`, {
+			method: "POST",
+			credentials: "include",
+		})
+
+		let cred: Credential | null = null
+		try {
+			cred = await navigator.credentials.create({
+				publicKey: PublicKeyCredential.parseCreationOptionsFromJSON(
+					(await req.json()).publicKey,
+				),
+			})
+		} catch (e) {
+			console.error(e)
+			passkeyError = e.message
+			return
+		}
+
+		if (!cred) {
+			passkeyError =
+				"No credential returned. Your browser may not support passkeys."
+			return
+		}
+
+		try {
+			await fetch(`/webauthn/register-finish`, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify(cred),
+				credentials: "include",
+			})
+		} catch (e) {
+			console.error(e)
+			passkeyError = e.message
+		}
+	}
 </script>
 
 <svelte:head>
@@ -176,6 +217,12 @@
 				type="submit"
 				disabled={$isValidating || $isSubmitting || !$isValid}>Update</Button
 			>
+			<div class="border-paper-1-outline mt-2 rounded-md border-2 p-4">
+				<Button onClick={addPasskey} variant="secondary">Add Passkey</Button>
+				{#if passkeyError}
+					<p class="text-error-text">{passkeyError}</p>
+				{/if}
+			</div>
 		</form>
 	</div>
 	<div class="bg-error-bg/40 text-error-text mt-auto w-full px-16 py-8">

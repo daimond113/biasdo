@@ -88,17 +88,29 @@ async fn run() -> std::io::Result<()> {
 		.await
 		.expect("Failed to run migrations");
 
-	let webauthn_origin: url::Url = benv!(parse required "WEBAUTHN_ORIGIN");
+	let webauthn_origins = benv!(required "WEBAUTHN_ORIGINS")
+		.split('|')
+		.map(|origin| url::Url::parse(origin).expect("invalid webauthn origin"))
+		.collect::<Vec<_>>();
 
 	let app_data = web::Data::new(AppState {
 		db: pool,
 		server_connections: DashMap::new(),
 		user_connections: DashMap::new(),
-		webauthn: WebauthnBuilder::new(webauthn_origin.host_str().unwrap(), &webauthn_origin)
-			.expect("invalid webauthn config")
-			.rp_name("biasdo")
-			.build()
-			.expect("failed to build webauthn config"),
+		webauthn: {
+			let first_origin = webauthn_origins
+				.first()
+				.expect("no webauthn origins provided");
+			let mut builder = WebauthnBuilder::new(first_origin.host_str().unwrap(), first_origin)
+				.expect("invalid webauthn config")
+				.rp_name("biasdo");
+
+			for origin in webauthn_origins.iter().skip(1) {
+				builder = builder.append_allowed_origin(origin);
+			}
+
+			builder.build().expect("failed to build webauthn config")
+		},
 	});
 
 	let generic_governor_config = GovernorConfigBuilder::default()
@@ -151,6 +163,14 @@ async fn run() -> std::io::Result<()> {
 							.to(endpoints::webauthn::finish_register_passkey)
 							.wrap(Governor::new(&generic_governor_config))
 							.wrap(from_fn(middleware::authentication)),
+					)
+					.route(
+						"/webauthn/auth-start",
+						web::post().to(endpoints::webauthn::start_authentication),
+					)
+					.route(
+						"/webauthn/auth-finish",
+						web::post().to(endpoints::webauthn::finish_authentication),
 					)
 					.route(
 						"/logout",

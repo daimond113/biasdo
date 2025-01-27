@@ -7,10 +7,18 @@
 	import BoxLayout from "$lib/BoxLayout.svelte"
 	import Button from "$lib/Button.svelte"
 	import TextField from "$lib/TextField.svelte"
+	import { get } from "svelte/store"
 
 	let error: string | undefined
 
-	const { form, errors, isSubmitting, isValidating, isValid } = createForm<{
+	const {
+		form,
+		errors,
+		isSubmitting,
+		isValidating,
+		isValid,
+		data: formData,
+	} = createForm<{
 		username: string
 		password: string
 	}>({
@@ -68,6 +76,66 @@
 			goto("/app").then(invalidateAll)
 		},
 	})
+
+	let passkeyError: string | undefined
+
+	const loginWithPasskey = async () => {
+		const req = await fetch(`/webauthn/auth-start`, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				username: get(formData).username,
+			}),
+			credentials: "include",
+		})
+
+		if (req.status === 404) {
+			passkeyError = "No account or passkey found for this username"
+			return
+		}
+
+		let cred: Credential | null = null
+		try {
+			cred = await navigator.credentials.get({
+				publicKey: PublicKeyCredential.parseRequestOptionsFromJSON(
+					(await req.json()).publicKey,
+				),
+			})
+		} catch (e) {
+			console.error(e)
+			passkeyError = e.message
+			return
+		}
+
+		if (!cred) {
+			passkeyError =
+				"No credentials provided. Your browser may not support passkeys."
+			return
+		}
+
+		try {
+			const res = await fetch(`/webauthn/auth-finish`, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify(cred),
+				credentials: "include",
+			})
+
+			if (!res.ok) {
+				passkeyError = (await res.json()).error
+			} else {
+				localStorage.setItem("session", (await res.json()).token)
+				goto("/app").then(invalidateAll)
+			}
+		} catch (e) {
+			console.error(e)
+			passkeyError = e.message
+		}
+	}
 </script>
 
 <svelte:head>
@@ -99,5 +167,17 @@
 			class="mt-4 w-full"
 			disabled={$isSubmitting || $isValidating || !$isValid}>Login</Button
 		>
+		<p class="mt-2 w-full text-center text-sm">
+			<button
+				type="button"
+				class="text-link appearance-none border-none bg-transparent"
+				on:click={loginWithPasskey}
+			>
+				Login with passkey
+			</button>
+			{#if passkeyError}
+				<div class="text-error-text mt-2">{passkeyError}</div>
+			{/if}
+		</p>
 	</form>
 </BoxLayout>
