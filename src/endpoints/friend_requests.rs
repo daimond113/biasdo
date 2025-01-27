@@ -1,5 +1,5 @@
 use actix_web::{web, HttpResponse};
-use sqlx::{mysql::MySqlDatabaseError, query};
+use sqlx::query;
 use std::sync::Mutex;
 
 use crate::{
@@ -377,17 +377,14 @@ LIMIT 1
 
 			Ok(HttpResponse::Ok().finish())
 		}
-		Err(err) => match err.as_database_error() {
-			Some(err)
-				if err
-					.try_downcast_ref::<MySqlDatabaseError>()
-					.is_some_and(|err| err.number() == 1062) =>
-			{
-				Ok(HttpResponse::Conflict().json(ErrorResponse {
-					error: "Friendship already exists".to_string(),
-				}))
-			}
-			_ => Err(err.into()),
-		},
+		Err(e)
+			if e.as_database_error()
+				.is_some_and(|e| e.is_unique_violation()) =>
+		{
+			Ok(HttpResponse::Conflict().json(ErrorResponse {
+				error: "Friendship already exists".to_string(),
+			}))
+		}
+		Err(e) => Err(e.into()),
 	}
 }

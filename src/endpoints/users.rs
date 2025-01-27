@@ -3,7 +3,7 @@ use cuid2::CuidConstructor;
 use password_auth::generate_hash;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use sqlx::{mysql::MySqlDatabaseError, query, Executor, MySql};
+use sqlx::{query, Executor, MySql};
 use std::{
 	collections::HashSet,
 	sync::{LazyLock, Mutex},
@@ -83,7 +83,7 @@ pub async fn register_user(
 		generator.generate()
 	};
 
-	if let Err(err) = query!(
+	match query!(
         "INSERT INTO User (id, username, display_name, password, email, email_verified) VALUES (?, ?, ?, ?, ?, FALSE)",
         user_id,
         body.username,
@@ -93,19 +93,14 @@ pub async fn register_user(
     )
     .execute(&mut *tx)
     .await {
-        return match err.as_database_error() {
-            Some(err)
-                if err
-                    .try_downcast_ref::<MySqlDatabaseError>()
-                    .is_some_and(|err| err.number() == 1062) =>
-            {
-                Ok(HttpResponse::Conflict().json(ErrorResponse {
-                    error: "Username or email already exists".to_string(),
-                }))
-            }
-            _ => Err(err.into()),
-        };
-    }
+		Ok(_) => {},
+		Err(e) if e.as_database_error().is_some_and(|e| e.is_unique_violation()) => {
+			return Ok(HttpResponse::Conflict().json(ErrorResponse {
+				error: "Username or email already exists".to_string(),
+			}));
+		}
+		Err(e) => return Err(e.into()),
+	}
 
 	let session = create_session(&mut *tx, user_id).await?;
 

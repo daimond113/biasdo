@@ -1,6 +1,6 @@
 use actix_web::{web, HttpResponse};
 use cuid2::CuidConstructor;
-use sqlx::{mysql::MySqlDatabaseError, query};
+use sqlx::query;
 use std::sync::LazyLock;
 
 use crate::{
@@ -319,17 +319,14 @@ pub async fn accept_invite(
 
 			Ok(HttpResponse::Ok().finish())
 		}
-		Err(err) => match err.as_database_error() {
-			Some(err)
-				if err
-					.try_downcast_ref::<MySqlDatabaseError>()
-					.is_some_and(|err| err.number() == 1062) =>
-			{
-				Ok(HttpResponse::Conflict().json(ErrorResponse {
-					error: "You are already a member of this server".to_string(),
-				}))
-			}
-			_ => Err(err.into()),
-		},
+		Err(e)
+			if e.as_database_error()
+				.is_some_and(|e| e.is_unique_violation()) =>
+		{
+			Ok(HttpResponse::Conflict().json(ErrorResponse {
+				error: "You are already a member of this server".to_string(),
+			}))
+		}
+		Err(err) => Err(err.into()),
 	}
 }
