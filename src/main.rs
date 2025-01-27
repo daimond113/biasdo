@@ -173,6 +173,14 @@ async fn run() -> std::io::Result<()> {
 						web::post().to(endpoints::webauthn::finish_authentication),
 					)
 					.route(
+						"/webauthn/cond/auth-start",
+						web::post().to(endpoints::webauthn::start_conditional_authentication),
+					)
+					.route(
+						"/webauthn/cond/auth-finish",
+						web::post().to(endpoints::webauthn::finish_conditional_authentication),
+					)
+					.route(
 						"/logout",
 						web::post()
 							.to(endpoints::users::logout_user)

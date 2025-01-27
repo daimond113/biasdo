@@ -27,3 +27,7 @@ pub fn opt_id_str<S: Serializer>(id: &Option<u64>, s: S) -> Result<S::Ok, S::Err
 pub fn id_to_uuid(id: u64) -> webauthn_rs::prelude::Uuid {
 	webauthn_rs::prelude::Uuid::from_u64_pair(0, id)
 }
+
+pub fn uuid_to_id(uuid: webauthn_rs::prelude::Uuid) -> u64 {
+	uuid.as_u64_pair().1
+}

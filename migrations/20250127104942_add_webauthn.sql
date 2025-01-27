@@ -27,10 +27,18 @@ CREATE TABLE WebauthnAuthState
     FOREIGN KEY (user_id) REFERENCES User (id) ON DELETE CASCADE
 );
 
+CREATE TABLE WebauthnConditionalAuthState
+(
+    cond_id    CHAR(32) PRIMARY KEY,
+    state      JSON      NOT NULL,
+    expires_at TIMESTAMP NOT NULL DEFAULT (TIMESTAMPADD(SECOND, 300, NOW()))
+);
+
 CREATE EVENT webauthn_cleanup
     ON SCHEDULE EVERY 1 DAY
     DO
     BEGIN
         DELETE FROM WebauthnPasskeyRegistration WHERE expires_at <= NOW();
         DELETE FROM WebauthnAuthState WHERE expires_at <= NOW();
+        DELETE FROM WebauthnConditionalAuthState WHERE expires_at <= NOW();
     END;
