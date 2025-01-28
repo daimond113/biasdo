@@ -11,6 +11,8 @@
 
 	let error: string | undefined
 
+	const gotoApp = () => goto("/app").then(invalidateAll)
+
 	const {
 		form: loginForm,
 		errors: loginErrors,
@@ -72,13 +74,11 @@
 			localStorage.setItem("session", token)
 		},
 		onSuccess: () => {
-			goto("/app").then(invalidateAll)
+			gotoApp()
 		},
 	})
 
 	let passkeyError: string | undefined
-	let supportsConditional =
-		PublicKeyCredential.isConditionalMediationAvailable()
 	let passkeyModalOpen = false
 
 	const {
@@ -123,9 +123,12 @@
 				throw new Error("No account or passkey found for this username")
 			}
 
+			const resp = await req.json()
+
 			const cred = await navigator.credentials.get({
+				...resp,
 				publicKey: PublicKeyCredential.parseRequestOptionsFromJSON(
-					(await req.json()).publicKey,
+					resp.publicKey,
 				),
 			})
 
@@ -150,16 +153,65 @@
 			localStorage.setItem("session", (await res.json()).token)
 		},
 		onSuccess: () => {
-			goto("/app").then(invalidateAll)
+			gotoApp()
 		},
 		onError: (err) => {
 			passkeyError = err.message
 		},
 	})
 
-	const conditionalLoginWithPasskey = async () => {}
+	const conditionalLoginWithPasskey = async () => {
+		try {
+			const req = await fetch(`/webauthn/cond/auth-start`, {
+				method: "POST",
+				credentials: "include",
+			})
 
-	const supports = false
+			if (req.status === 404) {
+				throw new Error("No account or passkey found for this username")
+			}
+
+			const resp = await req.json()
+
+			const cred = await navigator.credentials.get({
+				...resp,
+				publicKey: PublicKeyCredential.parseRequestOptionsFromJSON(
+					resp.publicKey,
+				),
+			})
+
+			if (!cred) {
+				throw new Error(
+					"No credentials provided. Your browser may not support passkeys.",
+				)
+			}
+
+			const res = await fetch(`/webauthn/cond/auth-finish`, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify(cred),
+				credentials: "include",
+			})
+			if (!res.ok) {
+				throw new Error((await res.json()).error)
+			}
+
+			localStorage.setItem("session", (await res.json()).token)
+
+			gotoApp()
+		} catch (err) {
+			console.error(err)
+			passkeyError = err.message
+		}
+	}
+
+	let supportsConditional =
+		PublicKeyCredential.isConditionalMediationAvailable().then((s) => {
+			if (s) conditionalLoginWithPasskey()
+			return s
+		})
 </script>
 
 <svelte:head>
@@ -177,13 +229,13 @@
 			type="text"
 			label="Username"
 			errors={$loginErrors}
-			autocomplete="username"
+			autocomplete="username webauthn"
 		/>
 		<TextField
 			type="password"
 			label="Password"
 			errors={$loginErrors}
-			autocomplete="current-password"
+			autocomplete="current-password webauthn"
 		/>
 		<p>Don't have an account yet? <a href="/register">Register one!</a></p>
 		<Button
@@ -192,8 +244,12 @@
 			disabled={$loginIsSubmitting || $loginIsValidating || !$loginIsValid}
 			>Login</Button
 		>
-		{#await supportsConditional then _}
-			{#if !supports}
+		{#await supportsConditional then supports}
+			{#if supports}
+				{#if passkeyError}
+					<div class="text-error-text mt-2">{passkeyError}</div>
+				{/if}
+			{:else}
 				<Modal bind:showModal={passkeyModalOpen}>
 					<h1>Login with Passkey</h1>
 					<p class="my-2">
@@ -222,20 +278,6 @@
 					{/if}
 				</Modal>
 			{/if}
-			<p class="mt-2 w-full text-center text-sm">
-				<button
-					type="button"
-					class="text-link appearance-none border-none bg-transparent"
-					on:click={supports
-						? conditionalLoginWithPasskey
-						: () => (passkeyModalOpen = true)}
-				>
-					Login with passkey
-				</button>
-				{#if passkeyError && supports}
-					<div class="text-error-text mt-2">{passkeyError}</div>
-				{/if}
-			</p>
 		{/await}
 	</form>
 </BoxLayout>

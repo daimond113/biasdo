@@ -111,11 +111,14 @@
 			credentials: "include",
 		})
 
+		const resp = await req.json()
+
 		let cred: Credential | null = null
 		try {
 			cred = await navigator.credentials.create({
+				...resp,
 				publicKey: PublicKeyCredential.parseCreationOptionsFromJSON(
-					(await req.json()).publicKey,
+					resp.publicKey,
 				),
 			})
 		} catch (e) {
