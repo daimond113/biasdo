@@ -1,0 +1,12 @@
+{
+  "db_name": "MySQL",
+  "query": "INSERT INTO WebauthnAuthState (user_id, auth_id, state, expires_at) VALUES (?, ?, ?, DEFAULT)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "17dde0513879c14aba217f386725bf8acdcded3d955fd025dbd05249948f6460"
+}

@@ -1,0 +1,12 @@
+{
+  "db_name": "MySQL",
+  "query": "DELETE\nFROM WebauthnPasskeyRegistration\nWHERE user_id=? AND reg_id=? AND expires_at > NOW()\nRETURNING reg_state",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "17274667e2cf7fb9ed7047e7b49b91d9774597cbefdbe8a6b60bee493d5d2360"
+}

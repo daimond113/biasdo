@@ -1,0 +1,12 @@
+{
+  "db_name": "MySQL",
+  "query": "DELETE\nFROM WebauthnAuthState\nWHERE auth_id=? AND expires_at > NOW()\nRETURNING user_id, state",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": []
+  },
+  "hash": "6136f18e45bc5f1f966e13c38db56f966b2ab1a68271fce0259647c8438dcb10"
+}

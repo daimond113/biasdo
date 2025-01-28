@@ -1,0 +1,12 @@
+{
+  "db_name": "MySQL",
+  "query": "INSERT INTO WebauthnPasskeyRegistration (user_id, reg_id, reg_state, expires_at) VALUES (?, ?, ?, DEFAULT)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 3
+    },
+    "nullable": []
+  },
+  "hash": "ebf7cdfc3356f0dbb3f143b295e90967a717036fed343e78ac3463ed020bc7ae"
+}
