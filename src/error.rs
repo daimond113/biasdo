@@ -60,6 +60,9 @@ impl ResponseError for BackendError {
 					}),
 				}
 			}
+			BackendError::Webauthn(e) => HttpResponse::BadRequest().json(ErrorResponse {
+				error: e.to_string(),
+			}),
 			_ => HttpResponse::InternalServerError().finish(),
 		}
 	}
