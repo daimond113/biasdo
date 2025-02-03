@@ -178,6 +178,7 @@
 				publicKey: PublicKeyCredential.parseRequestOptionsFromJSON(
 					resp.publicKey,
 				),
+				mediation: "required",
 			})
 
 			if (!cred) {
@@ -207,11 +208,10 @@
 		}
 	}
 
+	let supportsPasskeys = typeof window.PublicKeyCredential !== "undefined"
 	let supportsConditional =
-		PublicKeyCredential.isConditionalMediationAvailable().then((s) => {
-			if (s) conditionalLoginWithPasskey()
-			return s
-		})
+		supportsPasskeys &&
+		window.PublicKeyCredential.isConditionalMediationAvailable()
 </script>
 
 <svelte:head>
@@ -229,13 +229,13 @@
 			type="text"
 			label="Username"
 			errors={$loginErrors}
-			autocomplete="username webauthn"
+			autocomplete="username"
 		/>
 		<TextField
 			type="password"
 			label="Password"
 			errors={$loginErrors}
-			autocomplete="current-password webauthn"
+			autocomplete="current-password"
 		/>
 		<p>Don't have an account yet? <a href="/register">Register one!</a></p>
 		<Button
@@ -244,40 +244,52 @@
 			disabled={$loginIsSubmitting || $loginIsValidating || !$loginIsValid}
 			>Login</Button
 		>
-		{#await supportsConditional then supports}
-			{#if supports}
-				{#if passkeyError}
-					<div class="text-error-text mt-2">{passkeyError}</div>
-				{/if}
-			{:else}
-				<Modal bind:showModal={passkeyModalOpen}>
-					<h1>Login with Passkey</h1>
-					<p class="my-2">
-						Your browser doesn't support Conditional UI, so please input the
-						username of your account.
-					</p>
-
-					<form use:passkeyForm>
-						<TextField
-							type="text"
-							label="Username"
-							errors={$passkeyErrors}
-							autocomplete="username"
-						/>
-						<Button
-							type="submit"
-							class="mt-4 w-full"
-							disabled={$passkeyIsSubmitting ||
-								$passkeyIsValidating ||
-								!$passkeyIsValid}
-							on:click={conditionalLoginWithPasskey}>Login</Button
-						>
-					</form>
+		{#if supportsPasskeys}
+			{#await supportsConditional then supports}
+				<button
+					type="button"
+					class="text-link appearance-none border-none bg-transparent"
+					on:click={supports
+						? conditionalLoginWithPasskey
+						: () => (passkeyModalOpen = true)}
+				>
+					Login with passkey
+				</button>
+				{#if supports}
 					{#if passkeyError}
 						<div class="text-error-text mt-2">{passkeyError}</div>
 					{/if}
-				</Modal>
-			{/if}
-		{/await}
+				{:else}
+					<Modal bind:showModal={passkeyModalOpen}>
+						<h1>Login with Passkey</h1>
+						<p class="my-2">
+							Your browser doesn't support Conditional UI, so please input the
+							username of your account.
+						</p>
+
+						<form use:passkeyForm>
+							<TextField
+								type="text"
+								label="Username"
+								errors={$passkeyErrors}
+								autocomplete="username"
+							/>
+							<Button
+								type="submit"
+								class="mt-4 w-full"
+								disabled={$passkeyIsSubmitting ||
+									$passkeyIsValidating ||
+									!$passkeyIsValid}
+							>
+								Login
+							</Button>
+						</form>
+						{#if passkeyError}
+							<div class="text-error-text mt-2">{passkeyError}</div>
+						{/if}
+					</Modal>
+				{/if}
+			{/await}
+		{/if}
 	</form>
 </BoxLayout>
