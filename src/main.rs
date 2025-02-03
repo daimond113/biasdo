@@ -181,6 +181,21 @@ async fn run() -> std::io::Result<()> {
 						web::post().to(endpoints::webauthn::finish_conditional_authentication),
 					)
 					.route(
+						"/webauthn/passkeys",
+						web::get()
+							.to(endpoints::webauthn::get_user_passkeys)
+							.wrap(Governor::new(&generic_governor_config))
+							.wrap(from_fn(middleware::authentication)),
+					)
+					.service(
+						web::resource("/webauthn/passkeys/{cred_id}")
+							.get(endpoints::webauthn::get_user_passkey)
+							.patch(endpoints::webauthn::update_user_passkey)
+							.delete(endpoints::webauthn::delete_user_passkey)
+							.wrap(Governor::new(&generic_governor_config))
+							.wrap(from_fn(middleware::authentication)),
+					)
+					.route(
 						"/logout",
 						web::post()
 							.to(endpoints::users::logout_user)

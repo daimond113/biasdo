@@ -1,0 +1,12 @@
+{
+  "db_name": "MySQL",
+  "query": "DELETE\nFROM WebauthnUserCredential\nWHERE user_id=? AND cred_id=?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "7998a417604b6ec78269c2e383a963688f2b34846d86319e63fbc6f4fc619621"
+}

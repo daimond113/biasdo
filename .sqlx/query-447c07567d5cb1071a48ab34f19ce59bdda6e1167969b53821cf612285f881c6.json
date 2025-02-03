@@ -1,0 +1,12 @@
+{
+  "db_name": "MySQL",
+  "query": "INSERT INTO WebauthnUserCredential (user_id, cred_id, cred, display_name, created_at) VALUES (?, ?, ?, 'Passkey', ?)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 4
+    },
+    "nullable": []
+  },
+  "hash": "447c07567d5cb1071a48ab34f19ce59bdda6e1167969b53821cf612285f881c6"
+}

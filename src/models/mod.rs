@@ -11,6 +11,7 @@ pub mod scope;
 pub mod server;
 pub mod servermember;
 pub mod user;
+pub mod passkey;
 
 // sending 64-bit integers will not work in JavaScript and other languages
 pub fn id_str<S: Serializer>(id: &u64, s: S) -> Result<S::Ok, S::Error> {

@@ -18,6 +18,9 @@ pub enum BackendError {
 
 	#[error("serde_json error")]
 	SerdeJson(#[from] serde_json::Error),
+	
+	#[error("serde error")]
+	Serde(#[from] serde::de::value::Error),
 }
 
 #[derive(Debug, Serialize)]
@@ -61,6 +64,9 @@ impl ResponseError for BackendError {
 				}
 			}
 			BackendError::Webauthn(e) => HttpResponse::BadRequest().json(ErrorResponse {
+				error: e.to_string(),
+			}),
+			BackendError::Serde(e) => HttpResponse::BadRequest().json(ErrorResponse {
 				error: e.to_string(),
 			}),
 			_ => HttpResponse::InternalServerError().finish(),

@@ -1,8 +1,10 @@
 CREATE TABLE WebauthnUserCredential
 (
-    user_id BIGINT UNSIGNED        NOT NULL,
-    cred_id VARBINARY(1023) UNIQUE NOT NULL,
-    cred    JSON                   NOT NULL,
+    user_id      BIGINT UNSIGNED        NOT NULL,
+    cred_id      VARBINARY(1023) UNIQUE NOT NULL,
+    cred         JSON                   NOT NULL,
+    display_name VARCHAR(64)            NOT NULL,
+    created_at   TIMESTAMP              NOT NULL DEFAULT NOW(),
     PRIMARY KEY (user_id, cred_id),
     FOREIGN KEY (user_id) REFERENCES User (id) ON DELETE CASCADE
 );

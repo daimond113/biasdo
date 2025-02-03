@@ -1,0 +1,34 @@
+{
+  "db_name": "MySQL",
+  "query": "SELECT display_name, created_at\nFROM WebauthnUserCredential\nWHERE user_id=? AND cred_id=?",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "display_name",
+        "type_info": {
+          "type": "VarString",
+          "flags": "NOT_NULL | NO_DEFAULT_VALUE",
+          "max_size": 256
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "created_at",
+        "type_info": {
+          "type": "Timestamp",
+          "flags": "NOT_NULL | UNSIGNED | BINARY | TIMESTAMP",
+          "max_size": 19
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "b281e2711d49021e02644eb482715bc13b6d49773faee8175c7420403f115fa4"
+}

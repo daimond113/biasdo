@@ -1,11 +1,15 @@
 <script lang="ts">
 	import { invalidateAll, me } from "$lib/stores"
+	import type { Passkey } from "@biasdo/server-utils/src/Passkey"
 	import { createForm } from "felte"
 	import { fetch } from "$lib/fetch"
 	import { get } from "svelte/store"
 	import { goto } from "$app/navigation"
 
 	import Button from "$lib/Button.svelte"
+	import Check from "lucide-svelte/icons/check"
+	import LoadingSpinner from "$lib/LoadingSpinner.svelte"
+	import PencilLine from "lucide-svelte/icons/pencil-line"
 	import TextField from "$lib/TextField.svelte"
 	import X from "lucide-svelte/icons/x"
 
@@ -104,6 +108,8 @@
 		email: $me?.email,
 	})
 
+	let passkeysPromise: Promise<Passkey[]> | undefined = undefined
+
 	let passkeyError: string | undefined
 	const addPasskey = async () => {
 		const req = await fetch(`/webauthn/register-start`, {
@@ -134,7 +140,7 @@
 		}
 
 		try {
-			await fetch(`/webauthn/register-finish`, {
+			const res = await fetch(`/webauthn/register-finish`, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
@@ -142,130 +148,268 @@
 				body: JSON.stringify(cred),
 				credentials: "include",
 			})
+			const json = await res.json()
+			if (!res.ok) {
+				throw json
+			}
+
+			passkeysPromise = passkeysPromise?.then((passkeys) =>
+				passkeys.concat(json),
+			)
 		} catch (e) {
 			console.error(e)
 			passkeyError = e.message
 		}
 	}
+
+	let abortController: AbortController | undefined = undefined
+
+	let isEditingPasskey: string | undefined = undefined
+
+	const {
+		form: passkeyForm,
+		errors: passkeyErrors,
+		isValid: passkeyIsValid,
+		isValidating: passkeyIsValidating,
+		isSubmitting: passkeyIsSubmitting,
+		setInitialValues: setPasskeyInitialValues,
+	} = createForm<{ display_name: string }>({
+		validate: (values) => {
+			const errors = {} as Record<string, string>
+
+			const display_name = values.display_name?.trim()
+			if (!display_name) {
+				errors.display_name = "Display name is required"
+			} else if (display_name.length < 1) {
+				errors.display_name = "Display name must be at least 1 character long"
+			} else if (display_name.length > 64) {
+				errors.display_name = "Display name must be at most 64 characters long"
+			}
+
+			return errors
+		},
+		onSubmit: async (values) => {
+			const res = await fetch(`/webauthn/passkeys/${isEditingPasskey}`, {
+				method: "PATCH",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify(values),
+			})
+			if (!res.ok) throw await res.json()
+
+			return values
+		},
+		onSuccess: ({ display_name }) => {
+			const id = isEditingPasskey
+			passkeysPromise = passkeysPromise?.then((passkeys) =>
+				passkeys.map((p) => (p.id === id ? { ...p, display_name } : p)),
+			)
+			isEditingPasskey = undefined
+		},
+	})
+
+	$: {
+		abortController?.abort("Navigation interrupted")
+		abortController = new AbortController()
+
+		passkeysPromise = fetch(`/webauthn/passkeys`, {
+			signal: abortController!.signal,
+		}).then((res) => res.json())
+	}
+
+	const supportsPasskeys = typeof window.PublicKeyCredential !== "undefined"
 </script>
 
 <svelte:head>
 	<title>User Settings - biasdo</title>
 </svelte:head>
 
-<div
-	class="border-paper-1-outline bg-paper-1-bg flex size-full shrink-0 flex-col gap-4 overflow-auto rounded-2xl border pt-16"
->
-	<div class="max-w-[48rem] px-16">
-		<h1>User Settings</h1>
-		<form use:form class="mt-2">
-			<TextField
-				label="Username"
-				class="mb-2 w-full"
-				name="username"
-				errors={$errors}
-				autocomplete="username"
-			>
-				<Button
-					class="ml-2 flex size-10 items-center justify-center p-2"
-					title="Reset field"
-					onClick={() => setFields("username", get(me)?.username)}
-					variant="error"
-				>
-					<X />
-				</Button>
-			</TextField>
-			<TextField
-				label="Display Name"
-				class="mb-2 w-full"
-				name="display_name"
-				errors={$errors}
-				autocomplete="name"
-			>
-				<Button
-					class="ml-2 flex size-10 items-center justify-center p-2"
-					title="Reset field"
-					onClick={() =>
-						setFields("display_name", get(me)?.display_name ?? undefined)}
-					variant="error"
-				>
-					<X />
-				</Button>
-			</TextField>
-			<TextField
-				label="Email"
-				class="mb-2 w-full"
-				name="email"
-				errors={$errors}
-				autocomplete="email"
-			>
-				<Button
-					class="ml-2 flex size-10 items-center justify-center p-2"
-					title="Reset field"
-					onClick={() => setFields("email", get(me)?.email)}
-					variant="error"
-				>
-					<X />
-				</Button>
-			</TextField>
-			<TextField
-				label="Password"
-				type="password"
-				class="mb-2 w-full"
-				name="password"
-				errors={$errors}
-				autocomplete="new-password"
-			/>
-			<Button
-				type="submit"
-				disabled={$isValidating || $isSubmitting || !$isValid}>Update</Button
-			>
-			<div class="border-paper-1-outline mt-2 rounded-md border-2 p-4">
-				<Button onClick={addPasskey} variant="secondary">Add Passkey</Button>
-				{#if passkeyError}
-					<p class="text-error-text">{passkeyError}</p>
-				{/if}
-			</div>
-		</form>
+{#await passkeysPromise}
+	<div class="flex size-full items-center justify-center">
+		<LoadingSpinner />
 	</div>
-	<div class="bg-error-bg/40 text-error-text mt-auto w-full px-16 py-8">
-		<h2>Danger Zone</h2>
-		<p>These actions cannot be undone. Be careful!</p>
-		<div class="mt-4 flex gap-4 overflow-x-auto">
-			<Button
-				onClick={() => {
-					fetch(`/users/@me`, {
-						method: "DELETE",
-					})
-				}}
-				variant="error"
-			>
-				Delete Account
-			</Button>
-			<Button
-				onClick={async () => {
-					await fetch(`/logout`, {
-						method: "POST",
-					})
+{:then passkeys}
+	<div
+		class="border-paper-1-outline bg-paper-1-bg flex size-full shrink-0 flex-col gap-4 overflow-auto rounded-2xl border pt-16"
+	>
+		<div class="max-w-[48rem] px-16">
+			<h1>User Settings</h1>
+			<form use:form class="mt-2">
+				<TextField
+					label="Username"
+					class="mb-2 w-full"
+					name="username"
+					errors={$errors}
+					autocomplete="username"
+				>
+					<Button
+						class="ml-2 flex size-10 items-center justify-center p-2"
+						title="Reset field"
+						onClick={() => setFields("username", get(me)?.username)}
+						variant="error"
+					>
+						<X />
+					</Button>
+				</TextField>
+				<TextField
+					label="Display Name"
+					class="mb-2 w-full"
+					name="display_name"
+					errors={$errors}
+					autocomplete="name"
+				>
+					<Button
+						class="ml-2 flex size-10 items-center justify-center p-2"
+						title="Reset field"
+						onClick={() =>
+							setFields("display_name", get(me)?.display_name ?? undefined)}
+						variant="error"
+					>
+						<X />
+					</Button>
+				</TextField>
+				<TextField
+					label="Email"
+					class="mb-2 w-full"
+					name="email"
+					errors={$errors}
+					autocomplete="email"
+				>
+					<Button
+						class="ml-2 flex size-10 items-center justify-center p-2"
+						title="Reset field"
+						onClick={() => setFields("email", get(me)?.email)}
+						variant="error"
+					>
+						<X />
+					</Button>
+				</TextField>
+				<TextField
+					label="Password"
+					type="password"
+					class="mb-2 w-full"
+					name="password"
+					errors={$errors}
+					autocomplete="new-password"
+				/>
+				<Button
+					type="submit"
+					disabled={$isValidating || $isSubmitting || !$isValid}>Update</Button
+				>
+				<div class="border-paper-1-outline mt-2 rounded-md border-2 p-4">
+					{#each passkeys ?? [] as passkey (passkey.id)}
+						<div class="bg-paper-2-bg mb-2 flex items-center rounded px-3 py-1">
+							{#if isEditingPasskey === passkey.id}
+								<form use:passkeyForm class="contents" on:submit|preventDefault>
+									<TextField
+										withoutLabel
+										label="Display Name"
+										class="w-full pr-3"
+										name="display_name"
+										errors={$passkeyErrors}
+										autocomplete="off"
+									/>
+									<Button
+										class="ml-auto flex size-10 items-center justify-center p-2"
+										type="submit"
+										variant="secondary"
+										disabled={!$passkeyIsValid ||
+											$passkeyIsValidating ||
+											$passkeyIsSubmitting}
+									>
+										<Check />
+									</Button>
+								</form>
+							{:else}
+								{passkey.display_name}
+								<Button
+									class="ml-auto flex size-10 items-center justify-center p-2"
+									onClick={() => {
+										setPasskeyInitialValues({
+											display_name: passkey.display_name,
+										})
+										isEditingPasskey = passkey.id
+									}}
+									variant="secondary"
+								>
+									<PencilLine />
+								</Button>
+							{/if}
+							<Button
+								class="ml-3 flex size-10 items-center justify-center p-2"
+								onClick={async () => {
+									if (isEditingPasskey === passkey.id) {
+										isEditingPasskey = undefined
+										return
+									}
 
-					localStorage.removeItem("session")
-					invalidateAll()
-					goto("/")
-				}}
-				variant="error">Logout</Button
-			>
-			<Button
-				onClick={async () => {
-					await fetch(`/logout?all=true`, {
-						method: "POST",
-					})
+									const res = await fetch(`/webauthn/passkeys/${passkey.id}`, {
+										method: "DELETE",
+									})
+									if (!res.ok) throw await res.json()
 
-					localStorage.removeItem("session")
-					invalidateAll()
-					goto("/")
-				}}
-				variant="error">Logout All Sessions</Button
-			>
+									passkeysPromise = passkeys
+										? new Promise((resolve) => {
+												resolve(passkeys.filter((p) => p.id !== passkey.id))
+											})
+										: undefined
+								}}
+								variant="error"
+							>
+								<X />
+							</Button>
+						</div>
+					{/each}
+					{#if supportsPasskeys}
+						<Button onClick={addPasskey} variant="secondary">Add Passkey</Button
+						>
+					{/if}
+					{#if passkeyError}
+						<p class="text-error-text">{passkeyError}</p>
+					{/if}
+				</div>
+			</form>
+		</div>
+		<div class="bg-error-bg/40 text-error-text mt-auto w-full px-16 py-8">
+			<h2>Danger Zone</h2>
+			<p>These actions cannot be undone. Be careful!</p>
+			<div class="mt-4 flex gap-4 overflow-x-auto">
+				<Button
+					onClick={() => {
+						fetch(`/users/@me`, {
+							method: "DELETE",
+						})
+					}}
+					variant="error"
+				>
+					Delete Account
+				</Button>
+				<Button
+					onClick={async () => {
+						await fetch(`/logout`, {
+							method: "POST",
+						})
+
+						localStorage.removeItem("session")
+						invalidateAll()
+						goto("/")
+					}}
+					variant="error">Logout</Button
+				>
+				<Button
+					onClick={async () => {
+						await fetch(`/logout?all=true`, {
+							method: "POST",
+						})
+
+						localStorage.removeItem("session")
+						invalidateAll()
+						goto("/")
+					}}
+					variant="error">Logout All Sessions</Button
+				>
+			</div>
 		</div>
 	</div>
-</div>
+{/await}
