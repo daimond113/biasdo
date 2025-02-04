@@ -299,66 +299,78 @@
 				>
 				<div class="border-paper-1-outline mt-2 rounded-md border-2 p-4">
 					{#each passkeys ?? [] as passkey (passkey.id)}
-						<div class="bg-paper-2-bg mb-2 flex items-center rounded px-3 py-1">
-							{#if isEditingPasskey === passkey.id}
-								<form use:passkeyForm class="contents" on:submit|preventDefault>
-									<TextField
-										withoutLabel
-										label="Display Name"
-										class="w-full pr-3"
-										name="display_name"
-										errors={$passkeyErrors}
-										autocomplete="off"
-									/>
+						<div class="bg-paper-2-bg mb-2 rounded px-3 py-1">
+							<div class="flex items-center">
+								{#if isEditingPasskey === passkey.id}
+									<form
+										use:passkeyForm
+										class="contents"
+										on:submit|preventDefault
+									>
+										<TextField
+											withoutLabel
+											label="Display Name"
+											class="w-full pr-3"
+											name="display_name"
+											errors={$passkeyErrors}
+											autocomplete="off"
+										/>
+										<Button
+											class="ml-auto flex size-10 items-center justify-center p-2"
+											type="submit"
+											variant="secondary"
+											disabled={!$passkeyIsValid ||
+												$passkeyIsValidating ||
+												$passkeyIsSubmitting}
+										>
+											<Check />
+										</Button>
+									</form>
+								{:else}
+									{passkey.display_name}
 									<Button
 										class="ml-auto flex size-10 items-center justify-center p-2"
-										type="submit"
-										variant="secondary"
-										disabled={!$passkeyIsValid ||
-											$passkeyIsValidating ||
-											$passkeyIsSubmitting}
-									>
-										<Check />
-									</Button>
-								</form>
-							{:else}
-								{passkey.display_name}
-								<Button
-									class="ml-auto flex size-10 items-center justify-center p-2"
-									onClick={() => {
-										setPasskeyInitialValues({
-											display_name: passkey.display_name,
-										})
-										isEditingPasskey = passkey.id
-									}}
-									variant="secondary"
-								>
-									<PencilLine />
-								</Button>
-							{/if}
-							<Button
-								class="ml-3 flex size-10 items-center justify-center p-2"
-								onClick={async () => {
-									if (isEditingPasskey === passkey.id) {
-										isEditingPasskey = undefined
-										return
-									}
-
-									const res = await fetch(`/webauthn/passkeys/${passkey.id}`, {
-										method: "DELETE",
-									})
-									if (!res.ok) throw await res.json()
-
-									passkeysPromise = passkeys
-										? new Promise((resolve) => {
-												resolve(passkeys.filter((p) => p.id !== passkey.id))
+										onClick={() => {
+											setPasskeyInitialValues({
+												display_name: passkey.display_name,
 											})
-										: undefined
-								}}
-								variant="error"
-							>
-								<X />
-							</Button>
+											isEditingPasskey = passkey.id
+										}}
+										variant="secondary"
+									>
+										<PencilLine />
+									</Button>
+								{/if}
+								<Button
+									class="ml-3 flex size-10 items-center justify-center p-2"
+									onClick={async () => {
+										if (isEditingPasskey === passkey.id) {
+											isEditingPasskey = undefined
+											return
+										}
+										const res = await fetch(
+											`/webauthn/passkeys/${passkey.id}`,
+											{
+												method: "DELETE",
+											},
+										)
+										if (!res.ok) throw await res.json()
+										passkeysPromise = passkeys
+											? new Promise((resolve) => {
+													resolve(passkeys.filter((p) => p.id !== passkey.id))
+												})
+											: undefined
+									}}
+									variant="error"
+								>
+									<X />
+								</Button>
+							</div>
+							<div class="mb-2 h-5 text-sm">
+								<time datetime={passkey.created_at}>
+									Created at {new Date(passkey.created_at).toLocaleString()}
+								</time>
+							</div>
 						</div>
 					{/each}
 					{#if supportsPasskeys}
