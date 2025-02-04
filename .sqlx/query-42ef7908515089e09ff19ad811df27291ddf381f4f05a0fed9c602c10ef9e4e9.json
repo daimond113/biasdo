@@ -1,0 +1,44 @@
+{
+  "db_name": "MySQL",
+  "query": "SELECT User.username, User.display_name, WebauthnUserCredential.cred_id\nFROM User\nLEFT JOIN WebauthnUserCredential ON WebauthnUserCredential.user_id=User.id\nWHERE User.id = ?",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "username",
+        "type_info": {
+          "type": "VarString",
+          "flags": "NOT_NULL | UNIQUE_KEY | MULTIPLE_KEY | NO_DEFAULT_VALUE",
+          "max_size": 128
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "display_name",
+        "type_info": {
+          "type": "VarString",
+          "flags": "",
+          "max_size": 128
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "cred_id",
+        "type_info": {
+          "type": "VarString",
+          "flags": "PRIMARY_KEY | UNIQUE_KEY | BINARY | NO_DEFAULT_VALUE",
+          "max_size": 1023
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      true,
+      true
+    ]
+  },
+  "hash": "42ef7908515089e09ff19ad811df27291ddf381f4f05a0fed9c602c10ef9e4e9"
+}

@@ -1,0 +1,44 @@
+{
+  "db_name": "MySQL",
+  "query": "SELECT cred_id, display_name, created_at\nFROM WebauthnUserCredential\nWHERE user_id=?\nORDER BY created_at ASC",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "cred_id",
+        "type_info": {
+          "type": "VarString",
+          "flags": "NOT_NULL | PRIMARY_KEY | UNIQUE_KEY | BINARY | NO_DEFAULT_VALUE",
+          "max_size": 1023
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "display_name",
+        "type_info": {
+          "type": "VarString",
+          "flags": "NOT_NULL | NO_DEFAULT_VALUE",
+          "max_size": 256
+        }
+      },
+      {
+        "ordinal": 2,
+        "name": "created_at",
+        "type_info": {
+          "type": "Timestamp",
+          "flags": "NOT_NULL | UNSIGNED | BINARY | TIMESTAMP",
+          "max_size": 19
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "6d47b37fd1a22b2823298e396cc762f4beaea93b6e2696bbdfc666f37013dd32"
+}

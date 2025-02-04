@@ -1,0 +1,34 @@
+{
+  "db_name": "MySQL",
+  "query": "SELECT User.id, WebauthnUserCredential.cred AS `cred: sqlx::types::Json<Passkey>`\nFROM User\nINNER JOIN WebauthnUserCredential ON WebauthnUserCredential.user_id=User.id\nWHERE User.username=?",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": {
+          "type": "LongLong",
+          "flags": "NOT_NULL | PRIMARY_KEY | UNSIGNED | NO_DEFAULT_VALUE",
+          "max_size": 20
+        }
+      },
+      {
+        "ordinal": 1,
+        "name": "cred: sqlx::types::Json<Passkey>",
+        "type_info": {
+          "type": "Blob",
+          "flags": "NOT_NULL | BLOB | BINARY | NO_DEFAULT_VALUE",
+          "max_size": 4294967295
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false,
+      false
+    ]
+  },
+  "hash": "84f75aa4bfc9ad87265108f981767e70f7d3e3a6841e7ce16cff79584e7badb1"
+}

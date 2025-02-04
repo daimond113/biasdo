@@ -1,0 +1,12 @@
+{
+  "db_name": "MySQL",
+  "query": "DELETE\nFROM WebauthnConditionalAuthState\nWHERE cond_id=? AND expires_at > NOW()\nRETURNING state",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": []
+  },
+  "hash": "f0c2c074a4367b3b07c446b7aeee1b13e62e70d28c5cf1aeacde91b6496b3a50"
+}

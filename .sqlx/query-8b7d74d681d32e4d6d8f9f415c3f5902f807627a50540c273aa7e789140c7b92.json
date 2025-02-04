@@ -1,0 +1,24 @@
+{
+  "db_name": "MySQL",
+  "query": "SELECT cred AS `cred: sqlx::types::Json<Passkey>`\nFROM WebauthnUserCredential\nWHERE cred_id=?",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "cred: sqlx::types::Json<Passkey>",
+        "type_info": {
+          "type": "Blob",
+          "flags": "NOT_NULL | BLOB | BINARY | NO_DEFAULT_VALUE",
+          "max_size": 4294967295
+        }
+      }
+    ],
+    "parameters": {
+      "Right": 1
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "8b7d74d681d32e4d6d8f9f415c3f5902f807627a50540c273aa7e789140c7b92"
+}

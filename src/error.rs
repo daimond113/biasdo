@@ -4,14 +4,23 @@ use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum BackendError {
-	#[error("an error occurred while querying the database")]
+	#[error("error querying the database")]
 	DB(#[from] sqlx::Error),
 
-	#[error("an error occurred while verifying the password")]
+	#[error("error verifying password")]
 	Password(#[from] password_auth::VerifyError),
 
-	#[error("an error occurred while validating the request data")]
+	#[error("error occurred validating request data")]
 	Validation(#[from] validator::ValidationErrors),
+
+	#[error("webauthn error")]
+	Webauthn(#[from] webauthn_rs::prelude::WebauthnError),
+
+	#[error("serde_json error")]
+	SerdeJson(#[from] serde_json::Error),
+	
+	#[error("serde error")]
+	Serde(#[from] serde::de::value::Error),
 }
 
 #[derive(Debug, Serialize)]
@@ -54,6 +63,12 @@ impl ResponseError for BackendError {
 					}),
 				}
 			}
+			BackendError::Webauthn(e) => HttpResponse::BadRequest().json(ErrorResponse {
+				error: e.to_string(),
+			}),
+			BackendError::Serde(e) => HttpResponse::BadRequest().json(ErrorResponse {
+				error: e.to_string(),
+			}),
 			_ => HttpResponse::InternalServerError().finish(),
 		}
 	}

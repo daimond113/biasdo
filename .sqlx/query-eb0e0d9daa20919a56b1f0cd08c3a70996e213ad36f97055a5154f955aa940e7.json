@@ -1,0 +1,12 @@
+{
+  "db_name": "MySQL",
+  "query": "UPDATE WebauthnUserCredential\nSET cred=?\nWHERE cred_id=?",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "eb0e0d9daa20919a56b1f0cd08c3a70996e213ad36f97055a5154f955aa940e7"
+}

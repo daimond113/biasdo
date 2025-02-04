@@ -1,0 +1,12 @@
+{
+  "db_name": "MySQL",
+  "query": "INSERT INTO WebauthnConditionalAuthState (cond_id, state, expires_at) VALUES (?, ?, DEFAULT)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 2
+    },
+    "nullable": []
+  },
+  "hash": "f651963720ced03869a35621c4ee281f55a1d75cf78acd4e4a2ffc2da109a7a0"
+}
