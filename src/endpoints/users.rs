@@ -2,11 +2,8 @@ use actix_web::{web, HttpResponse};
 use password_auth::generate_hash;
 use serde::Deserialize;
 use serde_json::Value;
-use sqlx::{query, Executor, MySql};
-use std::{
-	collections::HashSet,
-	sync::{LazyLock, Mutex},
-};
+use sqlx::query;
+use std::{collections::HashSet, sync::Mutex};
 use validator::{Validate, ValidationError};
 
 use crate::{

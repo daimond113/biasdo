@@ -1,4 +1,9 @@
-use crate::{error::{ApiResult, BackendError}, middleware::Identity, models::{auth::create_session, id_to_uuid, uuid_to_id}, update_structure, AppState};
+use crate::{
+	error::{ApiResult, BackendError},
+	middleware::Identity,
+	models::{auth::create_session, id_to_uuid, passkey::Passkey as PasskeyResponse, uuid_to_id},
+	update_structure, AppState,
+};
 use actix_web::{
 	cookie::{time::OffsetDateTime, Cookie, SameSite},
 	web, HttpRequest, HttpResponse,
@@ -8,7 +13,6 @@ use sqlx::{query, MySqlConnection, Row};
 use std::sync::LazyLock;
 use validator::Validate;
 use webauthn_rs::{prelude::*, DEFAULT_AUTHENTICATOR_TIMEOUT};
-use crate::models::passkey::Passkey as PasskeyResponse;
 
 static WEBAUTHN_ID_GENERATOR: LazyLock<CuidConstructor> =
 	LazyLock::new(|| CuidConstructor::new().with_length(32));
@@ -151,7 +155,7 @@ RETURNING reg_state"#,
 		.finish_passkey_registration(&reg, &reg_state)?;
 
 	let created_at = chrono::Utc::now();
-	
+
 	match query!(
 		r#"INSERT INTO WebauthnUserCredential (user_id, cred_id, cred, display_name, created_at) VALUES (?, ?, ?, 'Passkey', ?)"#,
 		id,
@@ -364,12 +368,10 @@ ORDER BY created_at ASC"#,
 	Ok(HttpResponse::Ok().json(
 		passkeys
 			.into_iter()
-			.map(|row| {
-				PasskeyResponse {
-					id: row.cred_id.into(),
-					display_name: row.display_name,
-					created_at: row.created_at,
-				}
+			.map(|row| PasskeyResponse {
+				id: row.cred_id.into(),
+				display_name: row.display_name,
+				created_at: row.created_at,
 			})
 			.collect::<Vec<_>>(),
 	))
@@ -383,7 +385,7 @@ pub async fn get_user_passkey(
 	let cred_id = request.match_info().get("cred_id").unwrap();
 	let deser = serde::de::value::StrDeserializer::<serde::de::value::Error>::new(cred_id);
 	let cred_id: CredentialID = serde::Deserialize::deserialize(deser)?;
-	
+
 	let Identity::User(id) = identity.into_inner() else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
@@ -396,17 +398,16 @@ WHERE user_id=? AND cred_id=?"#,
 		cred_id.as_slice()
 	)
 	.fetch_optional(&app_state.db)
-	.await? else {
+	.await?
+	else {
 		return Ok(HttpResponse::NotFound().finish());
 	};
 
-	Ok(HttpResponse::Ok().json(
-		PasskeyResponse {
-			id: cred_id,
-			display_name: passkey.display_name,
-			created_at: passkey.created_at,
-		}
-	))
+	Ok(HttpResponse::Ok().json(PasskeyResponse {
+		id: cred_id,
+		display_name: passkey.display_name,
+		created_at: passkey.created_at,
+	}))
 }
 
 #[derive(Debug, serde::Deserialize, Validate)]
@@ -423,20 +424,16 @@ pub async fn update_user_passkey(
 	body: web::Json<UpdatePasskeyBody>,
 ) -> ApiResult {
 	body.validate()?;
-	
+
 	let cred_id = request.match_info().get("cred_id").unwrap();
 	let deser = serde::de::value::StrDeserializer::<serde::de::value::Error>::new(cred_id);
 	let cred_id: CredentialID = serde::Deserialize::deserialize(deser)?;
-	
+
 	let Identity::User(id) = identity.into_inner() else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
-	
-	let result = update_structure!(
-		"WebauthnUserCredential",
-		body,
-		display_name
-	)
+
+	let result = update_structure!("WebauthnUserCredential", body, display_name)
 		.push(" WHERE user_id = ")
 		.push_bind(id)
 		.push(" AND cred_id = ")
@@ -444,24 +441,24 @@ pub async fn update_user_passkey(
 		.build()
 		.execute(&app_state.db)
 		.await?;
-	
+
 	if result.rows_affected() == 0 {
 		return Ok(HttpResponse::NotFound().finish());
 	}
-	
+
 	Ok(HttpResponse::Ok().finish())
 }
 
-	pub async fn delete_user_passkey(
+pub async fn delete_user_passkey(
 	identity: web::ReqData<Identity>,
 	app_state: web::Data<AppState>,
 	request: HttpRequest,
 ) -> ApiResult {
-		let cred_id = request.match_info().get("cred_id").unwrap();
-		let deser = serde::de::value::StrDeserializer::<serde::de::value::Error>::new(cred_id);
-		let cred_id: CredentialID = serde::Deserialize::deserialize(deser)?;
+	let cred_id = request.match_info().get("cred_id").unwrap();
+	let deser = serde::de::value::StrDeserializer::<serde::de::value::Error>::new(cred_id);
+	let cred_id: CredentialID = serde::Deserialize::deserialize(deser)?;
 
-		let Identity::User(id) = identity.into_inner() else {
+	let Identity::User(id) = identity.into_inner() else {
 		return Ok(HttpResponse::Forbidden().finish());
 	};
 
@@ -474,10 +471,10 @@ WHERE user_id=? AND cred_id=?"#,
 	)
 	.execute(&app_state.db)
 	.await?;
-		
-		if result.rows_affected() == 0 {
-			return Ok(HttpResponse::NotFound().finish());
-		}
+
+	if result.rows_affected() == 0 {
+		return Ok(HttpResponse::NotFound().finish());
+	}
 
 	Ok(HttpResponse::Ok().finish())
 }

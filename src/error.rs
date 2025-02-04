@@ -18,7 +18,7 @@ pub enum BackendError {
 
 	#[error("serde_json error")]
 	SerdeJson(#[from] serde_json::Error),
-	
+
 	#[error("serde error")]
 	Serde(#[from] serde::de::value::Error),
 }
