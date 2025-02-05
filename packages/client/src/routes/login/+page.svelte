@@ -1,4 +1,9 @@
 <script lang="ts">
+	import {
+		parseRequestOptionsFromJSON,
+		get as webauthnGet,
+		supported as webauthnSupported,
+	} from "@github/webauthn-json/browser-ponyfill"
 	import { createForm } from "felte"
 	import { fetch } from "$lib/fetch"
 	import { goto } from "$app/navigation"
@@ -125,13 +130,7 @@
 
 			const resp = await req.json()
 
-			const cred = await navigator.credentials.get({
-				...resp,
-				publicKey: PublicKeyCredential.parseRequestOptionsFromJSON(
-					resp.publicKey,
-				),
-			})
-
+			const cred = await webauthnGet(parseRequestOptionsFromJSON(resp))
 			if (!cred) {
 				throw new Error(
 					"No credentials provided. Your browser may not support passkeys.",
@@ -173,14 +172,10 @@
 
 			const resp = await req.json()
 
-			const cred = await navigator.credentials.get({
-				...resp,
-				publicKey: PublicKeyCredential.parseRequestOptionsFromJSON(
-					resp.publicKey,
-				),
+			const cred = await webauthnGet({
+				...parseRequestOptionsFromJSON(resp),
 				mediation: "required",
 			})
-
 			if (!cred) {
 				throw new Error(
 					"No credentials provided. Your browser may not support passkeys.",
@@ -208,10 +203,8 @@
 		}
 	}
 
-	let supportsPasskeys = typeof window.PublicKeyCredential !== "undefined"
 	let supportsConditional =
-		supportsPasskeys &&
-		window.PublicKeyCredential.isConditionalMediationAvailable()
+		window.PublicKeyCredential?.isConditionalMediationAvailable?.() ?? false
 </script>
 
 <svelte:head>
@@ -244,7 +237,7 @@
 			disabled={$loginIsSubmitting || $loginIsValidating || !$loginIsValid}
 			>Login</Button
 		>
-		{#if supportsPasskeys}
+		{#if webauthnSupported()}
 			{#await supportsConditional then supports}
 				<button
 					type="button"

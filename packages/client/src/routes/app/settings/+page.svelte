@@ -1,5 +1,10 @@
 <script lang="ts">
 	import { invalidateAll, me } from "$lib/stores"
+	import {
+		parseCreationOptionsFromJSON,
+		create as webauthnCreate,
+		supported as webauthnSupported,
+	} from "@github/webauthn-json/browser-ponyfill"
 	import type { Passkey } from "@biasdo/server-utils/src/Passkey"
 	import { createForm } from "felte"
 	import { fetch } from "$lib/fetch"
@@ -112,34 +117,24 @@
 
 	let passkeyError: string | undefined
 	const addPasskey = async () => {
-		const req = await fetch(`/webauthn/register-start`, {
-			method: "POST",
-			credentials: "include",
-		})
-
-		const resp = await req.json()
-
-		let cred: Credential | null = null
 		try {
-			cred = await navigator.credentials.create({
-				...resp,
-				publicKey: PublicKeyCredential.parseCreationOptionsFromJSON(
-					resp.publicKey,
-				),
+			const req = await fetch(`/webauthn/register-start`, {
+				method: "POST",
+				credentials: "include",
 			})
-		} catch (e) {
-			console.error(e)
-			passkeyError = e.message
-			return
-		}
+			if (!req.ok) {
+				throw await req.json()
+			}
 
-		if (!cred) {
-			passkeyError =
-				"No credential returned. Your browser may not support passkeys."
-			return
-		}
+			const resp = await req.json()
 
-		try {
+			const cred = await webauthnCreate(parseCreationOptionsFromJSON(resp))
+			if (!cred) {
+				passkeyError =
+					"No credential returned. Your browser may not support passkeys."
+				return
+			}
+
 			const res = await fetch(`/webauthn/register-finish`, {
 				method: "POST",
 				headers: {
@@ -217,8 +212,6 @@
 			signal: abortController!.signal,
 		}).then((res) => res.json())
 	}
-
-	const supportsPasskeys = typeof window.PublicKeyCredential !== "undefined"
 </script>
 
 <svelte:head>
@@ -373,7 +366,7 @@
 							</div>
 						</div>
 					{/each}
-					{#if supportsPasskeys}
+					{#if webauthnSupported()}
 						<Button onClick={addPasskey} variant="secondary">Add Passkey</Button
 						>
 					{/if}
