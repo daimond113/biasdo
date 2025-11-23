@@ -5,7 +5,11 @@
   "workspaces": [
     "packages/*"
   ],
+  "scripts": {
+    "postinstall": "bun2nix -o bun.nix"
+  },
   "devDependencies": {
+    "bun2nix": "^2.0.1",
     "eslint": "^9.3.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.1.3",
