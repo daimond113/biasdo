@@ -3,7 +3,7 @@
   pnpm,
   nodejs,
   lib,
-  apiUrl ? "https://biasdo-api.daimond113.com",
+  apiUrl ? "https://biasdo-api.daimond113.com/v0",
   ...
 }:
 let
