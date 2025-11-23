@@ -4,6 +4,17 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  carta-md@4.6.7:
+    hash: 5a1a92ab6c82b7470dc3558dd58119822cbaeb982b75514cf55d182bb7497646
+    path: patches/carta-md@4.6.7.patch
+  svelte-portal@2.2.1:
+    hash: 04dd2080cd63d99f5a343fb587b9b414f898e4f1182786c390bc47385e901435
+    path: patches/svelte-portal@2.2.1.patch
+  svelte-virtual-scroll-list@1.3.0:
+    hash: b3b71215347bb5d30ad6428660c809f01ef09138b8735bb2f94d03b6a00bd69a
+    path: patches/svelte-virtual-scroll-list@1.3.0.patch
+
 importers:
 
   .:
@@ -45,11 +56,11 @@ importers:
   packages/client:
     dependencies:
       '@cartamd/plugin-code':
-        specifier: ^4.0.5
-        version: 4.2.0(carta-md@4.6.7(svelte@4.2.20))
+        specifier: '=4.0.6'
+        version: 4.0.6(carta-md@4.6.7(patch_hash=5a1a92ab6c82b7470dc3558dd58119822cbaeb982b75514cf55d182bb7497646)(svelte@4.2.20))
       '@cartamd/plugin-math':
-        specifier: ^4.0.3
-        version: 4.3.1(carta-md@4.6.7(svelte@4.2.20))(svelte@4.2.20)
+        specifier: '=4.2.1'
+        version: 4.2.1(carta-md@4.6.7(patch_hash=5a1a92ab6c82b7470dc3558dd58119822cbaeb982b75514cf55d182bb7497646)(svelte@4.2.20))(svelte@4.2.20)
       '@floating-ui/core':
         specifier: ^1.6.2
         version: 1.7.3
@@ -64,7 +75,7 @@ importers:
         version: 0.5.19(tailwindcss@3.4.18)
       carta-md:
         specifier: '=4.6.7'
-        version: 4.6.7(svelte@4.2.20)
+        version: 4.6.7(patch_hash=5a1a92ab6c82b7470dc3558dd58119822cbaeb982b75514cf55d182bb7497646)(svelte@4.2.20)
       dompurify:
         specifier: ^3.1.4
         version: 3.3.0
@@ -85,10 +96,10 @@ importers:
         version: 1.6.2
       svelte-portal:
         specifier: '=2.2.1'
-        version: 2.2.1
+        version: 2.2.1(patch_hash=04dd2080cd63d99f5a343fb587b9b414f898e4f1182786c390bc47385e901435)
       svelte-virtual-scroll-list:
         specifier: '=1.3.0'
-        version: 1.3.0(svelte@4.2.20)
+        version: 1.3.0(patch_hash=b3b71215347bb5d30ad6428660c809f01ef09138b8735bb2f94d03b6a00bd69a)(svelte@4.2.20)
       tailwind-merge:
         specifier: ^2.1.0
         version: 2.6.0
@@ -154,16 +165,16 @@ packages:
   '@antfu/utils@0.7.10':
     resolution: {integrity: sha512-+562v9k4aI80m1+VuMHehNJWLOFjBnXn3tdOitzD0il5b7smkSBal4+a3oKiQTbrwMmN/TBUMDvbdoWDehgOww==}
 
-  '@cartamd/plugin-code@4.2.0':
-    resolution: {integrity: sha512-rqv/Ol0kZQ4Z3+RmvT9l+CqkdYCDaDBO4ExpYu8+KmP3pgKWSFaJ2Cv1maZFZLGqUF6rWFPd1AcjeCxwY5nCWQ==}
+  '@cartamd/plugin-code@4.0.6':
+    resolution: {integrity: sha512-2Y+hu+dobLaZC4Wzfe3NT9rF75rAiNiZfgGuDXccQa3fOre1hr893GrMKw6h8qA8AfrHangyP4I1W2ca3phhrA==}
     peerDependencies:
-      carta-md: ^4.9.0
+      carta-md: ^4.0.0
 
-  '@cartamd/plugin-math@4.3.1':
-    resolution: {integrity: sha512-C1/LC3KNu9r46RJSUdOBiYInmvNOeUYiCY08wR3ygcXxnPhSGlaOHAj5/zRuEsr7O/Uml3650bAsDPnS3+CdsA==}
+  '@cartamd/plugin-math@4.2.1':
+    resolution: {integrity: sha512-2p6URGd52uHRgpjV5aIvymK2sSI2ElMWYmnoXYg7T6YWTnkTfoTus/6LlV+0oAXbpG5XcZzJCd96fC6XXp/14Q==}
     peerDependencies:
-      carta-md: ^4.9.0
-      svelte: ^5.0.0
+      carta-md: ^4.0.0
+      svelte: ^3.54.0 || ^4.0.0 || ^5.0.0-next.1
 
   '@esbuild/aix-ppc64@0.21.5':
     resolution: {integrity: sha512-1SDgH6ZSPTlggy1yI6+Dbkiz8xzpHJEVAlF/AM1tHPLsf5STom9rwtjE4hKAF20FfXXNTFqEYXyJNWh1GiZedQ==}
@@ -618,41 +629,23 @@ packages:
   '@shikijs/core@1.29.2':
     resolution: {integrity: sha512-vju0lY9r27jJfOY4Z7+Rt/nIOjzJpZ3y+nYpqtUZInVoXQ/TJZcfGnNOGnKjFdVZb8qexiCuSlZRKcGfhhTTZQ==}
 
-  '@shikijs/core@3.15.0':
-    resolution: {integrity: sha512-8TOG6yG557q+fMsSVa8nkEDOZNTSxjbbR8l6lF2gyr6Np+jrPlslqDxQkN6rMXCECQ3isNPZAGszAfYoJOPGlg==}
-
   '@shikijs/engine-javascript@1.29.2':
     resolution: {integrity: sha512-iNEZv4IrLYPv64Q6k7EPpOCE/nuvGiKl7zxdq0WFuRPF5PAE9PRo2JGq/d8crLusM59BRemJ4eOqrFrC4wiQ+A==}
-
-  '@shikijs/engine-javascript@3.15.0':
-    resolution: {integrity: sha512-ZedbOFpopibdLmvTz2sJPJgns8Xvyabe2QbmqMTz07kt1pTzfEvKZc5IqPVO/XFiEbbNyaOpjPBkkr1vlwS+qg==}
 
   '@shikijs/engine-oniguruma@1.29.2':
     resolution: {integrity: sha512-7iiOx3SG8+g1MnlzZVDYiaeHe7Ez2Kf2HrJzdmGwkRisT7r4rak0e655AcM/tF9JG/kg5fMNYlLLKglbN7gBqA==}
 
-  '@shikijs/engine-oniguruma@3.15.0':
-    resolution: {integrity: sha512-HnqFsV11skAHvOArMZdLBZZApRSYS4LSztk2K3016Y9VCyZISnlYUYsL2hzlS7tPqKHvNqmI5JSUJZprXloMvA==}
-
   '@shikijs/langs@1.29.2':
     resolution: {integrity: sha512-FIBA7N3LZ+223U7cJDUYd5shmciFQlYkFXlkKVaHsCPgfVLiO+e12FmQE6Tf9vuyEsFe3dIl8qGWKXgEHL9wmQ==}
 
-  '@shikijs/langs@3.15.0':
-    resolution: {integrity: sha512-WpRvEFvkVvO65uKYW4Rzxs+IG0gToyM8SARQMtGGsH4GDMNZrr60qdggXrFOsdfOVssG/QQGEl3FnJ3EZ+8w8A==}
-
-  '@shikijs/rehype@3.15.0':
-    resolution: {integrity: sha512-U+tqD1oxL+85N8FaW5XYIlMZ8KAa2g9IdplEZxPWflGRJf2gQRiBMMrpdG1USz3PN350YnMUHWcz9Twt3wJjXQ==}
+  '@shikijs/rehype@1.29.2':
+    resolution: {integrity: sha512-sxi53HZe5XDz0s2UqF+BVN/kgHPMS9l6dcacM4Ra3ZDzCJa5rDGJ+Ukpk4LxdD1+MITBM6hoLbPfGv9StV8a5Q==}
 
   '@shikijs/themes@1.29.2':
     resolution: {integrity: sha512-i9TNZlsq4uoyqSbluIcZkmPL9Bfi3djVxRnofUHwvx/h6SRW3cwgBC5SML7vsDcWyukY0eCzVN980rqP6qNl9g==}
 
-  '@shikijs/themes@3.15.0':
-    resolution: {integrity: sha512-8ow2zWb1IDvCKjYb0KiLNrK4offFdkfNVPXb1OZykpLCzRU6j+efkY+Y7VQjNlNFXonSw+4AOdGYtmqykDbRiQ==}
-
   '@shikijs/types@1.29.2':
     resolution: {integrity: sha512-VJjK0eIijTZf0QSTODEXCqinjBn0joAHQ+aPSBzrv4O2d/QSbsMw+ZeSRx03kV34Hy7NzUvV/7NqfYGRLrASmw==}
-
-  '@shikijs/types@3.15.0':
-    resolution: {integrity: sha512-BnP+y/EQnhihgHy4oIAN+6FFtmfTekwOLsQbRw9hOKwqgNy8Bdsjq8B05oAt/ZgvIWWFrshV71ytOrlPfYjIJw==}
 
   '@shikijs/vscode-textmate@10.0.2':
     resolution: {integrity: sha512-83yeghZ2xxin3Nj8z1NMd/NCuca+gsYXswywDy5bHvwlWL8tpTQmzGeUuHd9FC3E/SBEMvzJRwWEOz5gGes9Qg==}
@@ -1654,14 +1647,8 @@ packages:
   once@1.4.0:
     resolution: {integrity: sha512-lNaJgI+2Q5URQBkccEKHTQOPaXdUxnZZElQTZY0MFUAuaEqe1E+Nyvgdz/aIyNi6Z9MzO5dv1H8n58/GELp3+w==}
 
-  oniguruma-parser@0.12.1:
-    resolution: {integrity: sha512-8Unqkvk1RYc6yq2WBYRj4hdnsAxVze8i7iPfQr8e4uSP3tRv0rpZcbGUDvxfQQcdwHt/e9PrMvGCsa8OqG9X3w==}
-
   oniguruma-to-es@2.3.0:
     resolution: {integrity: sha512-bwALDxriqfKGfUufKGGepCzu9x7nJQuoRoAFp4AnwehhC2crqrDIAP/uN2qdlsAvSMpeRC3+Yzhqc7hLmle5+g==}
-
-  oniguruma-to-es@4.3.4:
-    resolution: {integrity: sha512-3VhUGN3w2eYxnTzHn+ikMI+fp/96KoRSVK9/kMTcFqj1NRDh2IhQCKvYxDnWePKRXY/AqH+Fuiyb7VHSzBjHfA==}
 
   open@10.2.0:
     resolution: {integrity: sha512-YgBpdJHPyQ2UE5x+hlSXcnejzAvD0b22U2OuAP+8OnlJT+PjWPxtgmGqKKc+RgTM63U9gN0YzrYc71R2WT/hTA==}
@@ -1909,17 +1896,11 @@ packages:
   regex-recursion@5.1.1:
     resolution: {integrity: sha512-ae7SBCbzVNrIjgSbh7wMznPcQel1DNlDtzensnFxpiNpXt1U2ju/bHugH422r+4LAVS1FpW1YCwilmnNsjum9w==}
 
-  regex-recursion@6.0.2:
-    resolution: {integrity: sha512-0YCaSCq2VRIebiaUviZNs0cBz1kg5kVS2UKUfNIx8YVs1cN3AV7NTctO5FOKBA+UT2BPJIWZauYHPqJODG50cg==}
-
   regex-utilities@2.3.0:
     resolution: {integrity: sha512-8VhliFJAWRaUiVvREIiW2NXXTmHs4vMNnSzuJVhscgmGav3g9VDxLrQndI3dZZVVdp0ZO/5v0xmX516/7M9cng==}
 
   regex@5.1.1:
     resolution: {integrity: sha512-dN5I359AVGPnwzJm2jN1k0W9LPZ+ePvoOeVMMfqIMFz53sSwXkxaJoxr50ptnsC771lK95BnTrVSZxq0b9yCGw==}
-
-  regex@6.0.1:
-    resolution: {integrity: sha512-uorlqlzAKjKQZ5P+kTJr3eeJGSVroLKoHmquUj4zHWuR+hEyNqlXsSKlYYF5F4NI6nl7tWCs0apKJ0lmfsXAPA==}
 
   rehype-katex@7.0.1:
     resolution: {integrity: sha512-OiM2wrZ/wuhKkigASodFoo8wimG3H12LWQaH8qSPVJn9apWKFSH3YOCtbKpBorTVw/eI7cuT21XBbvwEswbIOA==}
@@ -2002,9 +1983,6 @@ packages:
 
   shiki@1.29.2:
     resolution: {integrity: sha512-njXuliz/cP+67jU2hukkxCNuH1yUi4QfdZZY+sMr5PPrIyXSu5iTb/qYC4BiWWB0vZ+7TbdvYUCeL23zpwCfbg==}
-
-  shiki@3.15.0:
-    resolution: {integrity: sha512-kLdkY6iV3dYbtPwS9KXU7mjfmDm25f5m0IPNFnaXO7TBPcvbUOY72PYXSuSqDzwp+vlH/d7MXpHlKO/x+QoLXw==}
 
   sirv@3.0.2:
     resolution: {integrity: sha512-2wcC/oGxHis/BoHkkPwldgiPSYcpZK3JU28WoMVv55yHJgcZ8rlXvuG9iZggz+sU1d4bRgIGASwyWqjxu3FM0g==}
@@ -2341,15 +2319,15 @@ snapshots:
 
   '@antfu/utils@0.7.10': {}
 
-  '@cartamd/plugin-code@4.2.0(carta-md@4.6.7(svelte@4.2.20))':
+  '@cartamd/plugin-code@4.0.6(carta-md@4.6.7(patch_hash=5a1a92ab6c82b7470dc3558dd58119822cbaeb982b75514cf55d182bb7497646)(svelte@4.2.20))':
     dependencies:
-      '@shikijs/rehype': 3.15.0
-      carta-md: 4.6.7(svelte@4.2.20)
+      '@shikijs/rehype': 1.29.2
+      carta-md: 4.6.7(patch_hash=5a1a92ab6c82b7470dc3558dd58119822cbaeb982b75514cf55d182bb7497646)(svelte@4.2.20)
       unified: 11.0.5
 
-  '@cartamd/plugin-math@4.3.1(carta-md@4.6.7(svelte@4.2.20))(svelte@4.2.20)':
+  '@cartamd/plugin-math@4.2.1(carta-md@4.6.7(patch_hash=5a1a92ab6c82b7470dc3558dd58119822cbaeb982b75514cf55d182bb7497646)(svelte@4.2.20))(svelte@4.2.20)':
     dependencies:
-      carta-md: 4.6.7(svelte@4.2.20)
+      carta-md: 4.6.7(patch_hash=5a1a92ab6c82b7470dc3558dd58119822cbaeb982b75514cf55d182bb7497646)(svelte@4.2.20)
       rehype-katex: 7.0.1
       remark-math: 6.0.0
       svelte: 4.2.20
@@ -2677,49 +2655,27 @@ snapshots:
       '@types/hast': 3.0.4
       hast-util-to-html: 9.0.5
 
-  '@shikijs/core@3.15.0':
-    dependencies:
-      '@shikijs/types': 3.15.0
-      '@shikijs/vscode-textmate': 10.0.2
-      '@types/hast': 3.0.4
-      hast-util-to-html: 9.0.5
-
   '@shikijs/engine-javascript@1.29.2':
     dependencies:
       '@shikijs/types': 1.29.2
       '@shikijs/vscode-textmate': 10.0.2
       oniguruma-to-es: 2.3.0
 
-  '@shikijs/engine-javascript@3.15.0':
-    dependencies:
-      '@shikijs/types': 3.15.0
-      '@shikijs/vscode-textmate': 10.0.2
-      oniguruma-to-es: 4.3.4
-
   '@shikijs/engine-oniguruma@1.29.2':
     dependencies:
       '@shikijs/types': 1.29.2
-      '@shikijs/vscode-textmate': 10.0.2
-
-  '@shikijs/engine-oniguruma@3.15.0':
-    dependencies:
-      '@shikijs/types': 3.15.0
       '@shikijs/vscode-textmate': 10.0.2
 
   '@shikijs/langs@1.29.2':
     dependencies:
       '@shikijs/types': 1.29.2
 
-  '@shikijs/langs@3.15.0':
+  '@shikijs/rehype@1.29.2':
     dependencies:
-      '@shikijs/types': 3.15.0
-
-  '@shikijs/rehype@3.15.0':
-    dependencies:
-      '@shikijs/types': 3.15.0
+      '@shikijs/types': 1.29.2
       '@types/hast': 3.0.4
       hast-util-to-string: 3.0.1
-      shiki: 3.15.0
+      shiki: 1.29.2
       unified: 11.0.5
       unist-util-visit: 5.0.0
 
@@ -2727,16 +2683,7 @@ snapshots:
     dependencies:
       '@shikijs/types': 1.29.2
 
-  '@shikijs/themes@3.15.0':
-    dependencies:
-      '@shikijs/types': 3.15.0
-
   '@shikijs/types@1.29.2':
-    dependencies:
-      '@shikijs/vscode-textmate': 10.0.2
-      '@types/hast': 3.0.4
-
-  '@shikijs/types@3.15.0':
     dependencies:
       '@shikijs/vscode-textmate': 10.0.2
       '@types/hast': 3.0.4
@@ -3001,7 +2948,7 @@ snapshots:
 
   caniuse-lite@1.0.30001756: {}
 
-  carta-md@4.6.7(svelte@4.2.20):
+  carta-md@4.6.7(patch_hash=5a1a92ab6c82b7470dc3558dd58119822cbaeb982b75514cf55d182bb7497646)(svelte@4.2.20):
     dependencies:
       diff: 5.2.0
       esm-env: 1.2.2
@@ -3983,19 +3930,11 @@ snapshots:
     dependencies:
       wrappy: 1.0.2
 
-  oniguruma-parser@0.12.1: {}
-
   oniguruma-to-es@2.3.0:
     dependencies:
       emoji-regex-xs: 1.0.0
       regex: 5.1.1
       regex-recursion: 5.1.1
-
-  oniguruma-to-es@4.3.4:
-    dependencies:
-      oniguruma-parser: 0.12.1
-      regex: 6.0.1
-      regex-recursion: 6.0.2
 
   open@10.2.0:
     dependencies:
@@ -4154,17 +4093,9 @@ snapshots:
       regex: 5.1.1
       regex-utilities: 2.3.0
 
-  regex-recursion@6.0.2:
-    dependencies:
-      regex-utilities: 2.3.0
-
   regex-utilities@2.3.0: {}
 
   regex@5.1.1:
-    dependencies:
-      regex-utilities: 2.3.0
-
-  regex@6.0.1:
     dependencies:
       regex-utilities: 2.3.0
 
@@ -4315,17 +4246,6 @@ snapshots:
       '@shikijs/vscode-textmate': 10.0.2
       '@types/hast': 3.0.4
 
-  shiki@3.15.0:
-    dependencies:
-      '@shikijs/core': 3.15.0
-      '@shikijs/engine-javascript': 3.15.0
-      '@shikijs/engine-oniguruma': 3.15.0
-      '@shikijs/langs': 3.15.0
-      '@shikijs/themes': 3.15.0
-      '@shikijs/types': 3.15.0
-      '@shikijs/vscode-textmate': 10.0.2
-      '@types/hast': 3.0.4
-
   sirv@3.0.2:
     dependencies:
       '@polka/url': 1.0.0-next.29
@@ -4422,7 +4342,7 @@ snapshots:
     dependencies:
       svelte: 4.2.20
 
-  svelte-portal@2.2.1: {}
+  svelte-portal@2.2.1(patch_hash=04dd2080cd63d99f5a343fb587b9b414f898e4f1182786c390bc47385e901435): {}
 
   svelte-preprocess@5.1.4(postcss-load-config@3.1.4(postcss@8.5.6))(postcss@8.5.6)(sass@1.94.2)(svelte@4.2.20)(typescript@5.9.3):
     dependencies:
@@ -4438,7 +4358,7 @@ snapshots:
       sass: 1.94.2
       typescript: 5.9.3
 
-  svelte-virtual-scroll-list@1.3.0(svelte@4.2.20):
+  svelte-virtual-scroll-list@1.3.0(patch_hash=b3b71215347bb5d30ad6428660c809f01ef09138b8735bb2f94d03b6a00bd69a)(svelte@4.2.20):
     dependencies:
       svelte: 4.2.20
 
