@@ -1,33 +1,41 @@
 {
   stdenv,
-  bun2nix,
+  pnpm,
+  nodejs,
   lib,
   ...
 }:
 let
   package = lib.importJSON ./package.json;
 in
-stdenv.mkDerivation {
+stdenv.mkDerivation (finalAttrs: {
   pname = package.name;
   version = package.version;
 
   src = ./../..;
 
   nativeBuildInputs = [
-    bun2nix.hook
+    nodejs
+    pnpm.configHook
   ];
 
-  bunDeps = bun2nix.fetchBunDeps {
-    bunNix = ./../../bun.nix;
-  };
-
   buildPhase = ''
-    cd packages/client
-    bun run build
+    runHook preBuild
+
+    pnpm --filter=@biasdo/client build
+
+    runHook postBuild
   '';
 
   installPhase = ''
     mkdir -p $out/build
     cp -R packages/client/build $out
   '';
-}
+
+  pnpmWorkspaces = [ "@biasdo/client" ];
+  pnpmDeps = pnpm.fetchDeps {
+    inherit (finalAttrs) pname version src;
+    fetcherVersion = 2;
+    hash = "sha256-7CEhhE+l0YmDct00lwaNbvXijN00OsJvPwb2pmZg3LI=";
+  };
+})
