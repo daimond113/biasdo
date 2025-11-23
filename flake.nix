@@ -25,7 +25,13 @@
     inputs:
     let
       eachSystem = inputs.nixpkgs.lib.genAttrs (import inputs.systems);
-      pkgs = eachSystem (system: import inputs.nixpkgs { inherit system; overlays = [ inputs.bun2nix.overlays.default ]; });
+      pkgs = eachSystem (
+        system:
+        import inputs.nixpkgs {
+          inherit system;
+          overlays = [ inputs.bun2nix.overlays.default ];
+        }
+      );
     in
     {
       packages = eachSystem (system: {

@@ -21,10 +21,6 @@ stdenv.mkDerivation {
     bunNix = ./../../bun.nix;
   };
 
-  bunNodeModulesInstallPhase = ''
-    bun install --verbose
-  '';
-
   buildPhase = ''
     cd packages/client
     bun run build
@@ -32,7 +28,6 @@ stdenv.mkDerivation {
 
   installPhase = ''
     mkdir -p $out/build
-
     cp -R packages/client/build $out
   '';
 }
