@@ -3,6 +3,7 @@
   pnpm,
   nodejs,
   lib,
+  apiUrl ? "https://biasdo-api.daimond113.com",
   ...
 }:
 let
@@ -18,6 +19,8 @@ stdenv.mkDerivation (finalAttrs: {
     nodejs
     pnpm.configHook
   ];
+
+  VITE_API_URL = apiUrl;
 
   buildPhase = ''
     runHook preBuild
