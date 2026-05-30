@@ -1,10 +1,10 @@
 packages:
   - packages/*
 
-onlyBuiltDependencies:
-  - '@parcel/watcher'
-  - esbuild
-  - svelte-preprocess
+allowBuilds:
+  '@parcel/watcher': true
+  esbuild: true
+  svelte-preprocess: true
 
 patchedDependencies:
   svelte-virtual-scroll-list@1.3.0: patches/svelte-virtual-scroll-list@1.3.0.patch

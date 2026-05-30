@@ -39,7 +39,7 @@
 
           shellHook = ''
             crate2nix generate
-            bun install --frozen-lockfile
+            pnpm install
           '';
         };
       });

@@ -1,6 +1,8 @@
 {
   stdenv,
   pnpm,
+  pnpmConfigHook,
+  fetchPnpmDeps,
   nodejs,
   lib,
   apiUrl ? "https://biasdo-api.daimond113.com/v0",
@@ -17,7 +19,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   nativeBuildInputs = [
     nodejs
-    pnpm.configHook
+    pnpm
+    pnpmConfigHook
   ];
 
   VITE_API_URL = apiUrl;
@@ -36,9 +39,9 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   pnpmWorkspaces = [ "@biasdo/client" ];
-  pnpmDeps = pnpm.fetchDeps {
+  pnpmDeps = fetchPnpmDeps {
     inherit (finalAttrs) pname version src;
-    fetcherVersion = 2;
-    hash = "sha256-OZuwS+QEgm8SS3KGotrkAThcca5inq+pE1ViSvrMuGc=";
+    fetcherVersion = 3;
+    hash = "sha256-Ojw6ZUVZv2gqYq2pjw+a+S2pBgsr7lvwpJh4GUqBOO4=";
   };
 })
