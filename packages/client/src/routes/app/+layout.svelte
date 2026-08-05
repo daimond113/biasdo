@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { run } from "svelte/legacy"
+
 	import { afterNavigate, goto } from "$app/navigation"
 	import {
 		allFriendRequests,
@@ -27,28 +29,33 @@
 	import { twMerge } from "tailwind-merge"
 
 	import Button from "$lib/Button.svelte"
-	import Cog from "lucide-svelte/icons/cog"
-	import Contact from "lucide-svelte/icons/contact"
+	import Cog from "@lucide/svelte/icons/cog"
+	import Contact from "@lucide/svelte/icons/contact"
 	import DMButton from "./DMButton.svelte"
 	import ErrorPage from "$lib/ErrorPage.svelte"
-	import HardDrive from "lucide-svelte/icons/hard-drive"
-	import Hash from "lucide-svelte/icons/hash"
+	import HardDrive from "@lucide/svelte/icons/hard-drive"
+	import Hash from "@lucide/svelte/icons/hash"
 	import LoadingSpinner from "$lib/LoadingSpinner.svelte"
 	import MemberButton from "./MemberButton.svelte"
-	import Menu from "lucide-svelte/icons/menu"
+	import Menu from "@lucide/svelte/icons/menu"
 	import Modal from "$lib/Modal.svelte"
-	import PencilLine from "lucide-svelte/icons/pencil-line"
-	import Plus from "lucide-svelte/icons/plus"
+	import PencilLine from "@lucide/svelte/icons/pencil-line"
+	import Plus from "@lucide/svelte/icons/plus"
 	import Portal from "svelte-portal"
 	import SidebarButton from "$lib/SidebarButton.svelte"
 	import TextField from "$lib/TextField.svelte"
-	import Users from "lucide-svelte/icons/users"
+	import Users from "@lucide/svelte/icons/users"
 	import VirtualList from "svelte-virtual-scroll-list"
-	import X from "lucide-svelte/icons/x"
+	import X from "@lucide/svelte/icons/x"
 
 	import logo from "../../../static/logo.svg?raw"
+	interface Props {
+		children?: import("svelte").Snippet
+	}
 
-	let newServerModalOpen = false
+	let { children }: Props = $props()
+
+	let newServerModalOpen = $state(false)
 
 	const {
 		form: serverForm,
@@ -92,7 +99,7 @@
 		},
 	})
 
-	let newChannelOrFriendsModalOpen = false
+	let newChannelOrFriendsModalOpen = $state(false)
 
 	const {
 		form: channelForm,
@@ -186,8 +193,8 @@
 		},
 	})
 
-	let updateChannelModalOpen = false
-	let updateChannelId: `${number}` | undefined = undefined
+	let updateChannelModalOpen = $state(false)
+	let updateChannelId: `${number}` | undefined = $state(undefined)
 
 	const {
 		form: updateChannelForm,
@@ -238,14 +245,16 @@
 		},
 	})
 
-	$: updateChannelId &&
-		setUpdateChannelFields("name", $channels.get(updateChannelId)?.name ?? "")
+	run(() => {
+		updateChannelId &&
+			setUpdateChannelFields("name", $channels.get(updateChannelId)?.name ?? "")
+	})
 
-	let vs: VirtualList
+	let vs: VirtualList = $state()
 
-	let isFetching = false
-	let abortController = new AbortController()
-	let isFinished = false
+	let isFetching = $state(false)
+	let abortController = $state(new AbortController())
+	let isFinished = $state(false)
 
 	afterNavigate(() => {
 		isFinished = false
@@ -253,23 +262,23 @@
 		abortController = new AbortController()
 	})
 
-	let mobileSidebarsModalOpen = false
-	let desktopNavigationElement: HTMLElement
-	let mobileNavigationElement: HTMLElement
-	let desktopMembersElement: HTMLElement
-	let mobileMembersElement: HTMLElement
+	let mobileSidebarsModalOpen = $state(false)
+	let desktopNavigationElement: HTMLElement = $state()
+	let mobileNavigationElement: HTMLElement = $state()
+	let desktopMembersElement: HTMLElement = $state()
+	let mobileMembersElement: HTMLElement = $state()
 
-	let currentPage: "nav" | "members" = "nav"
+	let currentPage: "nav" | "members" = $state("nav")
 
-	$: {
+	run(() => {
 		if (!$isMobileUI && mobileSidebarsModalOpen) {
 			mobileSidebarsModalOpen = false
 		}
-	}
+	})
 
-	$: isHome = $page.url.pathname === "/app"
+	let isHome = $derived($page.url.pathname === "/app")
 
-	let data: Promise<unknown> | undefined = undefined
+	let data: Promise<unknown> | undefined = $state(undefined)
 
 	onMount(() => {
 		const abortController = new AbortController()
@@ -297,7 +306,7 @@
 		}
 	})
 
-	$: ownsServer = $currentServerData?.owner_id === $me?.id
+	let ownsServer = $derived($currentServerData?.owner_id === $me?.id)
 </script>
 
 <svelte:head>
@@ -437,7 +446,7 @@
 		<div class="mb-4 flex items-center px-2">
 			<button
 				type="button"
-				on:click={() => (mobileSidebarsModalOpen = false)}
+				onclick={() => (mobileSidebarsModalOpen = false)}
 				title="Close mobile navigation menu"
 			>
 				<X class="size-6" />
@@ -459,7 +468,7 @@
 			</a>
 			<button
 				type="button"
-				on:click={() => {
+				onclick={() => {
 					currentPage = currentPage === "nav" ? "members" : "nav"
 				}}
 				title="Toggle members panel"
@@ -474,11 +483,11 @@
 		<div
 			bind:this={mobileNavigationElement}
 			class={currentPage === "nav" ? "contents" : "hidden"}
-		/>
+		></div>
 		<div
 			bind:this={mobileMembersElement}
 			class={currentPage === "members" ? "contents" : "hidden"}
-		/>
+		></div>
 	</Modal>
 
 	{#if $isMobileUI ? mobileNavigationElement : desktopNavigationElement}
@@ -567,7 +576,7 @@
 							{#if $currentServerId && ownsServer}
 								<button
 									class="icons ml-auto shrink-0 opacity-0 transition-all group-hover:opacity-100"
-									on:click={() => {
+									onclick={() => {
 										updateChannelId = channel.id
 										updateChannelModalOpen = true
 									}}
@@ -591,12 +600,11 @@
 				<VirtualList
 					data={$currentServerId
 						? $members.valuesArray()
-						: $currentChannelData?.recipients?.map((id) => ({ user_id: id })) ??
-							[]}
+						: ($currentChannelData?.recipients?.map((id) => ({
+								user_id: id,
+							})) ?? [])}
 					key="user_id"
-					let:data
 					bind:this={vs}
-					let:index
 					on:bottom={() => {
 						if (isFetching || isFinished) return
 						if (get(currentChannelData)?.kind === "DM") return
@@ -633,7 +641,9 @@
 							})
 					}}
 				>
-					<MemberButton {data} {index} />
+					{#snippet children({ data, index })}
+						<MemberButton {data} {index} />
+					{/snippet}
 				</VirtualList>
 			</div>
 		</Portal>
@@ -661,7 +671,7 @@
 				<button
 					class="bg-paper-2-bg hover:bg-paper-1-outline active:bg-paper-2-active flex aspect-square h-full shrink-0 items-center justify-center rounded-md transition-all"
 					type="button"
-					on:click={() => {
+					onclick={() => {
 						newServerModalOpen = true
 					}}
 					title="Create Server"
@@ -675,7 +685,7 @@
 				{/if}
 				<div
 					class="no-scrollbar flex size-full gap-2 overflow-auto"
-					on:wheel={(e) => {
+					onwheel={(e) => {
 						e.preventDefault()
 						e.currentTarget.scrollLeft += e.deltaY
 					}}
@@ -718,7 +728,7 @@
 				<button
 					title="Toggle mobile sidebars"
 					class="bg-paper-2-bg hover:bg-paper-1-outline h-full rounded-md px-[0.4375rem] transition-all lg:hidden"
-					on:click={() => {
+					onclick={() => {
 						mobileSidebarsModalOpen = true
 					}}
 				>
@@ -733,7 +743,7 @@
 				bind:this={desktopNavigationElement}
 			></div>
 			<main class="grow overflow-auto">
-				<slot />
+				{@render children?.()}
 			</main>
 			<div
 				class={twMerge(

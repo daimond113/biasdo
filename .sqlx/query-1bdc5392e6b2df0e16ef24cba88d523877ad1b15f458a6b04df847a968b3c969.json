@@ -9,7 +9,14 @@
         "type_info": {
           "type": "LongLong",
           "flags": "NOT_NULL | PRIMARY_KEY | MULTIPLE_KEY | UNSIGNED | NO_DEFAULT_VALUE",
+          "collation": 63,
           "max_size": 20
+        },
+        "origin": {
+          "Table": {
+            "table": "biasdo.UserFriend",
+            "name": "friend_id"
+          }
         }
       },
       {
@@ -18,7 +25,14 @@
         "type_info": {
           "type": "LongLong",
           "flags": "NOT_NULL | PRIMARY_KEY | UNSIGNED | NO_DEFAULT_VALUE",
+          "collation": 63,
           "max_size": 20
+        },
+        "origin": {
+          "Table": {
+            "table": "biasdo.UserFriend",
+            "name": "user_id"
+          }
         }
       },
       {
@@ -27,7 +41,14 @@
         "type_info": {
           "type": "Timestamp",
           "flags": "NOT_NULL | UNSIGNED | BINARY | TIMESTAMP",
+          "collation": 63,
           "max_size": 19
+        },
+        "origin": {
+          "Table": {
+            "table": "biasdo.UserFriend",
+            "name": "created_at"
+          }
         }
       },
       {
@@ -36,7 +57,14 @@
         "type_info": {
           "type": "VarString",
           "flags": "NOT_NULL | UNIQUE_KEY | MULTIPLE_KEY | NO_DEFAULT_VALUE",
+          "collation": 224,
           "max_size": 128
+        },
+        "origin": {
+          "Table": {
+            "table": "biasdo.User",
+            "name": "username"
+          }
         }
       },
       {
@@ -45,7 +73,14 @@
         "type_info": {
           "type": "VarString",
           "flags": "",
+          "collation": 224,
           "max_size": 128
+        },
+        "origin": {
+          "Table": {
+            "table": "biasdo.User",
+            "name": "display_name"
+          }
         }
       },
       {
@@ -54,7 +89,14 @@
         "type_info": {
           "type": "VarString",
           "flags": "NOT_NULL | UNIQUE_KEY | MULTIPLE_KEY | NO_DEFAULT_VALUE",
+          "collation": 224,
           "max_size": 128
+        },
+        "origin": {
+          "Table": {
+            "table": "biasdo.User",
+            "name": "username"
+          }
         }
       },
       {
@@ -63,7 +105,14 @@
         "type_info": {
           "type": "VarString",
           "flags": "",
+          "collation": 224,
           "max_size": 128
+        },
+        "origin": {
+          "Table": {
+            "table": "biasdo.User",
+            "name": "display_name"
+          }
         }
       },
       {
@@ -72,7 +121,14 @@
         "type_info": {
           "type": "LongLong",
           "flags": "NOT_NULL | PRIMARY_KEY | UNSIGNED | NO_DEFAULT_VALUE",
+          "collation": 63,
           "max_size": 20
+        },
+        "origin": {
+          "Table": {
+            "table": "biasdo.Channel",
+            "name": "id"
+          }
         }
       }
     ],

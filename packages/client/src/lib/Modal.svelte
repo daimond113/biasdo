@@ -1,36 +1,49 @@
 <script lang="ts">
+	import { run, self, createBubbler, stopPropagation } from "svelte/legacy"
 	import { twMerge } from "tailwind-merge"
 
-	export let showModal: boolean | null
-	let className: string | undefined = undefined
-	export { className as class }
+	const bubble = createBubbler()
 
-	export let dialog: HTMLDialogElement = undefined as never
-
-	$: if (dialog) {
-		if (showModal) {
-			dialog.showModal()
-		} else {
-			dialog.close()
-		}
+	interface Props {
+		showModal: boolean | null
+		class?: string | undefined
+		dialog?: HTMLDialogElement
+		children?: import("svelte").Snippet
 	}
+
+	let {
+		showModal = $bindable(),
+		class: className = undefined,
+		dialog = $bindable(undefined as never),
+		children,
+	}: Props = $props()
+
+	run(() => {
+		if (dialog) {
+			if (showModal) {
+				dialog.showModal()
+			} else {
+				dialog.close()
+			}
+		}
+	})
 </script>
 
-<!-- svelte-ignore a11y-click-events-have-key-events a11y-no-noninteractive-element-interactions -->
+<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_noninteractive_element_interactions -->
 <dialog
 	bind:this={dialog}
-	on:close={() => (showModal = false)}
-	on:click|self={() => dialog.close()}
+	onclose={() => (showModal = false)}
+	onclick={self(() => dialog.close())}
 	class="w-full max-w-96 bg-transparent md:max-w-[32rem] lg:max-w-[48rem]"
 >
-	<!-- svelte-ignore a11y-no-static-element-interactions -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
 		class={twMerge(
 			"border-paper-1-outline bg-paper-1-bg overflow-auto rounded-2xl border p-16",
 			className,
 		)}
-		on:click|stopPropagation
+		onclick={stopPropagation(bubble("click"))}
 	>
-		<slot />
+		{@render children?.()}
 	</div>
 </dialog>

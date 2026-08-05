@@ -14,7 +14,7 @@
 	import Modal from "$lib/Modal.svelte"
 	import TextField from "$lib/TextField.svelte"
 
-	let error: string | undefined
+	let error: string | undefined = $state()
 
 	const gotoApp = () => goto("/app").then(invalidateAll)
 
@@ -83,8 +83,8 @@
 		},
 	})
 
-	let passkeyError: string | undefined
-	let passkeyModalOpen = false
+	let passkeyError: string | undefined = $state()
+	let passkeyModalOpen = $state(false)
 
 	const {
 		form: passkeyForm,
@@ -242,7 +242,7 @@
 				<button
 					type="button"
 					class="text-link appearance-none border-none bg-transparent"
-					on:click={supports
+					onclick={supports
 						? conditionalLoginWithPasskey
 						: () => (passkeyModalOpen = true)}
 				>

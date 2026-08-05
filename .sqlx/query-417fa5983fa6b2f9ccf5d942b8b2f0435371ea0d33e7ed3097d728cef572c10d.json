@@ -9,7 +9,14 @@
         "type_info": {
           "type": "VarString",
           "flags": "NOT_NULL | NO_DEFAULT_VALUE",
+          "collation": 224,
           "max_size": 128
+        },
+        "origin": {
+          "Table": {
+            "table": "biasdo.Server",
+            "name": "name"
+          }
         }
       },
       {
@@ -18,7 +25,14 @@
         "type_info": {
           "type": "LongLong",
           "flags": "NOT_NULL | MULTIPLE_KEY | UNSIGNED | NO_DEFAULT_VALUE",
+          "collation": 63,
           "max_size": 20
+        },
+        "origin": {
+          "Table": {
+            "table": "biasdo.Server",
+            "name": "owner_id"
+          }
         }
       }
     ],

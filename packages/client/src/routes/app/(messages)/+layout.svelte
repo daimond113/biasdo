@@ -1,3 +1,4 @@
+<!-- @migration-task Error while migrating Svelte code: Can't migrate code with afterUpdate and beforeUpdate. Please migrate by hand. -->
 <script lang="ts">
 	import { afterUpdate, beforeUpdate, tick } from "svelte"
 	import {
@@ -21,11 +22,11 @@
 	import { get } from "svelte/store"
 
 	import ErrorPage from "$lib/ErrorPage.svelte"
-	import Hash from "lucide-svelte/icons/hash"
+	import Hash from "@lucide/svelte/icons/hash"
 	import LoadingSpinner from "$lib/LoadingSpinner.svelte"
 	import Message from "./Message.svelte"
-	import Send from "lucide-svelte/icons/send"
-	import Users from "lucide-svelte/icons/users"
+	import Send from "@lucide/svelte/icons/send"
+	import Users from "@lucide/svelte/icons/users"
 	import VirtualList from "svelte-virtual-scroll-list"
 
 	let vs: VirtualList

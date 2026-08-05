@@ -9,7 +9,14 @@
         "type_info": {
           "type": "LongLong",
           "flags": "NOT_NULL | PRIMARY_KEY | UNSIGNED | NO_DEFAULT_VALUE",
+          "collation": 63,
           "max_size": 20
+        },
+        "origin": {
+          "Table": {
+            "table": "biasdo.Client",
+            "name": "id"
+          }
         }
       },
       {
@@ -18,7 +25,14 @@
         "type_info": {
           "type": "VarString",
           "flags": "NOT_NULL | NO_DEFAULT_VALUE",
+          "collation": 224,
           "max_size": 96
+        },
+        "origin": {
+          "Table": {
+            "table": "biasdo.Client",
+            "name": "name"
+          }
         }
       },
       {
@@ -27,7 +41,14 @@
         "type_info": {
           "type": "LongLong",
           "flags": "NOT_NULL | MULTIPLE_KEY | UNSIGNED | NO_DEFAULT_VALUE",
+          "collation": 63,
           "max_size": 20
+        },
+        "origin": {
+          "Table": {
+            "table": "biasdo.Client",
+            "name": "owner_id"
+          }
         }
       },
       {
@@ -36,7 +57,14 @@
         "type_info": {
           "type": "VarString",
           "flags": "",
+          "collation": 224,
           "max_size": 1020
+        },
+        "origin": {
+          "Table": {
+            "table": "biasdo.Client",
+            "name": "client_uri"
+          }
         }
       },
       {
@@ -45,7 +73,14 @@
         "type_info": {
           "type": "VarString",
           "flags": "",
+          "collation": 224,
           "max_size": 1020
+        },
+        "origin": {
+          "Table": {
+            "table": "biasdo.Client",
+            "name": "tos_uri"
+          }
         }
       },
       {
@@ -54,7 +89,14 @@
         "type_info": {
           "type": "VarString",
           "flags": "",
+          "collation": 224,
           "max_size": 1020
+        },
+        "origin": {
+          "Table": {
+            "table": "biasdo.Client",
+            "name": "policy_uri"
+          }
         }
       },
       {
@@ -63,7 +105,14 @@
         "type_info": {
           "type": "VarString",
           "flags": "PRIMARY_KEY | NO_DEFAULT_VALUE",
+          "collation": 224,
           "max_size": 1020
+        },
+        "origin": {
+          "Table": {
+            "table": "biasdo.ClientRedirect",
+            "name": "uri"
+          }
         }
       }
     ],

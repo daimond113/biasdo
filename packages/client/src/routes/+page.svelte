@@ -45,7 +45,7 @@
 			you enjoy the app, consider
 			<a href="https://buymeacoff.ee/daimond113">donating</a> to help keep it running.
 		</p>
-		<p class="max-w-max break-words text-sm">
+		<p class="max-w-max text-sm break-words">
 			Use of this app is subject to the <a href="/tos" rel="terms-of-service"
 				>Terms of Service</a
 			>.

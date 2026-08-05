@@ -9,8 +9,10 @@
         "type_info": {
           "type": "LongLong",
           "flags": "NOT_NULL | UNSIGNED",
+          "collation": 63,
           "max_size": 20
-        }
+        },
+        "origin": "Expression"
       }
     ],
     "parameters": {

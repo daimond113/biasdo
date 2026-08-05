@@ -9,7 +9,14 @@
         "type_info": {
           "type": "VarString",
           "flags": "NOT_NULL | NO_DEFAULT_VALUE",
+          "collation": 224,
           "max_size": 128
+        },
+        "origin": {
+          "Table": {
+            "table": "biasdo.Server",
+            "name": "name"
+          }
         }
       }
     ],

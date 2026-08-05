@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { run } from "svelte/legacy"
+
 	import { currentServerData, me } from "$lib/stores"
 	import type { Invite } from "@biasdo/server-utils/src/Invite"
 	import { fetch } from "$lib/fetch"
@@ -6,34 +8,40 @@
 	import { page } from "$app/stores"
 
 	import Button from "$lib/Button.svelte"
-	import Check from "lucide-svelte/icons/check"
-	import Copy from "lucide-svelte/icons/copy"
+	import Check from "@lucide/svelte/icons/check"
+	import Copy from "@lucide/svelte/icons/copy"
 	import TextField from "$lib/TextField.svelte"
-	import X from "lucide-svelte/icons/x"
+	import X from "@lucide/svelte/icons/x"
 
-	export let invite: Invite
+	interface Props {
+		invite: Invite
+	}
 
-	$: url = new URL(`/app/invites/${invite.id}`, $page.url).toString()
+	let { invite }: Props = $props()
 
-	let copySuccessful: boolean | undefined = undefined
-	let resetTimeout: number | undefined = undefined
+	let url = $derived(new URL(`/app/invites/${invite.id}`, $page.url).toString())
 
-	$: {
+	let copySuccessful: boolean | undefined = $state(undefined)
+	let resetTimeout: number | undefined = $state(undefined)
+
+	run(() => {
 		copySuccessful
 
 		if (resetTimeout) clearTimeout(resetTimeout)
 		resetTimeout = setTimeout(() => {
 			copySuccessful = undefined
 		}, 1_250)
-	}
+	})
 
-	$: ownsServer = $currentServerData?.owner_id === $me?.id
+	let ownsServer = $derived($currentServerData?.owner_id === $me?.id)
 
-	let field: HTMLInputElement | undefined
+	let field: HTMLInputElement | undefined = $state()
 
-	$: if (field) {
-		field.value = url
-	}
+	run(() => {
+		if (field) {
+			field.value = url
+		}
+	})
 </script>
 
 <li class="contents">

@@ -417,13 +417,16 @@ fn main() -> std::io::Result<()> {
 		.with(sentry::integrations::tracing::layer())
 		.init();
 
-	let guard = sentry::init(sentry::ClientOptions {
-		release: sentry::release_name!(),
-		dsn: benv!(parse "SENTRY_DSN").ok(),
-		session_mode: sentry::SessionMode::Request,
-		traces_sample_rate: 1.0,
-		debug: true,
-		..Default::default()
+	let guard = sentry::init({
+		let mut opts = sentry::ClientOptions::new()
+			.maybe_release(sentry::release_name!())
+			.session_mode(sentry::SessionMode::Request)
+			.traces_sample_rate(1.0)
+			.debug(true);
+		if let Ok(dsn) = benv!(parse "SENTRY_DSN") {
+			opts.dsn = Some(dsn);
+		}
+		opts
 	});
 
 	if guard.is_enabled() {

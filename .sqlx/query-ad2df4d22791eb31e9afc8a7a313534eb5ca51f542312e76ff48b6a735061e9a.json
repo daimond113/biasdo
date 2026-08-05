@@ -9,7 +9,14 @@
         "type_info": {
           "type": "LongLong",
           "flags": "PRIMARY_KEY | UNSIGNED | NO_DEFAULT_VALUE",
+          "collation": 63,
           "max_size": 20
+        },
+        "origin": {
+          "Table": {
+            "table": "biasdo.ServerMember",
+            "name": "server_id"
+          }
         }
       },
       {
@@ -18,7 +25,14 @@
         "type_info": {
           "type": "VarString",
           "flags": "",
+          "collation": 224,
           "max_size": 128
+        },
+        "origin": {
+          "Table": {
+            "table": "biasdo.ServerMember",
+            "name": "nickname"
+          }
         }
       },
       {
@@ -27,7 +41,14 @@
         "type_info": {
           "type": "Timestamp",
           "flags": "UNSIGNED | BINARY | TIMESTAMP",
+          "collation": 63,
           "max_size": 19
+        },
+        "origin": {
+          "Table": {
+            "table": "biasdo.ServerMember",
+            "name": "created_at"
+          }
         }
       },
       {
@@ -36,7 +57,14 @@
         "type_info": {
           "type": "LongLong",
           "flags": "PRIMARY_KEY | MULTIPLE_KEY | UNSIGNED | NO_DEFAULT_VALUE",
+          "collation": 63,
           "max_size": 20
+        },
+        "origin": {
+          "Table": {
+            "table": "biasdo.DMChannelRecipient",
+            "name": "user_id"
+          }
         }
       }
     ],

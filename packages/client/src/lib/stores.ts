@@ -6,10 +6,16 @@ import {
 	readable,
 	writable,
 } from "svelte/store"
-import BTreeMap from "sorted-btree"
+import btreeLib from "sorted-btree"
 import { getImageUrl } from "./images"
 import { goto } from "$app/navigation"
 import { page } from "$app/stores"
+import type BTreeMapType from "sorted-btree"
+
+type BTreeMap<K, V> = BTreeMapType<K, V>
+const { default: BTreeMap } = btreeLib as never as {
+	default: typeof BTreeMapType
+}
 
 import type { Channel } from "@biasdo/server-utils/src/Channel"
 import type { Invite } from "@biasdo/server-utils/src/Invite"

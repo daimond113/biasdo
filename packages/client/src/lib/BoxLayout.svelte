@@ -2,9 +2,12 @@
 	import logo from "../../static/logotype.svg?raw"
 	import { twMerge } from "tailwind-merge"
 
-	let className: string | undefined = undefined
+	interface Props {
+		class?: string | undefined
+		children?: import("svelte").Snippet
+	}
 
-	export { className as class }
+	let { class: className = undefined, children }: Props = $props()
 </script>
 
 <div class="h-screen p-4">
@@ -19,7 +22,7 @@
 				className,
 			)}
 		>
-			<slot />
+			{@render children?.()}
 		</div>
 	</div>
 </div>

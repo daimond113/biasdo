@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { run } from "svelte/legacy"
+
 	import {
 		currentServerData,
 		currentServerId,
@@ -15,12 +17,12 @@
 	import Invite from "./Invite.svelte"
 	import LoadingSpinner from "$lib/LoadingSpinner.svelte"
 	import TextField from "$lib/TextField.svelte"
-	import X from "lucide-svelte/icons/x"
+	import X from "@lucide/svelte/icons/x"
 
-	let data: Promise<unknown> | undefined = undefined
-	let abortController: AbortController | undefined = undefined
+	let data: Promise<unknown> | undefined = $state(undefined)
+	let abortController: AbortController | undefined = $state(undefined)
 
-	$: {
+	run(() => {
 		abortController?.abort("Navigation interrupted")
 		abortController = new AbortController()
 
@@ -31,7 +33,7 @@
 				}),
 			}))
 		}
-	}
+	})
 
 	const { form, errors, isValid, isValidating, isSubmitting, setFields } =
 		createForm<{ name: string }>({
@@ -68,9 +70,11 @@
 			},
 		})
 
-	$: setFields("name", $currentServerData?.name ?? "")
+	run(() => {
+		setFields("name", $currentServerData?.name ?? "")
+	})
 
-	$: ownsServer = $currentServerData?.owner_id === $me?.id
+	let ownsServer = $derived($currentServerData?.owner_id === $me?.id)
 </script>
 
 <svelte:head>

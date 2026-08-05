@@ -1,4 +1,7 @@
 <script lang="ts">
+	import { run, createBubbler, preventDefault } from "svelte/legacy"
+
+	const bubble = createBubbler()
 	import { invalidateAll, me } from "$lib/stores"
 	import {
 		parseCreationOptionsFromJSON,
@@ -12,11 +15,11 @@
 	import { goto } from "$app/navigation"
 
 	import Button from "$lib/Button.svelte"
-	import Check from "lucide-svelte/icons/check"
+	import Check from "@lucide/svelte/icons/check"
 	import LoadingSpinner from "$lib/LoadingSpinner.svelte"
-	import PencilLine from "lucide-svelte/icons/pencil-line"
+	import PencilLine from "@lucide/svelte/icons/pencil-line"
 	import TextField from "$lib/TextField.svelte"
-	import X from "lucide-svelte/icons/x"
+	import X from "@lucide/svelte/icons/x"
 
 	const { form, errors, isValid, isValidating, isSubmitting, setFields } =
 		createForm<{
@@ -107,15 +110,17 @@
 			},
 		})
 
-	$: setFields({
-		username: $me?.username,
-		display_name: $me?.display_name ?? undefined,
-		email: $me?.email,
+	run(() => {
+		setFields({
+			username: $me?.username,
+			display_name: $me?.display_name ?? undefined,
+			email: $me?.email,
+		})
 	})
 
-	let passkeysPromise: Promise<Passkey[]> | undefined = undefined
+	let passkeysPromise: Promise<Passkey[]> | undefined = $state(undefined)
 
-	let passkeyError: string | undefined
+	let passkeyError: string | undefined = $state()
 	const addPasskey = async () => {
 		try {
 			const req = await fetch(`/webauthn/register-start`, {
@@ -157,9 +162,9 @@
 		}
 	}
 
-	let abortController: AbortController | undefined = undefined
+	let abortController: AbortController | undefined = $state(undefined)
 
-	let isEditingPasskey: string | undefined = undefined
+	let isEditingPasskey: string | undefined = $state(undefined)
 
 	const {
 		form: passkeyForm,
@@ -204,14 +209,14 @@
 		},
 	})
 
-	$: {
+	run(() => {
 		abortController?.abort("Navigation interrupted")
 		abortController = new AbortController()
 
 		passkeysPromise = fetch(`/webauthn/passkeys`, {
 			signal: abortController!.signal,
 		}).then((res) => res.json())
-	}
+	})
 </script>
 
 <svelte:head>
@@ -298,7 +303,7 @@
 									<form
 										use:passkeyForm
 										class="contents"
-										on:submit|preventDefault
+										onsubmit={preventDefault(bubble("submit"))}
 									>
 										<TextField
 											withoutLabel

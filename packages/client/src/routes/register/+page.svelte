@@ -8,7 +8,7 @@
 	import Button from "$lib/Button.svelte"
 	import TextField from "$lib/TextField.svelte"
 
-	let error: string | undefined
+	let error: string | undefined = $state()
 
 	const { form, errors, isSubmitting, isValidating, isValid } = createForm<{
 		email: string

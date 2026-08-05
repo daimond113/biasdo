@@ -1,0 +1,176 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+	--color-background: #111311;
+	--color-text: #cad8c6;
+	--color-alt-text: #94a98e;
+	--color-placeholder-text: #c6d8c899;
+	--color-link: #35e34c;
+	--color-paper-1-bg: #181c17;
+	--color-paper-1-outline: #3e4a3a;
+	--color-paper-2-bg: #262e23;
+	--color-paper-2-active: #364931;
+	--color-error-bg: #450c0c;
+	--color-error-bg-hover: #5f0d0d;
+	--color-error-text: #ffa6a6;
+	--color-scrollbar-track: #3e4a3a;
+	--color-scrollbar-thumb: #94a98e;
+	--color-scrollbar-thumb-hover: #364931;
+
+	--radius-paper-1: 0.875rem;
+
+	--font-sans: "Inter Variable", sans-serif;
+}
+
+@utility prose-biasdo {
+	--tw-prose-body: var(--color-text);
+	--tw-prose-headings: var(--color-text);
+	--tw-prose-lead: var(--color-green-100);
+	--tw-prose-links: var(--color-link);
+	--tw-prose-bold: var(--color-green-400);
+	--tw-prose-counters: var(--color-green-400);
+	--tw-prose-bullets: var(--color-text);
+	--tw-prose-hr: var(--color-green-100);
+	--tw-prose-quotes: var(--color-green-300);
+	--tw-prose-quote-borders: var(--color-green-500);
+	--tw-prose-captions: var(--color-green-300);
+	--tw-prose-th-borders: var(--color-green-500);
+	--tw-prose-td-borders: var(--color-text);
+	--tw-prose-code: var(--color-green-300);
+}
+
+@layer utilities {
+	@supports (height: 1svh) {
+		.h-screen {
+			height: 100svh;
+		}
+	}
+
+	.overflow-text {
+		@apply min-w-0 overflow-hidden text-ellipsis whitespace-nowrap;
+	}
+
+	.no-scrollbar {
+		scrollbar-width: none;
+	}
+
+	.no-scrollbar::-webkit-scrollbar {
+		background: transparent;
+		width: 0px;
+	}
+}
+
+.markdown-body {
+	@apply prose prose-biasdo lg:max-w-[100ch];
+}
+
+.markdown-body>*:first-child {
+	@apply mt-0;
+}
+
+.markdown-body>*:last-child {
+	@apply mb-0;
+}
+
+.virtual-scroll-root {
+	width: 100% !important;
+	height: 100% !important;
+}
+
+.carta-theme__biasdo.carta-editor {
+	@apply bg-paper-2-bg w-full rounded-md;
+}
+
+.carta-theme__biasdo.carta-editor ::placeholder {
+	@apply text-placeholder-text;
+}
+
+.carta-theme__biasdo.carta-editor .carta-wrapper {
+	@apply grow overflow-y-auto px-3 py-2;
+}
+
+.carta-theme__biasdo.carta-editor .carta-wrapper .carta-container {
+	@apply max-h-60;
+}
+
+.carta-theme__biasdo.carta-editor .carta-font-code {
+	@apply caret-text font-mono;
+}
+
+.carta-theme__biasdo.carta-editor .carta-toolbar {
+	@apply hidden;
+}
+
+:root {
+	scrollbar-color: var(--color-scrollbar-thumb) var(--color-scrollbar-track);
+}
+
+dialog {
+	@apply text-text;
+}
+
+html {
+	@apply bg-background text-text;
+}
+
+a:not([data-not-standard]) {
+	@apply text-link no-underline;
+}
+
+::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
+}
+
+::-webkit-scrollbar-track {
+	@apply bg-scrollbar-track;
+	border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+	@apply bg-scrollbar-thumb;
+	border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	@apply bg-scrollbar-thumb-hover;
+}
+
+h1 {
+	@apply text-2xl font-bold;
+}
+
+h2 {
+	@apply text-xl font-semibold;
+}
+
+dialog[open] {
+	@apply scale-100;
+}
+
+dialog {
+	@apply scale-0 m-auto;
+	transition: all 250ms allow-discrete;
+}
+
+@starting-style {
+	dialog[open] {
+		@apply scale-0;
+	}
+}
+
+dialog::backdrop {
+	@apply bg-paper-1-bg/0;
+	transition: all 250ms allow-discrete;
+}
+
+dialog[open]::backdrop {
+	@apply bg-paper-1-bg/75;
+}
+
+@starting-style {
+	dialog[open]::backdrop {
+		@apply bg-paper-1-bg/0;
+	}
+}

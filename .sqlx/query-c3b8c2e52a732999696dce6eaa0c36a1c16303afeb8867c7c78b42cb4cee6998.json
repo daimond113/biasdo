@@ -9,7 +9,14 @@
         "type_info": {
           "type": "LongLong",
           "flags": "NOT_NULL | PRIMARY_KEY | UNSIGNED | NO_DEFAULT_VALUE",
+          "collation": 63,
           "max_size": 20
+        },
+        "origin": {
+          "Table": {
+            "table": "biasdo.ClientUserTokens",
+            "name": "user_id"
+          }
         }
       },
       {
@@ -18,7 +25,14 @@
         "type_info": {
           "type": "String",
           "flags": "NOT_NULL | SET | NO_DEFAULT_VALUE",
+          "collation": 224,
           "max_size": 436
+        },
+        "origin": {
+          "Table": {
+            "table": "biasdo.ClientUserTokens",
+            "name": "scope"
+          }
         }
       }
     ],

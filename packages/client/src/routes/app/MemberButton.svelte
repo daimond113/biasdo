@@ -6,28 +6,36 @@
 	import SidebarButton from "$lib/SidebarButton.svelte"
 	import UserProfile from "$lib/UserProfile.svelte"
 
-	export let data: { user_id: `${number}`; server_id?: `${number}` }
-	export let index: number
+	interface Props {
+		data: { user_id: `${number}`; server_id?: `${number}` }
+		index: number
+	}
 
-	$: user = $allUsers.get(data.user_id)!
-	$: member =
-		data.server_id && $members.get(`${data.server_id}-${data.user_id}`)
+	let { data, index }: Props = $props()
 
-	$: username =
-		member?.nickname ?? user?.display_name ?? user?.username ?? "Deleted User"
+	let user = $derived($allUsers.get(data.user_id)!)
+	let member = $derived(
+		data.server_id && $members.get(`${data.server_id}-${data.user_id}`),
+	)
+
+	let username = $derived(
+		member?.nickname ?? user?.display_name ?? user?.username ?? "Deleted User",
+	)
 </script>
 
-<UserProfile let:floatingRef let:show {user} {member}>
-	<SidebarButton
-		class={twMerge("group flex items-center", index !== 0 && "mt-2")}
-		onClick={() => show(true)}
-		{floatingRef}
-	>
-		<img
-			class="mr-2 size-6 shrink-0 rounded-sm"
-			src={getImageUrl("user", user)}
-			alt="{username}'s icon"
-		/>
-		<span class="overflow-text">{username}</span>
-	</SidebarButton>
+<UserProfile {user} {member}>
+	{#snippet children({ floatingRef, show })}
+		<SidebarButton
+			class={twMerge("group flex items-center", index !== 0 && "mt-2")}
+			onClick={() => show(true)}
+			{floatingRef}
+		>
+			<img
+				class="mr-2 size-6 shrink-0 rounded-sm"
+				src={getImageUrl("user", user)}
+				alt="{username}'s icon"
+			/>
+			<span class="overflow-text">{username}</span>
+		</SidebarButton>
+	{/snippet}
 </UserProfile>

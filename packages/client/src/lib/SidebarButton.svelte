@@ -1,37 +1,49 @@
 <script lang="ts">
 	import { twMerge } from "tailwind-merge"
 
-	let className: string | undefined = undefined
+	interface Props {
+		class?: string | undefined
+		onClick?: (() => void) | undefined
+		disabled?: boolean
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		floatingRef?: (...p: any[]) => void
+		children?: import("svelte").Snippet
+		[key: string]: any
+	}
 
-	export { className as class }
+	let {
+		class: className = undefined,
+		onClick = undefined,
+		disabled = false,
+		floatingRef = () => {},
+		children,
+		...rest
+	}: Props = $props()
 
-	export let onClick: (() => void) | undefined = undefined
-	export let disabled: boolean = false
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	export let floatingRef: (...p: any[]) => void = () => {}
-
-	$: resolvedClassName = twMerge(
-		"bg-paper-2-bg flex h-[2.375rem] w-full shrink-0 items-center rounded-md px-2 transition-all",
-		disabled
-			? "opacity-50 cursor-not-allowed"
-			: "cursor-pointer hover:bg-paper-1-outline active:bg-paper-2-active",
-		className,
+	let resolvedClassName = $derived(
+		twMerge(
+			"bg-paper-2-bg flex h-[2.375rem] w-full shrink-0 items-center rounded-md px-2 transition-all",
+			disabled
+				? "opacity-50 cursor-not-allowed"
+				: "cursor-pointer hover:bg-paper-1-outline active:bg-paper-2-active",
+			className,
+		),
 	)
 </script>
 
 {#if onClick}
 	<button
 		type="button"
-		on:click={onClick}
+		onclick={onClick}
 		{...disabled ? { disabled: true } : {}}
-		{...$$restProps}
+		{...rest}
 		class={resolvedClassName}
 		use:floatingRef
 	>
-		<slot />
+		{@render children?.()}
 	</button>
 {:else}
-	<div class={resolvedClassName} {...$$restProps}>
-		<slot />
+	<div class={resolvedClassName} {...rest}>
+		{@render children?.()}
 	</div>
 {/if}

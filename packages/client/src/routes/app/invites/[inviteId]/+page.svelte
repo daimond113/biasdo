@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { run } from "svelte/legacy"
+
 	import { allInvites, allServers, populateStores } from "$lib/stores"
 	import { createForm } from "felte"
 	import { fetch } from "$lib/fetch"
@@ -10,8 +12,8 @@
 	import ErrorPage from "$lib/ErrorPage.svelte"
 	import LoadingSpinner from "$lib/LoadingSpinner.svelte"
 
-	$: currentInviteId = $page.params.inviteId
-	$: currentInviteData = $allInvites.get(currentInviteId)
+	let currentInviteId = $derived($page.params.inviteId)
+	let currentInviteData = $derived($allInvites.get(currentInviteId))
 
 	const { form, isSubmitting } = createForm({
 		onSubmit: async () =>
@@ -26,10 +28,10 @@
 		},
 	})
 
-	let data: Promise<unknown> | undefined = undefined
-	let abortController: AbortController | undefined = undefined
+	let data: Promise<unknown> | undefined = $state(undefined)
+	let abortController: AbortController | undefined = $state(undefined)
 
-	$: {
+	run(() => {
 		abortController?.abort("Navigation interrupted")
 		abortController = new AbortController()
 
@@ -40,9 +42,9 @@
 				}),
 			}))
 		}
-	}
+	})
 
-	$: {
+	run(() => {
 		if (
 			$allServers
 				.valuesArray()
@@ -50,7 +52,7 @@
 		) {
 			goto(`/app/servers/${currentInviteData?.server.id}`)
 		}
-	}
+	})
 </script>
 
 {#await data}

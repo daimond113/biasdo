@@ -2,11 +2,17 @@
 	import { type APIChannel, allUsers, me } from "$lib/stores"
 	import { getImageUrl } from "$lib/images"
 
-	export let channel: APIChannel
+	interface Props {
+		channel: APIChannel
+	}
 
-	$: recipientId = channel.recipients?.find((r) => r !== $me?.id)
-	$: recipient = recipientId && $allUsers.get(recipientId)
-	$: name = recipient?.display_name ?? recipient?.username ?? "Unknown"
+	let { channel }: Props = $props()
+
+	let recipientId = $derived(channel.recipients?.find((r) => r !== $me?.id))
+	let recipient = $derived(recipientId && $allUsers.get(recipientId))
+	let name = $derived(
+		recipient?.display_name ?? recipient?.username ?? "Unknown",
+	)
 </script>
 
 <img

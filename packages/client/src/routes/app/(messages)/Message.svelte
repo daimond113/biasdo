@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { run } from "svelte/legacy"
+
 	import { allUsers, currentChannelId, me, members } from "$lib/stores"
 	import { Markdown } from "carta-md"
 	import type { Message } from "@biasdo/server-utils/src/Message"
@@ -8,16 +10,24 @@
 	import { getImageUrl } from "$lib/images"
 	import { twMerge } from "tailwind-merge"
 
-	import Check from "lucide-svelte/icons/check"
-	import Copy from "lucide-svelte/icons/copy"
-	import PencilLine from "lucide-svelte/icons/pencil-line"
-	import Trash from "lucide-svelte/icons/trash-2"
+	import Check from "@lucide/svelte/icons/check"
+	import Copy from "@lucide/svelte/icons/copy"
+	import PencilLine from "@lucide/svelte/icons/pencil-line"
+	import Trash from "@lucide/svelte/icons/trash-2"
 	import UserProfile from "$lib/UserProfile.svelte"
-	import X from "lucide-svelte/icons/x"
+	import X from "@lucide/svelte/icons/x"
 
-	export let data: Message
-	export let textareaValue: string
-	export let editingMessage: string | undefined
+	interface Props {
+		data: Message
+		textareaValue: string
+		editingMessage: string | undefined
+	}
+
+	let {
+		data,
+		textareaValue = $bindable(),
+		editingMessage = $bindable(),
+	}: Props = $props()
 
 	function dateToText(date: Date, upper = true) {
 		const isToday = new Date().toDateString() === date.toDateString()
@@ -40,28 +50,33 @@
 		return date.toLocaleString([], { timeStyle: "short", dateStyle: "short" })
 	}
 
-	$: date = new Date(Number(BigInt(data.id) >> 22n) + 1716501600000)
-	$: updated_at = data.updated_at ? new Date(data.updated_at) : undefined
+	let date = $derived(new Date(Number(BigInt(data.id) >> 22n) + 1716501600000))
+	let updated_at = $derived(
+		data.updated_at ? new Date(data.updated_at) : undefined,
+	)
 
-	let copySuccessful: boolean | undefined = undefined
-	let resetTimeout: number | undefined = undefined
+	let copySuccessful: boolean | undefined = $state(undefined)
+	let resetTimeout: number | undefined = $state(undefined)
 
-	$: {
+	run(() => {
 		copySuccessful
 
 		if (resetTimeout) clearTimeout(resetTimeout)
 		resetTimeout = setTimeout(() => {
 			copySuccessful = undefined
 		}, 1_250)
-	}
+	})
 
-	$: member = data.member?.user_id
-		? $members.get(`${data.member.server_id}-${data.member.user_id}` as const)
-		: undefined
-	$: user = data.user?.id ? $allUsers.get(data.user.id) : undefined
+	let member = $derived(
+		data.member?.user_id
+			? $members.get(`${data.member.server_id}-${data.member.user_id}` as const)
+			: undefined,
+	)
+	let user = $derived(data.user?.id ? $allUsers.get(data.user.id) : undefined)
 
-	$: name =
-		member?.nickname ?? user?.display_name ?? user?.username ?? "Deleted User"
+	let name = $derived(
+		member?.nickname ?? user?.display_name ?? user?.username ?? "Deleted User",
+	)
 </script>
 
 <div
@@ -72,20 +87,22 @@
 			: "hover:border-paper-1-outline hover:bg-paper-1-bg",
 	)}
 >
-	<UserProfile let:floatingRef let:show user={data.user} member={data.member}>
-		<button
-			type="button"
-			title="Open {name}'s profile"
-			on:click={() => show(true)}
-			class="mr-1 size-10 rounded-md"
-			use:floatingRef
-		>
-			<img
-				class="size-full rounded-md"
-				src={getImageUrl("user", data.user)}
-				alt="{name}'s icon"
-			/>
-		</button>
+	<UserProfile user={data.user} member={data.member}>
+		{#snippet children({ floatingRef, show })}
+			<button
+				type="button"
+				title="Open {name}'s profile"
+				onclick={() => show(true)}
+				class="mr-1 size-10 rounded-md"
+				use:floatingRef
+			>
+				<img
+					class="size-full rounded-md"
+					src={getImageUrl("user", data.user)}
+					alt="{name}'s icon"
+				/>
+			</button>
+		{/snippet}
 	</UserProfile>
 	<div class="-mt-[0.375rem] flex-grow overflow-hidden">
 		<span class="mr-1 font-bold">{name}</span>
@@ -103,13 +120,13 @@
 		</div>
 	</div>
 	<div
-		class="absolute -right-px -top-px flex overflow-hidden rounded-[0.8125rem] opacity-0 shadow-lg transition-all group-hover:opacity-100"
+		class="absolute -top-px -right-px flex overflow-hidden rounded-[0.8125rem] opacity-0 shadow-lg transition-all group-hover:opacity-100"
 	>
 		<button
 			class="bg-paper-2-active hover:bg-paper-1-outline p-2 transition-all"
 			type="button"
 			title="Copy message content"
-			on:click={() => {
+			onclick={() => {
 				copySuccessful = undefined
 				try {
 					navigator.clipboard.writeText(data.content)
@@ -132,7 +149,7 @@
 				class="bg-paper-2-active hover:bg-paper-1-outline p-2 transition-all"
 				type="button"
 				title="Edit message"
-				on:click={() => {
+				onclick={() => {
 					editingMessage = data.id
 					textareaValue = data.content
 				}}
@@ -143,7 +160,7 @@
 				class="bg-error-bg text-error-text hover:bg-error-bg-hover p-2 transition-all"
 				type="button"
 				title="Delete message"
-				on:click={() => {
+				onclick={() => {
 					fetch(`/channels/${get(currentChannelId)}/messages/${data.id}`, {
 						method: "DELETE",
 					})

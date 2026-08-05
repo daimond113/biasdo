@@ -2,14 +2,25 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     systems.url = "github:nix-systems/default";
+    crate2nix = {
+      url = "github:nix-community/crate2nix";
+
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
   outputs =
-    inputs:
+    {
+      self,
+      nixpkgs,
+      systems,
+      crate2nix,
+      ...
+    }:
     let
-      eachSystem = inputs.nixpkgs.lib.genAttrs (import inputs.systems);
+      eachSystem = nixpkgs.lib.genAttrs (import systems);
       pkgs = eachSystem (
         system:
-        import inputs.nixpkgs {
+        import nixpkgs {
           inherit system;
         }
       );
@@ -17,28 +28,27 @@
     {
       packages = eachSystem (system: {
         backend =
-          (pkgs.${system}.callPackage ./Cargo.nix {
-            inherit (inputs) nixpkgs;
-            pkgs = pkgs.${system};
+          (crate2nix.tools.${system}.appliedCargoNix {
+            name = "biasdo-backend";
+            src = ./.;
           }).rootCrate.build;
         frontend = pkgs.${system}.callPackage ./packages/client { };
       });
 
       devShells = eachSystem (system: {
         default = pkgs.${system}.mkShell {
-          nativeBuildInputs = with pkgs.${system}; [
+          packages = with pkgs.${system}; [
+            nodejs
+            pnpm
             cargo
             rustc
-          ];
+            sqlx-cli
 
-          packages = with pkgs.${system}; [
-            crate2nix
-            nodejs_24
-            pnpm
+            pkg-config
+            openssl
           ];
 
           shellHook = ''
-            crate2nix generate
             pnpm install
           '';
         };

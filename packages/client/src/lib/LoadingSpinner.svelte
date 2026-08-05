@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { LoaderPinwheel } from "lucide-svelte"
+	import { LoaderPinwheel } from "@lucide/svelte"
 </script>
 
 <div class="sr-only">Loading...</div>

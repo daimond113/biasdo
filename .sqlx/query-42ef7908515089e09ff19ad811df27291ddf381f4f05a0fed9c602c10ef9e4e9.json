@@ -9,7 +9,14 @@
         "type_info": {
           "type": "VarString",
           "flags": "NOT_NULL | UNIQUE_KEY | MULTIPLE_KEY | NO_DEFAULT_VALUE",
+          "collation": 224,
           "max_size": 128
+        },
+        "origin": {
+          "Table": {
+            "table": "biasdo.User",
+            "name": "username"
+          }
         }
       },
       {
@@ -18,7 +25,14 @@
         "type_info": {
           "type": "VarString",
           "flags": "",
+          "collation": 224,
           "max_size": 128
+        },
+        "origin": {
+          "Table": {
+            "table": "biasdo.User",
+            "name": "display_name"
+          }
         }
       },
       {
@@ -27,7 +41,14 @@
         "type_info": {
           "type": "VarString",
           "flags": "PRIMARY_KEY | UNIQUE_KEY | BINARY | NO_DEFAULT_VALUE",
+          "collation": 63,
           "max_size": 1023
+        },
+        "origin": {
+          "Table": {
+            "table": "biasdo.WebauthnUserCredential",
+            "name": "cred_id"
+          }
         }
       }
     ],

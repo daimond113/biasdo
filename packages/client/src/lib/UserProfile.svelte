@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { run } from "svelte/legacy"
+
 	import {
 		allFriendRequests,
 		allFriends,
@@ -19,26 +21,10 @@
 	import { twMerge } from "tailwind-merge"
 
 	import Button from "./Button.svelte"
-	import Check from "lucide-svelte/icons/check"
-	import PencilLine from "lucide-svelte/icons/pencil-line"
-	import Plus from "lucide-svelte/icons/plus"
+	import Check from "@lucide/svelte/icons/check"
+	import PencilLine from "@lucide/svelte/icons/pencil-line"
+	import Plus from "@lucide/svelte/icons/plus"
 	import TextField from "./TextField.svelte"
-
-	let givenUser: User
-	let givenMember: ServerMember | undefined = undefined
-
-	export { givenMember as member, givenUser as user }
-
-	$: user =
-		$allUsers.get(givenUser?.id ?? givenMember?.user_id ?? ("" as never)) ??
-		givenUser
-	$: member = givenMember
-		? $allMembers.get(
-				`${givenMember.server_id}-${givenMember.user_id}` as const,
-			)
-		: undefined
-
-	$: username = user?.display_name ?? user?.username ?? "Deleted User"
 
 	let [_floatingRef, floatingContent] = createFloatingActions({
 		strategy: "absolute",
@@ -54,10 +40,22 @@
 		],
 	})
 
-	let shown = false
-	let contentRef: HTMLElement
-	let boxRef: HTMLElement
-	export let additionalRef: HTMLElement | undefined = undefined
+	let shown = $state(false)
+	let contentRef: HTMLElement = $state()
+	let boxRef: HTMLElement = $state()
+	interface Props {
+		user: User
+		member?: ServerMember | undefined
+		additionalRef?: HTMLElement | undefined
+		children?: import("svelte").Snippet<[any]>
+	}
+
+	let {
+		user: givenUser,
+		member: givenMember = undefined,
+		additionalRef = undefined,
+		children,
+	}: Props = $props()
 
 	const floatingRef = (node: HTMLElement) => {
 		_floatingRef(node)
@@ -68,10 +66,30 @@
 		shown = n
 	}
 
-	let isEditing = false
-	$: {
+	let isEditing = $state(false)
+
+	let user = $derived(
+		$allUsers.get(givenUser?.id ?? givenMember?.user_id ?? ("" as never)) ??
+			givenUser,
+	)
+	let member = $derived(
+		givenMember
+			? $allMembers.get(
+					`${givenMember.server_id}-${givenMember.user_id}` as const,
+				)
+			: undefined,
+	)
+	let username = $derived(
+		user?.display_name ?? user?.username ?? "Deleted User",
+	)
+	run(() => {
 		if (!shown) isEditing = false
-	}
+	})
+	let friend = $derived(
+		$allFriends
+			.valuesArray()
+			.find((f) => f.user.id === user?.id || f.friend.id === user?.id),
+	)
 
 	const { form, errors, setFields } = createForm<{
 		nickname: string
@@ -109,17 +127,15 @@
 		},
 	})
 
-	$: friend = $allFriends
-		.valuesArray()
-		.find((f) => f.user.id === user?.id || f.friend.id === user?.id)
-
-	$: setFields("nickname", member?.nickname ?? "")
+	run(() => {
+		setFields("nickname", member?.nickname ?? "")
+	})
 </script>
 
-<slot {show} {floatingRef} />
+{@render children?.({ show, floatingRef })}
 
 <svelte:window
-	on:click={(e) => {
+	onclick={(e) => {
 		if (!shown) return
 		const path = e.composedPath()
 		if (
@@ -170,7 +186,7 @@
 							class="ml-2 size-6"
 							type="button"
 							title="Edit nickname"
-							on:click={() => {
+							onclick={() => {
 								isEditing = true
 							}}
 						>

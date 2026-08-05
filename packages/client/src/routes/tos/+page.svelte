@@ -59,6 +59,8 @@
 </BoxLayout>
 
 <style>
+	@reference "tailwindcss";
+
 	h2 {
 		@apply my-2;
 	}

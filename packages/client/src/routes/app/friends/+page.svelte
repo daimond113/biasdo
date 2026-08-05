@@ -8,7 +8,7 @@
 	import FriendRequest from "./FriendRequest.svelte"
 	import LoadingSpinner from "$lib/LoadingSpinner.svelte"
 
-	let data: Promise<unknown> | undefined = undefined
+	let data: Promise<unknown> | undefined = $state(undefined)
 
 	onMount(() => {
 		data = populateStores(() => ({

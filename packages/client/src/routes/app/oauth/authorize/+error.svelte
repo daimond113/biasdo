@@ -1,11 +1,13 @@
 <script lang="ts">
+	import { run } from "svelte/legacy"
+
 	import BoxLayout from "$lib/BoxLayout.svelte"
 	import Button from "$lib/Button.svelte"
 	import { page } from "$app/stores"
 
-	let message: string
+	let message: string = $state()
 
-	$: {
+	run(() => {
 		const text = $page.error?.message
 		let json
 		try {
@@ -29,7 +31,7 @@
 			json?.errors ??
 			json?.message ??
 			text
-	}
+	})
 </script>
 
 <BoxLayout>

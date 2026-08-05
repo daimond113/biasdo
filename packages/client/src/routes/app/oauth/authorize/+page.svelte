@@ -5,7 +5,11 @@
 
 	import Button from "$lib/Button.svelte"
 
-	export let data: PageData
+	interface Props {
+		data: PageData
+	}
+
+	let { data }: Props = $props()
 
 	const { form, isSubmitting } = createForm({
 		onSubmit: async () => {

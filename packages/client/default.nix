@@ -41,7 +41,7 @@ stdenv.mkDerivation (finalAttrs: {
   pnpmWorkspaces = [ "@biasdo/client" ];
   pnpmDeps = fetchPnpmDeps {
     inherit (finalAttrs) pname version src;
-    fetcherVersion = 3;
-    hash = "sha256-Ojw6ZUVZv2gqYq2pjw+a+S2pBgsr7lvwpJh4GUqBOO4=";
+    fetcherVersion = 4;
+    hash = "sha256-0VI+DW55rfFe3RF1wmn0sn0HWPeb31Bd/Dvt8ORDdGI=";
   };
 })
