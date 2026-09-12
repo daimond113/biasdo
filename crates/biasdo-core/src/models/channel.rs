@@ -1,6 +1,6 @@
 use std::{fmt::Display, str::FromStr};
 
-use crate::models::user::User;
+use crate::models::{server::ServerId, user::User};
 use serde::Serialize;
 use serde_with::{DeserializeFromStr, SerializeDisplay};
 use ts_rs::TS;
@@ -33,19 +33,15 @@ impl FromStr for ChannelKind {
 	}
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, TS, Hash)]
+crate::models::id_type!(ChannelId);
+
+#[derive(Debug, Serialize, TS)]
 #[ts(export)]
 pub struct Channel {
-	#[serde(serialize_with = "super::id_str")]
-	#[ts(type = "`${number}`")]
-	pub id: u64,
+	pub id: ChannelId,
 	pub name: String,
 	pub kind: ChannelKind,
-	#[serde(
-		skip_serializing_if = "Option::is_none",
-		serialize_with = "super::opt_id_str"
-	)]
-	#[ts(type = "`${number}`")]
-	pub server_id: Option<u64>,
+	#[serde(skip_serializing_if = "Option::is_none")]
+	pub server_id: Option<ServerId>,
 	pub user: Option<User>,
 }

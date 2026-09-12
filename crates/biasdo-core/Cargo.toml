@@ -1,0 +1,18 @@
+[package]
+name = "biasdo-core"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+sqlx = { workspace = true }
+webauthn-rs = { workspace = true }
+ts-rs = { workspace = true }
+serde = { workspace = true }
+chrono = { workspace = true }
+url = { workspace = true }
+anyhow = { workspace = true }
+async-trait = { workspace = true }
+futures-core = { workspace = true }
+
+serde_with = { version = "3.23.0" }

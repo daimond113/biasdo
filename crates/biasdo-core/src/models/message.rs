@@ -1,6 +1,6 @@
 use std::{fmt::Display, str::FromStr};
 
-use crate::models::{servermember::ServerMember, user::User};
+use crate::models::{channel::ChannelId, servermember::ServerMember, user::User};
 use serde::Serialize;
 use serde_with::{DeserializeFromStr, SerializeDisplay};
 use ts_rs::TS;
@@ -30,18 +30,16 @@ impl FromStr for MessageKind {
 	}
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, TS, Hash)]
+crate::models::id_type!(MessageId);
+
+#[derive(Debug, Serialize, TS)]
 #[ts(export)]
 pub struct Message {
-	#[serde(serialize_with = "super::id_str")]
-	#[ts(type = "`${number}`")]
-	pub id: u64,
+	pub id: MessageId,
 	pub kind: MessageKind,
 	pub updated_at: Option<chrono::DateTime<chrono::Utc>>,
 	pub content: String,
-	#[serde(serialize_with = "super::id_str")]
-	#[ts(type = "`${number}`")]
-	pub channel_id: u64,
+	pub channel_id: ChannelId,
 	pub user: User,
 	pub member: Option<ServerMember>,
 }

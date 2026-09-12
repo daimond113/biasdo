@@ -1,10 +1,9 @@
 mod endpoints;
 mod error;
 mod middleware;
-mod models;
 mod ws;
 
-use crate::{middleware::TokenKey, models::scope::Scope};
+use crate::middleware::TokenKey;
 use actix_cors::Cors;
 use actix_governor::{Governor, GovernorConfigBuilder};
 use actix_web::{
@@ -12,11 +11,14 @@ use actix_web::{
 	rt::System,
 	web, App, HttpServer,
 };
+use biasdo_core::{
+	models::{auth::Scope, server::ServerId, user::UserId},
+	AppRepository,
+};
 use dashmap::DashMap;
 use snowflaked::Generator;
-use sqlx::{mysql::MySqlPoolOptions, MySqlPool};
 use std::{
-	collections::{HashMap, HashSet},
+	collections::{BTreeSet, HashMap, HashSet},
 	hash::{DefaultHasher, Hash, Hasher},
 	sync::Mutex,
 	time::{Duration, UNIX_EPOCH},
@@ -27,14 +29,14 @@ use tracing_subscriber::{
 };
 use webauthn_rs::{Webauthn, WebauthnBuilder};
 
-type Session = (Option<HashSet<Scope>>, actix_ws::Session);
+type Session = (Option<BTreeSet<Scope>>, actix_ws::Session);
 
 pub struct AppState {
-	pub db: MySqlPool,
+	pub repository: Box<dyn AppRepository>,
 	// server id -> user id(s)
-	pub server_connections: DashMap<u64, HashSet<u64>>,
+	pub server_connections: DashMap<ServerId, HashSet<UserId>>,
 	// user id -> ws(s) // multiple sessions
-	pub user_connections: DashMap<u64, HashMap<u64, Session>>,
+	pub user_connections: DashMap<UserId, HashMap<u64, Session>>,
 	pub webauthn: Webauthn,
 }
 
@@ -76,17 +78,23 @@ async fn run() -> std::io::Result<()> {
 	let port: u16 = benv!(parse "PORT" => "8080");
 
 	let db_url = benv!(required "DATABASE_URL");
+	let repository: Box<dyn AppRepository> = 'repo: {
+		#[cfg(feature = "mariadb")]
+		{
+			use biasdo_mariadb::MariaDBBackend;
+			if MariaDBBackend::URL_SCHEMES
+				.iter()
+				.any(|s| db_url.starts_with(s))
+			{
+				let repo = MariaDBBackend::connect(&db_url)
+					.await
+					.expect("failed to setup database");
+				break 'repo Box::new(repo);
+			}
+		}
 
-	let pool = MySqlPoolOptions::new()
-		.max_connections(5)
-		.connect(&db_url)
-		.await
-		.expect("Failed to connect to database");
-
-	sqlx::migrate!()
-		.run(&pool)
-		.await
-		.expect("Failed to run migrations");
+		panic!("no supported database found")
+	};
 
 	let webauthn_origins = benv!(required "WEBAUTHN_ORIGINS")
 		.split('|')
@@ -94,7 +102,7 @@ async fn run() -> std::io::Result<()> {
 		.collect::<Vec<_>>();
 
 	let app_data = web::Data::new(AppState {
-		db: pool,
+		repository,
 		server_connections: DashMap::new(),
 		user_connections: DashMap::new(),
 		webauthn: {

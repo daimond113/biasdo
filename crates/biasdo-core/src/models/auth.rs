@@ -1,9 +1,10 @@
-use crate::middleware::Identity;
 use serde_with::{DeserializeFromStr, SerializeDisplay};
-use std::collections::HashSet;
+use std::collections::BTreeSet;
 use ts_rs::TS;
 
-#[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, TS)]
+use crate::models::{client::ClientId, user::UserId};
+
+#[derive(Debug, Clone, Copy, Eq, PartialEq, PartialOrd, Ord, Hash, TS)]
 pub enum ReadWrite {
 	Read,
 	Write,
@@ -31,7 +32,7 @@ macro_rules! scopes {
             not_impl: [$($not_impl:tt)*],
         }
     } => {
-            #[derive(Debug, Clone, Copy, Eq, PartialEq, Hash, SerializeDisplay, DeserializeFromStr, TS)]
+            #[derive(Debug, Clone, Copy, Eq, PartialEq, PartialOrd, Ord, Hash, SerializeDisplay, DeserializeFromStr, TS)]
             #[ts(export)]
             pub enum $enum_name {
                 $($scope_enum)*
@@ -182,7 +183,7 @@ scopes! {
 	mut Friends = "friends",
 }
 
-pub fn has_scope(scopes: &HashSet<Scope>, scope: Scope) -> bool {
+pub fn has_scope(scopes: &BTreeSet<Scope>, scope: Scope) -> bool {
 	if scopes.contains(&scope) {
 		true
 	} else if let Some(access) = scope.access() {
@@ -193,14 +194,26 @@ pub fn has_scope(scopes: &HashSet<Scope>, scope: Scope) -> bool {
 	}
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum Identity {
+	User(UserId),
+	Client(ClientId),
+	// Bearer tokens
+	// refers to the fact a client is acting on behalf of a user, not the user itself
+	UserByClient(UserId, BTreeSet<Scope>),
+	ClientByClient(ClientId, BTreeSet<Scope>),
+}
+
 impl Identity {
-	pub fn is_user_like_with_scope(&self, scope: Scope) -> Option<u64> {
+	pub fn is_user_like_with_scope(&self, scope: Scope) -> Option<UserId> {
 		match self {
 			Identity::User(user_id) => Some(*user_id),
-			Identity::UserByClient((user_id, scopes)) => {
-				has_scope(scopes, scope).then_some(*user_id)
-			}
+			Identity::UserByClient(user_id, scopes) => has_scope(scopes, scope).then_some(*user_id),
 			_ => None,
 		}
+	}
+
+	pub fn is_user_like(&self) -> bool {
+		matches!(self, Identity::User(..) | Identity::UserByClient(..))
 	}
 }

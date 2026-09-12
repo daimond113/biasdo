@@ -2,7 +2,7 @@ use serde::Serialize;
 use ts_rs::TS;
 use webauthn_rs::prelude::CredentialID;
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, TS, Hash)]
+#[derive(Debug, Serialize, TS)]
 #[ts(export)]
 pub struct Passkey {
 	#[ts(type = "string")]

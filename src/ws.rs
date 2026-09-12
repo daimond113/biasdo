@@ -1,22 +1,21 @@
 use std::fmt::Display;
 
 use actix_web::{rt, web};
+use biasdo_core::models::{
+	auth::{has_scope, ReadWrite, Scope},
+	channel::{Channel, ChannelId},
+	friend::UserFriend,
+	friendrequest::UserFriendRequest,
+	invite::Invite,
+	message::{Message, MessageId},
+	server::{Server, ServerId},
+	servermember::ServerMember,
+	user::UserId,
+};
 use serde::Serialize;
 use ts_rs::TS;
 
-use crate::{
-	models::{
-		channel::Channel,
-		friend::UserFriend,
-		friendrequest::UserFriendRequest,
-		invite::Invite,
-		message::Message,
-		scope::{has_scope, ReadWrite, Scope},
-		server::Server,
-		servermember::ServerMember,
-	},
-	AppState,
-};
+use crate::AppState;
 
 #[derive(Debug, Serialize, TS)]
 #[ts(export)]
@@ -29,45 +28,33 @@ pub enum WsUpdateEvent {
 
 	ServerCreate(Server),
 	ServerUpdate {
-		#[serde(serialize_with = "crate::models::id_str")]
-		#[ts(type = "`${number}`")]
-		id: u64,
+		id: ServerId,
 		#[serde(skip_serializing_if = "Option::is_none")]
 		name: Option<String>,
 	},
 	ServerDelete {
-		#[serde(serialize_with = "crate::models::id_str")]
-		#[ts(type = "`${number}`")]
-		id: u64,
+		id: ServerId,
 	},
 
 	ChannelCreate(Channel),
 	ChannelUpdate {
-		#[serde(serialize_with = "crate::models::id_str")]
-		#[ts(type = "`${number}`")]
-		id: u64,
+		id: ChannelId,
 		#[serde(skip_serializing_if = "Option::is_none")]
 		name: Option<String>,
 	},
 	ChannelDelete {
-		#[serde(serialize_with = "crate::models::id_str")]
-		#[ts(type = "`${number}`")]
-		id: u64,
+		id: ChannelId,
 	},
 
 	MessageCreate(Message),
 	MessageUpdate {
-		#[serde(serialize_with = "crate::models::id_str")]
-		#[ts(type = "`${number}`")]
-		id: u64,
+		id: MessageId,
 		updated_at: chrono::DateTime<chrono::Utc>,
 		#[serde(skip_serializing_if = "Option::is_none")]
 		content: Option<String>,
 	},
 	MessageDelete {
-		#[serde(serialize_with = "crate::models::id_str")]
-		#[ts(type = "`${number}`")]
-		id: u64,
+		id: MessageId,
 	},
 
 	InviteCreate(Invite),
@@ -77,28 +64,18 @@ pub enum WsUpdateEvent {
 
 	MemberCreate(ServerMember),
 	MemberUpdate {
-		#[serde(serialize_with = "crate::models::id_str")]
-		#[ts(type = "`${number}`")]
-		user_id: u64,
-		#[serde(serialize_with = "crate::models::id_str")]
-		#[ts(type = "`${number}`")]
-		server_id: u64,
+		user_id: UserId,
+		server_id: ServerId,
 		#[serde(skip_serializing_if = "Option::is_none")]
 		nickname: Option<Option<String>>,
 	},
 	MemberDelete {
-		#[serde(serialize_with = "crate::models::id_str")]
-		#[ts(type = "`${number}`")]
-		user_id: u64,
-		#[serde(serialize_with = "crate::models::id_str")]
-		#[ts(type = "`${number}`")]
-		server_id: u64,
+		user_id: UserId,
+		server_id: ServerId,
 	},
 
 	UserUpdate {
-		#[serde(serialize_with = "crate::models::id_str")]
-		#[ts(type = "`${number}`")]
-		id: u64,
+		id: UserId,
 		#[serde(skip_serializing_if = "Option::is_none")]
 		username: Option<String>,
 		#[serde(skip_serializing_if = "Option::is_none")]
@@ -107,22 +84,14 @@ pub enum WsUpdateEvent {
 
 	FriendRequestCreate(UserFriendRequest),
 	FriendRequestDelete {
-		#[serde(serialize_with = "crate::models::id_str")]
-		#[ts(type = "`${number}`")]
-		sender_id: u64,
-		#[serde(serialize_with = "crate::models::id_str")]
-		#[ts(type = "`${number}`")]
-		receiver_id: u64,
+		sender_id: UserId,
+		receiver_id: UserId,
 	},
 
 	FriendCreate(UserFriend),
 	FriendDelete {
-		#[serde(serialize_with = "crate::models::id_str")]
-		#[ts(type = "`${number}`")]
-		user_id: u64,
-		#[serde(serialize_with = "crate::models::id_str")]
-		#[ts(type = "`${number}`")]
-		friend_id: u64,
+		user_id: UserId,
+		friend_id: UserId,
 	},
 }
 
@@ -169,7 +138,7 @@ impl WsUpdateEvent {
 	}
 }
 
-pub fn send_updates<I: IntoIterator<Item = WsUpdateEvent>, J: IntoIterator<Item = u64>>(
+pub fn send_updates<I: IntoIterator<Item = WsUpdateEvent>, J: IntoIterator<Item = UserId>>(
 	events: I,
 	app_state: &web::Data<AppState>,
 	users: J,

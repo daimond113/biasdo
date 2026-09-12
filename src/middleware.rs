@@ -9,50 +9,9 @@ use actix_web::{
 	web, Error as ActixError, HttpMessage, HttpResponse, ResponseError,
 };
 use base64::Engine;
-use sqlx::query;
+use biasdo_core::models::auth::Identity;
 
-use crate::{error::BackendError, models::scope::Scope, AppState};
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum Identity {
-	User(u64),
-	Client(u64),
-	// Bearer tokens
-	// refers to the fact a client is acting on behalf of a user, not the user itself
-	UserByClient((u64, HashSet<Scope>)),
-	ClientByClient((u64, HashSet<Scope>)),
-}
-
-impl Hash for Identity {
-	fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-		match self {
-			Identity::User(id) => {
-				id.hash(state);
-			}
-			Identity::Client(id) => {
-				id.hash(state);
-			}
-			Identity::UserByClient((id, scopes)) => {
-				id.hash(state);
-				for scope in scopes {
-					scope.hash(state);
-				}
-			}
-			Identity::ClientByClient((id, scopes)) => {
-				id.hash(state);
-				for scope in scopes {
-					scope.hash(state);
-				}
-			}
-		}
-	}
-}
-
-impl Identity {
-	pub fn is_user_like(&self) -> bool {
-		matches!(self, Identity::User(_) | Identity::UserByClient(_))
-	}
-}
+use crate::{error::BackendError, AppState};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct Token(pub String);

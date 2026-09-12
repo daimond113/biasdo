@@ -12,13 +12,9 @@ use actix_ws::{CloseCode, CloseReason, Message};
 use dashmap::mapref::entry::Entry;
 use futures::StreamExt;
 use serde::{Deserialize, Serialize};
-use sqlx::query;
 use tokio::select;
 
-use crate::{
-	middleware::{get_identity, Identity},
-	AppState,
-};
+use crate::{middleware::get_identity, AppState};
 
 const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(5);
 const HEARTBEAT_TIMEOUT: Duration = Duration::from_secs(10);

@@ -1,0 +1,13 @@
+[package]
+name = "biasdo-mariadb"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+sqlx = { workspace = true, features = ["mysql"] }
+async-trait = { workspace = true }
+futures-core = { workspace = true }
+anyhow = { workspace = true }
+
+biasdo-core = { path = "../biasdo-core" }

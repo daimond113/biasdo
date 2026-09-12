@@ -3,7 +3,7 @@ use chrono::{DateTime, Utc};
 use serde::Serialize;
 use ts_rs::TS;
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, TS, Hash)]
+#[derive(Debug, Serialize, TS)]
 #[ts(export)]
 pub struct Invite {
 	pub id: String,

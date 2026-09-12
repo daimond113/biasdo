@@ -1,11 +1,39 @@
 [package]
-name = "backend"
+name = "biasdo"
 version = "0.2.0"
 edition = "2021"
 license = "MIT"
 publish = false
 
+[features]
+default = ["mariadb"]
+mariadb = ["dep:biasdo-mariadb"]
+
+[workspace]
+members = ["crates/*"]
+
+[workspace.dependencies]
+sqlx = { version = "0.9.0", features = [
+    "runtime-tokio",
+    "tls-rustls",
+    "chrono",
+] }
+webauthn-rs = { version = "=0.6.1-dev", features = [
+    "danger-allow-state-serialisation",
+    "conditional-ui",
+] }
+serde = "1.0.229"
+ts-rs = { version = "12.0.1", features = ["chrono-impl", "url-impl"] }
+chrono = { version = "0.4.45", features = ["serde"] }
+url = { version = "2.5.7", features = ["serde"] }
+anyhow = "1.0.104"
+async-trait = "0.1.92"
+futures-core = "0.3.34"
+
 [dependencies]
+biasdo-core = { path = "crates/biasdo-core" }
+biasdo-mariadb = { path = "crates/biasdo-mariadb", optional = true }
+
 actix-web = "4.14.0"
 actix-cors = "0.7.1"
 actix-ws = "0.4.0"
@@ -14,37 +42,28 @@ actix-multipart = "0.8.0"
 
 tokio = { version = "1.53.1", features = ["macros"], default-features = false }
 
-url = { version = "2.5.7", features = ["serde"] }
+url = { workspace = true }
 
 rusty-s3 = "0.10.2"
 
-serde = "1.0.229"
+serde = { workspace = true }
 serde_json = "1.0.151"
 serde_with = "3.21.0"
 
-sqlx = { version = "0.9.0", features = [
-    "mysql",
-    "runtime-tokio",
-    "tls-rustls",
-    "chrono",
-] }
 sha2 = "0.11.0"
 base64 = "0.23.1"
 password-auth = "1.0.0"
 cuid2 = "0.1.4"
 snowflaked = "1.0.3"
-webauthn-rs = { version = "0.5.3", features = [
-    "danger-allow-state-serialisation",
-    "conditional-ui",
-] }
+webauthn-rs = { workspace = true }
 
 thiserror = "2.0.19"
 dotenvy = "0.15.7"
 futures = "0.3.33"
 
-chrono = { version = "0.4.45", features = ["serde"] }
+chrono = { workspace = true }
 validator = { version = "0.21.0", features = ["derive"] }
-ts-rs = { version = "12.0.1", features = ["chrono-impl", "url-impl"] }
+ts-rs = { workspace = true }
 
 tracing = { version = "0.1.41", features = ["attributes"] }
 tracing-subscriber = { version = "0.3.20", features = ["env-filter"] }
